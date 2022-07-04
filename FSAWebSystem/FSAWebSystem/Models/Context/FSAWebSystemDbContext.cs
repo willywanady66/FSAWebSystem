@@ -30,6 +30,10 @@ namespace FSAWebSystem.Models.Context
 
             builder.Entity<UserUnilever>()
               .Property(x => x.IsActive)
+              .HasDefaultValue(true); 
+            
+            builder.Entity<WorkLevel>()
+              .Property(x => x.IsActive)
               .HasDefaultValue(true);
         }
 
@@ -43,5 +47,6 @@ namespace FSAWebSystem.Models.Context
         public DbSet<FSACalendarDetail> FSACalendarDetail { get; set; }
         public DbSet<FSADocument> FSADocuments{ get; set; }
         public DbSet<MonthlyBucket> MonthlyBuckets{ get; set; }
+        public DbSet<WorkLevel> WorkLevels{ get; set; }
     }
 }

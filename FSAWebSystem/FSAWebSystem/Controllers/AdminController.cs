@@ -19,19 +19,21 @@ namespace FSAWebSystem.Controllers
         private IBannerService _bannerService;
         private IRoleService _roleServices;
         private ISKUService _skuService;
-
-        public AdminController(FSAWebSystemDbContext db, IUserService userSvc, IBannerService bannerSvc, IRoleService roleSvc, ISKUService skuService)
+        private ICalendarService _calendarService;
+        public AdminController(FSAWebSystemDbContext db, IUserService userSvc, IBannerService bannerSvc, IRoleService roleSvc, ISKUService skuService, ICalendarService calendarService)
         {
             _db = db;
             _userService = userSvc;
             _bannerService = bannerSvc;
             _roleServices = roleSvc;
             _skuService = skuService;
+            _calendarService = calendarService;
         }
 
         [Authorize]
         public async Task<IActionResult> Index()
         {
+            var currentDate = DateTime.Now;
             var listDocumentUpload = Enum.GetValues(typeof(DocumentUpload)).Cast<DocumentUpload>().Select(x => new SelectListItem { Text = UploadDocumentService.GetEnumDesc(x), Value = ((int) x).ToString() }).ToList();
             List<UserUnilever> listUsers = await _userService.GetAllUsers();
              foreach(var user in listUsers)
@@ -42,6 +44,7 @@ namespace FSAWebSystem.Controllers
             List<RoleUnilever> listRoles = await _roleServices.GetAllRoles().ToListAsync();
             List<ProductCategory> listCategory = await _skuService.GetAllProductCategories().ToListAsync();
             List<SKU> listSKU = await _skuService.GetAllProducts().ToListAsync();
+            FSACalendarHeader fsaCalendar = await _calendarService.GetFSACalendarHeader(currentDate.Month, currentDate.Year);
             AdminModel model = new AdminModel
             {
                 Users = listUsers,
@@ -50,7 +53,8 @@ namespace FSAWebSystem.Controllers
                 SKUs = listSKU,
                 Categories = listCategory,
                 DocumentUploads = listDocumentUpload,
-                LoggedUser = User.Identity.Name
+                LoggedUser = User.Identity.Name,
+                FSACalendar = fsaCalendar
             };
             return View(model);
         }
@@ -70,6 +74,7 @@ namespace FSAWebSystem.Controllers
             public List<ProductCategory> Categories{ get; set; }
 
             public List<SelectListItem> DocumentUploads { get; set; }
+            public FSACalendarHeader FSACalendar { get; set; }
             public string LoggedUser { get; set; }
         }
 

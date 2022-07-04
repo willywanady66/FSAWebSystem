@@ -71,6 +71,11 @@ namespace FSAWebSystem.Services
             return banner;
         }
 
+        public async Task SaveBanners(List<Banner> banners)
+        {
+            await _db.Banners.AddRangeAsync(banners);
+        }
+
         public async Task<Banner> UpdateBanner(Banner banner, string loggedUser)
         {
             banner.ModifiedAt = DateTime.Now;

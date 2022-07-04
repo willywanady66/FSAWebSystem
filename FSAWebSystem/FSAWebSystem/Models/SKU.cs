@@ -28,6 +28,8 @@ namespace FSAWebSystem.Models
         public DateTime? ModifiedAt { get; set; }
         public string? ModifiedBy{ get; set; }
 
+        public Guid FSADocumentId { get; set; }
+
         //[NotMapped] public ProductCategory ProductCategory { get; set; }
         [NotMapped]
         public string Category { get; set; }

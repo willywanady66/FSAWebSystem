@@ -88,9 +88,9 @@ namespace FSAWebSystem.Controllers
 
                 foreach(var detail in fSACalendarHeader.FSACalendarDetails)
                 {
-                    if (detail.Week == 5 && (detail.StartDate.HasValue && detail.EndDate.HasValue))
+                    if (detail.Week == 5 && !(detail.StartDate.HasValue && detail.EndDate.HasValue))
                     {
-
+                        continue;
                     }
                     else
                     {
@@ -98,7 +98,8 @@ namespace FSAWebSystem.Controllers
                     }
 
                 }
-
+                fSACalendarHeader.CreatedBy = User.Identity.Name;
+                fSACalendarHeader.CreatedAt = DateTime.Now;
                 fSACalendarHeader.Id = Guid.NewGuid();
                 _context.Add(fSACalendarHeader);
                 await _context.SaveChangesAsync();

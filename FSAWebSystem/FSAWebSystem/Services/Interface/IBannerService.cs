@@ -8,6 +8,7 @@ namespace FSAWebSystem.Services.Interface
         public IQueryable<Banner> GetAllBanner();
         public Task<Banner> GetBanner(Guid id);
         public Task<Banner> SaveBanner(Banner banner, string user);
+        public Task SaveBanners(List<Banner> banners);
         public Banner GetBannerByName (string name);
         public Task<bool> IsBannerExist (string name);
 

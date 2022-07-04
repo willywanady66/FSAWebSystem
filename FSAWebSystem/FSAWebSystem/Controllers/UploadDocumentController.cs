@@ -20,12 +20,14 @@ namespace FSAWebSystem.Controllers
 
         public ISKUService _skuService;
         public IBannerService _bannerService;
+        public IUploadDocumentService _uploadDocService;
         private readonly FSAWebSystemDbContext _db;
-        public UploadDocumentController(ISKUService skuService, IBannerService bannerService, FSAWebSystemDbContext db)
+        public UploadDocumentController(ISKUService skuService, IBannerService bannerService, IUploadDocumentService uploadDocService, FSAWebSystemDbContext db)
         {
             _db = db;
             _skuService = skuService;
             _bannerService = bannerService;
+            _uploadDocService = uploadDocService;
         }
 
 
@@ -36,7 +38,7 @@ namespace FSAWebSystem.Controllers
             var workbook = new HSSFWorkbook();
             ISheet worksheet = workbook.CreateSheet(doc.ToString());
             var headerRow = worksheet.CreateRow(0).CreateCell(0);
-            
+
 
             var style = workbook.CreateCellStyle();
             style.Alignment = HorizontalAlignment.Center;
@@ -45,15 +47,18 @@ namespace FSAWebSystem.Controllers
 
             switch (doc)
             {
-                case DocumentUpload.Product:
-                    columns = UploadDocumentService.GetProductColumn();
+                case DocumentUpload.Banner:
+                    columns = _uploadDocService.GetBannerColumns();
+                    break;
+                case DocumentUpload.SKU:
+                    columns = _uploadDocService.GetSKUColumns();
                     break;
                 case DocumentUpload.MonthlyBucket:
-                    columns = UploadDocumentService.GetMonthlyBucketColumn();
+                    columns = _uploadDocService.GetMonthlyBucketColumns();
                     break;
             }
 
-            CellRangeAddress range = new CellRangeAddress(0, 0, 0, columns.Count);  
+            CellRangeAddress range = new CellRangeAddress(0, 0, 0, columns.Count - 1);
             worksheet.AddMergedRegion(range);
 
             headerRow.CellStyle = style;
@@ -101,9 +106,19 @@ namespace FSAWebSystem.Controllers
         public async Task<IActionResult> UploadFile(IFormFile excelDocument, string documentType, string loggedUser)
         {
             var doc = (DocumentUpload)(Convert.ToInt32(documentType));
+            List<string> errorMessages = new List<string>();
 
+           
             if (excelDocument != null)
             {
+                if (!excelDocument.FileName.Contains(documentType.ToString()))
+                {
+                    errorMessages.Add("Wrong File Format!");
+                    TempData["ErrorMessages"] = errorMessages;
+                    TempData["Tab"] = "UploadDoc";
+                    return RedirectToAction("Index", "Admin");
+                }
+
                 MemoryStream stream = new MemoryStream();
                 //var stream = new FileStream(excelDocument.FileName, FileMode.Open, FileAccess.Read);
                 await excelDocument.CopyToAsync(stream);
@@ -117,35 +132,39 @@ namespace FSAWebSystem.Controllers
                 {
                     switch (doc)
                     {
-                        case DocumentUpload.Product:
-                            columns = UploadDocumentService.GetProductColumn();
-                             dt = CreateDataTable(sheet, columns);
-                            await SaveSKUs(dt, loggedUser);
+                        case DocumentUpload.Banner:
+                            columns = _uploadDocService.GetBannerColumns();
+                            dt = CreateDataTable(sheet, columns);
+                            await SaveBanners(dt, excelDocument.FileName, loggedUser, doc);
+                            break;
+                        case DocumentUpload.SKU:
+                            columns = _uploadDocService.GetSKUColumns();
+                            dt = CreateDataTable(sheet, columns);
+                            await SaveSKUs(dt, excelDocument.FileName, loggedUser, doc);
                             break;
                         case DocumentUpload.MonthlyBucket:
-                            columns = UploadDocumentService.GetMonthlyBucketColumn();
-                             dt = CreateDataTable(sheet, columns);
-                            await SaveMonthlyBucket(dt);
+                            columns = _uploadDocService.GetMonthlyBucketColumns();
+                            dt = CreateDataTable(sheet, columns);
+                            await SaveMonthlyBuckets(dt, excelDocument.FileName, loggedUser, doc);
                             break;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
 
                 }
             }
 
-            FSADocument fsaDoc = CreateFSADoc(excelDocument.FileName, loggedUser);
-            await _db.AddAsync(fsaDoc);
+
             await _db.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Admin");
+            return RedirectToAction("Index", "Admin", errorMessages);
         }
-       
+
 
         private DataTable CreateDataTable(ISheet sheet, List<string> columns)
         {
-            
+
             var dt = new DataTable();
 
             foreach (var column in columns)
@@ -184,7 +203,7 @@ namespace FSAWebSystem.Controllers
                     }
                     dt.Rows.Add(dr);
                     dt.AcceptChanges();
-                  
+
                 }
                 catch (Exception ex)
                 {
@@ -194,9 +213,10 @@ namespace FSAWebSystem.Controllers
             return dt;
         }
 
-        private async Task SaveSKUs(DataTable dt, string loggedUser)
+        private async Task SaveSKUs(DataTable dt, string fileName,  string loggedUser, DocumentUpload documentType)
         {
             List<SKU> listSKU = new List<SKU>();
+            FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
             //List<ProductCategory> listCategory = new List<ProductCategory>();
             foreach (DataRow row in dt.Rows)
             {
@@ -215,12 +235,12 @@ namespace FSAWebSystem.Controllers
             {
                 var count = await _db.Database.ExecuteSqlRawAsync("DELETE FROM ProductCategories");
             }
-           
-            
+
+
             var categoryToAdd = listSKU.Select(x => x.Category).Distinct().ToList();
 
             List<ProductCategory> listCategory = (from category in categoryToAdd
-                                                  select category).Select(x => new ProductCategory { Id = Guid.NewGuid(), CategoryProduct = x, CreatedAt = DateTime.Now, CreatedBy = loggedUser }).ToList();
+                                                  select category).Select(x => new ProductCategory { Id = Guid.NewGuid(), CategoryProduct = x, CreatedAt = DateTime.Now, CreatedBy = loggedUser, FSADocumentId = fsaDoc.Id }).ToList();
 
             foreach (var sku in listSKU)
             {
@@ -228,57 +248,74 @@ namespace FSAWebSystem.Controllers
                 sku.ProductCategory = listCategory.Single(x => x.CategoryProduct == sku.Category);
                 sku.CreatedAt = DateTime.Now;
                 sku.CreatedBy = loggedUser;
+                sku.FSADocumentId = fsaDoc.Id;
             }
-           
-           
+
+            await _uploadDocService.SaveDocument(fsaDoc);
             await _skuService.SaveProductCategories(listCategory);
             await _skuService.SaveSKUs(listSKU);
         }
 
-        private async Task SaveMonthlyBucket(DataTable dt)
+        private async Task SaveMonthlyBuckets(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType)
         {
             List<MonthlyBucket> listMonthlyBucket = new List<MonthlyBucket>();
-            
 
-            List<Banner> banners = _bannerService.GetAllBanner().ToList();
-            List<SKU> skus = _skuService.GetAllProducts().ToList();
+            IQueryable<Banner> banners = _bannerService.GetAllBanner();
+            IQueryable<SKU> skus = _skuService.GetAllProducts();
             //List<ProductCategory> categories = _skuService.GetAllProductCategories().ToList();
 
-            foreach(DataRow dr in dt.Rows)
+            FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
+
+            foreach (DataRow dr in dt.Rows)
             {
 
                 var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
+                var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
+                var currentDate = DateTime.Now;
                 var monthlyBucket = new MonthlyBucket
                 {
                     Id = Guid.NewGuid(),
-                    BannerId = banners.Single(x => x.BannerName == dr["Banner"].ToString()).Id,
+                    BannerId = banner.Id,
                     SKUId = sku.Id,
                     Price = Convert.ToDecimal(ConvertNumber(dr["Price"].ToString())),
-                    PlantContribution = Convert.ToDecimal(ConvertNumber(dr["Plant Contribution"].ToString())),
-                    RatingRate = Convert.ToDecimal(ConvertNumber(dr["Rating Rate"].ToString())),
-                    TCT = Convert.ToDecimal(ConvertNumber(dr["TCT"].ToString())),
-                    MonthlyTarget = Convert.ToDecimal(ConvertNumber(dr["MonthlyTarget"].ToString())),
-                   
+                    PlantContribution = Convert.ToDecimal(ConvertNumber(dr["Plant Contribution"].ToString())) * 100,
+                    RatingRate = Convert.ToDecimal(ConvertNumber(dr["Rating Rate"].ToString())) ,
+                    TCT = Convert.ToDecimal(ConvertNumber(dr["TCT"].ToString())) * 100,
+                    MonthlyTarget = Convert.ToDecimal(ConvertNumber(dr["Monthly Target"].ToString())) * 100,
+                    Month = currentDate.Month,
+                    Year = currentDate.Year,
+                    FSADocument = fsaDoc
                 };
+                listMonthlyBucket.Add(monthlyBucket);
             }
+
+            await _uploadDocService.SaveMonthlyBuckets(listMonthlyBucket);
+            await _uploadDocService.SaveDocument(fsaDoc);
         }
 
-
-        public FSADocument CreateFSADoc(string fileName, string loggedUser)
+        private async Task SaveBanners (DataTable dt, string fileName, string loggedUser, DocumentUpload documentType)
         {
-            FileInfo fileInfo = new FileInfo(fileName);
-            FSADocument fsaDoc = new FSADocument
+            List<Banner> banners = new List<Banner>();
+            FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
+            foreach (DataRow dr in dt.Rows)
             {
-                Id = Guid.NewGuid(),
-                DocumentName = fileInfo.Name,
-                DocumentType = fileInfo.Extension,
-                UploadedAt = DateTime.Now,
-                UploadedBy = loggedUser
-            };
+                var banner = new Banner
+                {
+                    Id = Guid.NewGuid(),
+                    Trade = dr["Trade"].ToString(),
+                    BannerName = dr["Banner Name"].ToString(),
+                    PlantCode = dr["Plant Code"].ToString(),
+                    PlantName = dr["Plant Name"].ToString(),
+                    CreatedAt = DateTime.Now,
+                    CreatedBy = loggedUser,
+                    FSADocumentId = fsaDoc.Id
+                };
 
-            return fsaDoc;
+                banners.Add(banner);
+            }
+            await _uploadDocService.SaveDocument(fsaDoc);
+            await _bannerService.SaveBanners(banners);
         }
-
 
         private static string ConvertNumber(string input)
         {
@@ -289,5 +326,5 @@ namespace FSAWebSystem.Controllers
 
 
 
-    
+
 }

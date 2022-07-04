@@ -118,6 +118,9 @@ namespace FSAWebSystem.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("FSADocumentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -175,6 +178,12 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<Guid>("SKUId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SWF2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SWF3")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TCT")
                         .HasColumnType("decimal(18,2)");
@@ -291,6 +300,9 @@ namespace FSAWebSystem.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("FSADocumentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
@@ -361,6 +373,9 @@ namespace FSAWebSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("FSADocumentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -425,6 +440,33 @@ namespace FSAWebSystem.Migrations
                     b.HasIndex("RoleUnileverId");
 
                     b.ToTable("UsersUnilever");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.WorkLevel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("WL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WorkLevels");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

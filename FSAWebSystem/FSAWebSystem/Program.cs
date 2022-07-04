@@ -17,7 +17,8 @@ builder.Services.AddDefaultIdentity<FSAWebSystemUser>(options => options.SignIn.
 
 
 
-
+builder.Services.AddScoped<IUploadDocumentService, UploadDocumentService>();
+builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
@@ -47,6 +48,11 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+#if !DEBUG
+            app.UseResponseCompression();
+#endif
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

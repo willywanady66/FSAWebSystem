@@ -1,12 +1,26 @@
 ﻿@using static FSAWebSystem.Controllers.AdminController
 @{
 	ViewData["Title"] = "Admin Page";
+	var tab = TempData["Tab"] as string;
 }
 @{
 	@model AdminModel
 
 }<div class="d-sm-flex align-items-center justify-content-between mb-4">
 	<h1 class="h3 mb-0 text-gray-800">Admin</h1>
+</div>
+<div class="text-danger">
+		@if (TempData["ErrorMessages"] != null)
+	{
+		<ul>
+
+			@foreach (var error in TempData["ErrorMessages"] as IEnumerable<string>)
+				{
+				<li>@Html.DisplayFor(Model => error)</li>
+				}
+		</ul>
+
+	}
 </div>
 <!-- DataTales Example -->
 <div class="card shadow mb-4 pt-4 pl-2">
@@ -35,7 +49,7 @@
 							<tr>
 								<th>Name</th>
 								<th>Email</th>
-								<th>Date Added</th>
+								@*<th>Date Added</th>*@
 								<th>User Roles</th>
 								<th>Banner</th>
 								<th>Action</th>
@@ -47,7 +61,7 @@
 								<tr>
 									<td>@Html.DisplayFor(Model => user.Name)</td>
 									<td>@Html.DisplayFor(Model => user.Email)</td>
-									<td>@Html.DisplayFor(Model => user.CreatedAt)</td>
+									@*<td>@Html.DisplayFor(Model => user.CreatedAt)</td>*@
 									<td>@Html.DisplayFor(Model => user.RoleUnilever.RoleName)</td>
 									<td>@Html.DisplayFor(Model => user.BannerName)</td>
 									<td class="text-center"><a asp-action="Edit" asp-controller="UserUnilevers" asp-route-id="@user.Id"><i class="fas fa-pen"></i></a></td>
@@ -121,19 +135,19 @@
 <div class="card shadow mb-4 pt-4 pl-2">
 	<ul class="nav nav-tabs" id="myTab3" role="tablist">
 		<li class="nav-item waves-effect waves-light">
-			<a class="nav-link active" id="calendar-tab" data-toggle="tab" href="#calendar" role="tab" aria-controls="calendar" aria-selected="true">Calendar</a>
-		
+			<a class="nav-link @(tab == "Calendar" || string.IsNullOrEmpty(tab) ? " active" : "")" id="calendar-tab" data-toggle="tab" href="#calendar" role="tab" aria-controls="calendar" aria-selected="@(tab == "Calendar" ? true : false)">Calendar</a>
+
 		</li>
 		<li class="nav-item waves-effect waves-light">
-			<a class="nav-link" id="uploadDoc-tab" data-toggle="tab" href="#uploadDoc" role="tab" aria-controls="uploadDoc" aria-selected="false">Upload Document</a>
+			<a class="nav-link @(tab == "UploadDoc" ? " active" : "")" id="uploadDoc-tab" data-toggle="tab" href="#uploadDoc" role="tab" aria-controls="uploadDoc" aria-selected="@(tab == "UploadDoc" ? true : false)">Upload Document</a>
 		</li>
 	</ul>
 
 	<div class="tab-content" id="myTabContent3">
-		<div class="tab-pane fade active show" id="calendar" role="tabpanel" aria-labelledby="calendar-tab">
+		<div class="tab-pane fade @(tab == "Calendar" || string.IsNullOrEmpty(tab) ? " active show" : "")" id="calendar" role="tabpanel" aria-labelledby="calendar-tab">
 			<div class="card-header py-3">
 				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-calendar"></i> Calendar</h5>
-				<a  asp-area="" asp-controller="FSACalendarHeaders" asp-action="Create"><button class="btn btn-primary float-right m-0"><i class="fas fa-plus"></i> Add Calendar</button></a>
+				<a asp-area="" asp-controller="FSACalendarHeaders" asp-action="Create"><button class="btn btn-primary float-right m-0"><i class="fas fa-plus"></i> Add Calendar</button></a>
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">
@@ -148,13 +162,24 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr>
-								<th></th>
-								<th></th>
-								<th></th>
-								<th></th>
-								<th></th>
-							</tr>
+							@if (Model.FSACalendar != null)
+							{
+								if (Model.FSACalendar.FSACalendarDetails.Count > 0)
+								{
+									foreach (var detail in Model.FSACalendar.FSACalendarDetails)
+									{
+										var startDate = detail.StartDate.Value.ToString("dd/MM/yyyy");
+										var endDate = detail.EndDate.Value.ToString("dd/MM/yyyy");
+										<tr>
+											<th>@Html.DisplayFor(Model  => detail.Week)</th>
+											<th>@Html.DisplayFor(Model => startDate)</th>
+											<th>@Html.DisplayFor(Model => endDate)</th>
+											<th>@Html.DisplayFor(Model  => Model.FSACalendar.Month)</th>
+											<th>@Html.DisplayFor(Model  => Model.FSACalendar.Year)</th>
+										</tr>
+									}
+								}
+							}
 
 						</tbody>
 					</table>
@@ -163,7 +188,7 @@
 		</div>
 
 
-		<div class="tab-pane fade" id="uploadDoc" role="tabpanel" aria-labelledby="uploadDoc-tab">
+		<div class="tab-pane fade @(tab == "UploadDoc" ? " active show" : "")" id="uploadDoc" role="tabpanel" aria-labelledby="uploadDoc-tab">
 			<div class="card-header py-3">
 				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-file"></i> Upload Document</h5>
 			</div>
@@ -211,7 +236,7 @@
 			<div class="card-header py-3">
 				<div class="inline"></div>
 				<h5 class="m-0 font-weight-bold text-primary d-inline">Banners</h5>
-				<a asp-area="" asp-controller="Banners" asp-action="Create"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Banner</button></a>
+				@*<a asp-area="" asp-controller="Banners" asp-action="Create"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Banner</button></a>*@
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">

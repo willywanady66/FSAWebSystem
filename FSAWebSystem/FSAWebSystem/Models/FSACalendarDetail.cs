@@ -10,8 +10,11 @@ namespace FSAWebSystem.Models
         public int Year { get; set; }
 
         [DataType(DataType.Date)]
+        //[DisplayFormat(DataFormatString = ("dd/MM/yyyy"))]
         public DateTime? StartDate { get; set; }
+
         [DataType(DataType.Date)]
+        //[DisplayFormat(DataFormatString = ("dd/MM/yyyy"))]
         public DateTime? EndDate { get; set; }
     }
 }

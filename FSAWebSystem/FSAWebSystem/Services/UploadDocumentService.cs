@@ -1,10 +1,12 @@
 ﻿using FSAWebSystem.Models;
+using FSAWebSystem.Models.Bucket;
 using FSAWebSystem.Models.Context;
+using FSAWebSystem.Services.Interface;
 using System.ComponentModel;
 
 namespace FSAWebSystem.Services
 {
-    public class UploadDocumentService
+    public class UploadDocumentService : IUploadDocumentService
     {
         public FSAWebSystemDbContext _db;
         public UploadDocumentService(FSAWebSystemDbContext db)
@@ -21,25 +23,7 @@ namespace FSAWebSystem.Services
             return attribute == null ? value.ToString() : attribute.Description;
         }
 
-
-        public FSADocument CreateFSADoc(string fileName, string loggedUser)
-        {
-            FileInfo fileInfo = new FileInfo(fileName);
-            FSADocument fsaDoc = new FSADocument
-            {
-                Id = Guid.NewGuid(),
-                DocumentName = fileInfo.Name,
-                DocumentType = fileInfo.Extension,
-                UploadedAt = DateTime.Now,
-                UploadedBy = loggedUser
-            };
-
-            return fsaDoc;
-        }
-
-
-
-        public static List<string> GetProductColumn()
+        public List<string> GetSKUColumns()
         {
             return new List<string>
             {
@@ -49,10 +33,12 @@ namespace FSAWebSystem.Services
             };
         }
 
-        public static List<string> GetMonthlyBucketColumn()
+        public List<string> GetMonthlyBucketColumns()
         {
             return new List<string>
             {
+                "SWF 2",
+                "SWF 3",
                 "Banner",
                 "PC Map",
                 "Description",
@@ -67,15 +53,80 @@ namespace FSAWebSystem.Services
             };
         }
 
+
+        public List<string> GetBannerColumns()
+        {
+            return new List<string>
+            {
+                "Trade",
+                "Banner Name",
+                "Plant Name",
+                "Plant Code"
+            };
+        }
+
+        public async Task SaveMonthlyBuckets(List<MonthlyBucket> monthlyBuckets)
+        {
+            await _db.AddRangeAsync(monthlyBuckets);
+        }
+
+        public FSADocument CreateFSADoc(string fileName, string loggedUser, DocumentUpload docType)
+        {
+            FileInfo fileInfo = new FileInfo(fileName);
+            FSADocument fsaDoc = new FSADocument
+            {
+                Id = Guid.NewGuid(),
+                DocumentName = fileInfo.Name,
+                DocumentType = docType.ToString(),
+                UploadedAt = DateTime.Now,
+                UploadedBy = loggedUser
+            };
+
+            return fsaDoc;
+        }
+
+        public List<string> GetWeeklyDispatchColumn()
+        {
+            return new List<string>
+            {
+                "Unik",
+                "Account",
+                "Material",
+                "Material Description",
+                "Description",
+                "Dispatch / Consume",
+            };
+        }
+
+        public async Task SaveDocument(FSADocument fsaDoc)
+        {
+            await _db.FSADocuments.AddAsync(fsaDoc);
+        }
+
+        List<string> IUploadDocumentService.GetWeeklyDispatchColumns()
+        {
+            throw new NotImplementedException();
+        }
+
+        List<string> IUploadDocumentService.GetDailyOrderColumns()
+        {
+            throw new NotImplementedException();
+        }
     }
 
 
 
     public enum DocumentUpload
     {
-        [Description("Product")]
-        Product,
+        [Description("Banner")]
+        Banner,
+        [Description("SKU")]
+        SKU,
         [Description("Monthly Bucket")]
-        MonthlyBucket
+        MonthlyBucket,
+        [Description("Weekly Dispatch")]
+        WeeklyDispatch,
+        [Description("Daily Order")]
+        DailyOrder
     }
 }

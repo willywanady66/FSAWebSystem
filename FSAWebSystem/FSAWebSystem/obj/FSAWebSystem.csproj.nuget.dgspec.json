@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\DELL\\source\\repos\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj": {}
+    "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj": {}
   },
   "projects": {
-    "C:\\Users\\DELL\\source\\repos\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj": {
+    "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\DELL\\source\\repos\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj",
+        "projectUniqueName": "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj",
         "projectName": "FSAWebSystem",
-        "projectPath": "C:\\Users\\DELL\\source\\repos\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj",
+        "projectPath": "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj",
         "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\DELL\\source\\repos\\FSAWebSystem\\FSAWebSystem\\obj\\",
+        "outputPath": "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\DELL\\AppData\\Roaming\\NuGet\\NuGet.Config",
