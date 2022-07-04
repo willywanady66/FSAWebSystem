@@ -1,0 +1,317 @@
+﻿@using static FSAWebSystem.Controllers.AdminController
+@{
+	ViewData["Title"] = "Admin Page";
+}
+@{
+	@model AdminModel
+
+}<div class="d-sm-flex align-items-center justify-content-between mb-4">
+	<h1 class="h3 mb-0 text-gray-800">Admin</h1>
+</div>
+<!-- DataTales Example -->
+<div class="card shadow mb-4 pt-4 pl-2">
+	<ul class="nav nav-tabs" id="myTab2" role="tablist">
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link active" id="users-tab" data-toggle="tab" href="#users" role="tab" aria-controls="users" aria-selected="true">Users</a>
+		</li>
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link" id="roles-tab" data-toggle="tab" href="#roles" role="tab" aria-controls="roles" aria-selected="false">Roles</a>
+		</li>
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link" id="role-access-tab" data-toggle="tab" href="#roleaccess" role="tab" aria-control="roleaccess" aria-selected="false">Role Access</a>
+		</li>
+	</ul>
+
+	<div class="tab-content" id="myTabContent2">
+		<div class="tab-pane fade active show" id="users" role="tabpanel" aria-labelledby="users-tab">
+			<div class="card-header py-3">
+				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-users"></i> Users</h5>
+				<a asp-area="Identity" asp-page="/Account/Register"><button class="btn btn-primary float-right m-0"><i class="fas fa-plus"></i> Add User</button></a>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableUsers" width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Email</th>
+								<th>Date Added</th>
+								<th>User Roles</th>
+								<th>Banner</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var user in Model.Users)
+							{
+								<tr>
+									<td>@Html.DisplayFor(Model => user.Name)</td>
+									<td>@Html.DisplayFor(Model => user.Email)</td>
+									<td>@Html.DisplayFor(Model => user.CreatedAt)</td>
+									<td>@Html.DisplayFor(Model => user.RoleUnilever.RoleName)</td>
+									<td>@Html.DisplayFor(Model => user.BannerName)</td>
+									<td class="text-center"><a asp-action="Edit" asp-controller="UserUnilevers" asp-route-id="@user.Id"><i class="fas fa-pen"></i></a></td>
+								</tr>
+							}
+
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="tab-pane fade" id="roles" role="tabpanel" aria-labelledby="roles-tab">
+			<div class="card-header py-3">
+				<div class="inline"></div>
+				<h5 class="m-0 font-weight-bold text-primary d-inline">Roles</h5>
+				<a asp-area="Identity" asp-page="/Account/Register"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Role</button></a>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableSKUs" width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>No.</th>
+								<th>Role</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var item in Model.Roles.Select((role, index) => new { role.RoleName, Index = index + 1 }))
+							{
+
+								<tr>
+									<td>@Html.DisplayFor(roles => item.Index)</td>
+									<td>@Html.DisplayFor(roles => item.RoleName)</td>
+								</tr>
+							}
+
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="tab-pane fade" id="roleaccess" role="tabpanel" aria-labelledby="roleaccess-tab">
+			<div class="card-header py-3">
+				<div class="inline"></div>
+				<h5 class="m-0 font-weight-bold text-primary d-inline">Role Access</h5>
+				<a asp-area="Identity" asp-page="/Account/Register"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Role Access</button></a>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableRoleAccess" width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>Group Role</th>
+								<th>Menu</th>
+								<th>Sub Menu</th>
+								<th>Access Activity</th>
+								<th class="text-center">Action</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="card shadow mb-4 pt-4 pl-2">
+	<ul class="nav nav-tabs" id="myTab3" role="tablist">
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link active" id="calendar-tab" data-toggle="tab" href="#calendar" role="tab" aria-controls="calendar" aria-selected="true">Calendar</a>
+		
+		</li>
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link" id="uploadDoc-tab" data-toggle="tab" href="#uploadDoc" role="tab" aria-controls="uploadDoc" aria-selected="false">Upload Document</a>
+		</li>
+	</ul>
+
+	<div class="tab-content" id="myTabContent3">
+		<div class="tab-pane fade active show" id="calendar" role="tabpanel" aria-labelledby="calendar-tab">
+			<div class="card-header py-3">
+				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-calendar"></i> Calendar</h5>
+				<a  asp-area="" asp-controller="FSACalendarHeaders" asp-action="Create"><button class="btn btn-primary float-right m-0"><i class="fas fa-plus"></i> Add Calendar</button></a>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableUsers" width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>Week</th>
+								<th>Start Date</th>
+								<th>End Date</th>
+								<th>Month</th>
+								<th>Year</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th></th>
+								<th></th>
+								<th></th>
+								<th></th>
+								<th></th>
+							</tr>
+
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="tab-pane fade" id="uploadDoc" role="tabpanel" aria-labelledby="uploadDoc-tab">
+			<div class="card-header py-3">
+				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-file"></i> Upload Document</h5>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-md-6">
+						<form enctype="multipart/form-data" asp-controller="UploadDocument" asp-action="UploadFile">
+							<input type="hidden" value=@Model.LoggedUser id="loggedUser" name="loggedUser" />
+							<div class="form-group row">
+								<label class="col-3 form-label my-auto">Select Document</label>
+								<select class="col-5 form-control form-select" id="documentType" name="documentType" asp-items="Model.DocumentUploads"></select>
+								<button class="col-3 ml-4 btn btn-primary" asp-controller="UploadDocument" asp-action="GetFileFormat">Get Excel Format</button>
+							</div>
+							<div class="form-group row">
+								<label class="col-3 form-label my-auto">File</label>
+								<input class="col-9 file-input form-control" id="excelDocument" name="excelDocument" type="file" />
+							</div>
+							<div class="form-group">
+								<input class="btn btn-primary" type="submit" value="Upload" />
+								@*<button value="Upload" class="btn btn-primary" asp-controller="UploadDocument" asp-action="UploadFile">Upload</button>*@
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="card shadow mb-4 pt-4 pl-2">
+	<ul class="nav nav-tabs" id="myTab" role="tablist">
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link active" id="banners-tab" data-toggle="tab" href="#banners" role="tab" aria-controls="banners" aria-selected="true">Banners</a>
+		</li>
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link" id="productCategories-tab" data-toggle="tab" href="#productCategories" role="tab" aria-controls="productCategories" aria-selected="false">Product Category</a>
+		</li>
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link" id="skus-tab" data-toggle="tab" href="#skus" role="tab" aria-controls="skus" aria-selected="false">SKUs</a>
+		</li>
+	</ul>
+	<div class="tab-content" id="myTabContent">
+		<div class="tab-pane fade active show" id="banners" role="tabpanel" aria-labelledby="banners-tab">
+			<div class="card-header py-3">
+				<div class="inline"></div>
+				<h5 class="m-0 font-weight-bold text-primary d-inline">Banners</h5>
+				<a asp-area="" asp-controller="Banners" asp-action="Create"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Banner</button></a>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableBanners" width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>Trade</th>
+								<th>Banner</th>
+								<th>Plant Name</th>
+								<th>Plant Code</th>
+								<th class="text-center">Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var banner in Model.Banners)
+							{
+								<tr>
+									<td>@Html.DisplayFor(Model  => banner.Trade)</td>
+									<td>@Html.DisplayFor(Model => banner.BannerName)</td>
+									<td>@Html.DisplayFor(Model => banner.PlantName)</td>
+									<td>@Html.DisplayFor(Model => banner.PlantCode)</td>
+									<td class="text-center"><a asp-action="Edit" asp-controller="Banners" asp-route-id="@banner.Id"><i class="fas fa-pen"></i></a></td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<div class="tab-pane fade" id="skus" role="tabpanel" aria-labelledby="skus-tab">
+			<div class="card-header py-3">
+				<div class="inline"></div>
+				<h5 class="m-0 font-weight-bold text-primary d-inline">SKUs</h5>
+				<a asp-area="" asp-controller="Banners" asp-action="Create"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add SKU</button></a>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableSKUs" width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>PC MAP</th>
+								<th>Description Map</th>
+								<th>Category</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (Model.SKUs != null)
+							{
+								@foreach (var sku in Model.SKUs)
+								{
+									<tr>
+										<td>@Html.DisplayFor(Model  => sku.PCMap)</td>
+										<td>@Html.DisplayFor(Model => sku.DescriptionMap)</td>
+										<td>@Html.DisplayFor(Model => sku.ProductCategory.CategoryProduct)</td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="tab-pane fade" id="productCategories" role="tabpanel" aria-labelledby="categories-tab">
+			<div class="card-header py-3">
+				<div class="inline"></div>
+				<h5 class="m-0 font-weight-bold text-primary d-inline">Product Category</h5>
+				<a asp-area="" asp-controller="ProductCateogries" asp-action="Create"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Category</button></a>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableProductCategory" width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>No.</th>
+								<th>Category</th>
+							</tr>
+
+
+						</thead>
+						<tbody>
+							@if (Model.Categories != null)
+							{
+								@foreach (var category in Model.Categories.Select((categ, index) => new { categ.CategoryProduct, Index = index + 1 }))
+								{
+									<tr>
+										<td>@Html.DisplayFor(categories => category.Index)</td>
+										<td>@Html.DisplayFor(categories => category.CategoryProduct)</td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+
+

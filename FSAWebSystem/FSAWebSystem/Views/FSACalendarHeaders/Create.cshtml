@@ -1,0 +1,64 @@
+﻿@model FSAWebSystem.Models.FSACalendarHeader
+
+@{
+	ViewData["Title"] = "Create";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	List<SelectListItem> listMonths = ViewData["listMonth"] as List<SelectListItem>;
+}
+
+<h1>Create</h1>
+
+<h4>FSACalendarHeader</h4>
+<hr />
+<div class="row">
+	<div class="col-md-4">
+		<form asp-action="Create">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<div class="form-group">
+				<label asp-for="Month" class="control-label"></label>
+				<select class="form-control form-select" id="dropDownListRoles" name="month" asp-items=@listMonths></select>
+				<span asp-validation-for="Month" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Year" class="control-label"></label>
+				<input asp-for="Year" class="form-control" />
+				<span asp-validation-for="Year" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<div class="table-responsive">
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Week</th>
+								<th colspan=3 class="text-center">Range Date</th>
+							</tr>
+						</thead>
+						<tbody>
+							@for(var i = 0; i<Model.FSACalendarDetails.Count; i++)
+							{
+								<tr>
+									<td><span>Week @Html.DisplayFor(Model => Model.FSACalendarDetails[i].Week)</span></td>
+									<td>@Html.EditorFor(Model => Model.FSACalendarDetails[i].StartDate) </td>
+									<td>To</td>
+									<td>@Html.EditorFor(Model => Model.FSACalendarDetails[i].EndDate) </td>
+									@Html.HiddenFor(Model => Model.FSACalendarDetails[i].Week)
+									@Html.HiddenFor(Model => Model.FSACalendarDetails[i].Id)
+									@Html.HiddenFor(Model => Model.FSACalendarDetails[i].Month)
+									@Html.HiddenFor(Model => Model.FSACalendarDetails[i].Year)
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="form-group">
+				<input type="submit" value="Create" class="btn btn-primary" />
+			</div>
+		</form>
+	</div>
+</div>
+
+<div>
+	<a asp-action="Index">Back to List</a>
+</div>
+

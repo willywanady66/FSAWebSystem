@@ -1,0 +1,60 @@
+﻿@model FSAWebSystem.Models.UserUnilever
+
+@{
+	ViewData["Title"] = "Edit";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	List<SelectListItem> listBanner = ViewData["ListBanner"] as List<SelectListItem>;
+	 List<SelectListItem> listRole = ViewData["ListRole"] as List<SelectListItem>;
+}
+
+<h1>Edit</h1>
+
+<h4>UserUnilever</h4>
+<hr />
+<div class="row">
+	<div class="col-md-4">
+		<form asp-action="Edit">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<input type="hidden" asp-for="Id" />
+			<input type="hidden" asp-for="CreatedAt" />
+			<input type="hidden" asp-for="CreatedBy" />
+			<div class="form-group">
+				<label asp-for="Name" class="control-label"></label>
+				<input asp-for="Name" class="form-control" />
+				<span asp-validation-for="Name" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Email" class="control-label"></label>
+				<input asp-for="Email" class="form-control" />
+				<span asp-validation-for="Email" class="text-danger"></span>
+			</div>
+
+			<div class="form-group">
+				<label class="form-label">Banners</label>
+				<div class="row">
+					<select id="dropDownListBanners" name="bannerIds" asp-items="@listBanner" multiple class="form-control"></select>
+					@*<span asp-validation-for="Banners" class="text-danger"></span>*@
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-label">Role</label>
+				<select class="form-control form-select" id="dropDownListRoles" name="roleUnileverId" asp-items=@listRole></select>
+				@*<span asp-validation-for="RoleUnileverId" class="text-danger"></span>*@
+				@*<select multiple='multiple' id='test_dropdown'>*@
+			</div>
+			<div class="form-group form-check">
+				<label class="form-check-label">
+					<input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
+				</label>
+			</div>
+			<div class="form-group">
+				<input type="submit" value="Save" class="btn btn-primary" />
+			</div>
+		</form>
+	</div>
+</div>
+
+<div>
+	<a asp-action="Index">Back to List</a>
+</div>
+
