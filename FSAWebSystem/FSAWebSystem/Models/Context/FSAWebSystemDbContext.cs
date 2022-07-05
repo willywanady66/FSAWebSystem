@@ -47,6 +47,7 @@ namespace FSAWebSystem.Models.Context
         public DbSet<FSACalendarDetail> FSACalendarDetail { get; set; }
         public DbSet<FSADocument> FSADocuments{ get; set; }
         public DbSet<MonthlyBucket> MonthlyBuckets{ get; set; }
+        public DbSet<WeeklyBucket> WeeklyBuckets{ get; set; }
         public DbSet<WorkLevel> WorkLevels{ get; set; }
     }
 }

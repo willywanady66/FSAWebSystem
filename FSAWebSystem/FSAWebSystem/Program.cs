@@ -4,6 +4,7 @@ using FSAWebSystem.Areas.Identity.Data;
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Services.Interface;
 using FSAWebSystem.Services;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("FSAWebSystemDbContextConnection") ?? throw new InvalidOperationException("Connection string 'FSAWebSystemDbContextConnection' not found.");
@@ -28,7 +29,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 
-
+CultureInfo newCulture = (CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+newCulture.DateTimeFormat.ShortDatePattern = "dd/MMM/yyyy";
+newCulture.DateTimeFormat.DateSeparator = "/";
+Thread.CurrentThread.CurrentCulture = newCulture;
 
 
 var app = builder.Build();

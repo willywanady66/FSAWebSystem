@@ -107,16 +107,29 @@ namespace FSAWebSystem.Controllers
         {
             var doc = (DocumentUpload)(Convert.ToInt32(documentType));
             List<string> errorMessages = new List<string>();
-
+            var currDate = DateTime.Now;
            
             if (excelDocument != null)
             {
-                if (!excelDocument.FileName.Contains(documentType.ToString()))
+                if (!excelDocument.FileName.Contains(doc.ToString()))
                 {
                     errorMessages.Add("Wrong File Format!");
                     TempData["ErrorMessages"] = errorMessages;
                     TempData["Tab"] = "UploadDoc";
                     return RedirectToAction("Index", "Admin");
+                }
+
+                if(doc == DocumentUpload.MonthlyBucket)
+				{
+                    var isCalendarExist = await _db.FSACalendarHeader.AnyAsync(x => x.Month == currDate.Month && x.Year == currDate.Year);
+                    var monthName = currDate.ToString("MMMM");
+                    if (!isCalendarExist)
+					{
+                        errorMessages.Add("Please Input FSACalendar for " + monthName + "-" + currDate.Year.ToString());
+                        TempData["ErrorMessages"] = errorMessages;
+                        TempData["Tab"] = "UploadDoc";
+                        return RedirectToAction("Index", "Admin");
+                    }
                 }
 
                 MemoryStream stream = new MemoryStream();
@@ -291,6 +304,7 @@ namespace FSAWebSystem.Controllers
 
             await _uploadDocService.SaveMonthlyBuckets(listMonthlyBucket);
             await _uploadDocService.SaveDocument(fsaDoc);
+            await CreateWeeklyBucket(listMonthlyBucket);
         }
 
         private async Task SaveBanners (DataTable dt, string fileName, string loggedUser, DocumentUpload documentType)
@@ -315,7 +329,32 @@ namespace FSAWebSystem.Controllers
             }
             await _uploadDocService.SaveDocument(fsaDoc);
             await _bannerService.SaveBanners(banners);
+           
         }
+
+		private async Task CreateWeeklyBucket(List<MonthlyBucket> monthlyBuckets)
+		{
+            List<WeeklyBucket> weeklyBuckets = new List<WeeklyBucket>();
+            foreach(var monthlyBucket in monthlyBuckets)
+			{
+                var weeklyBucket = new WeeklyBucket();
+
+                weeklyBucket.Id = Guid.NewGuid();
+                weeklyBucket.Month = monthlyBucket.Month;
+                weeklyBucket.Year = monthlyBucket.Year;
+                weeklyBucket.BannerId = monthlyBucket.BannerId;
+                weeklyBucket.SKUId = monthlyBucket.SKUId;
+                weeklyBucket.RatingRate = monthlyBucket.RatingRate;
+                var mBucket = monthlyBucket.RatingRate * (monthlyBucket.TCT /100) * (monthlyBucket.MonthlyTarget/100);
+                weeklyBucket.MonthlyBucket = mBucket;
+                weeklyBucket.BucketWeek1 = mBucket * ((decimal)50 / (decimal)100);
+                weeklyBucket.BucketWeek2 = mBucket * ((decimal)50 / (decimal)100);
+
+                weeklyBuckets.Add(weeklyBucket);
+			}
+
+            await _uploadDocService.SaveWeeklyBuckets(weeklyBuckets);
+		}
 
         private static string ConvertNumber(string input)
         {

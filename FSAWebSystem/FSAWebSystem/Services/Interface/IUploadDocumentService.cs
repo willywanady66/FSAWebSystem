@@ -7,6 +7,7 @@ namespace FSAWebSystem.Services.Interface
     {
         public Task SaveMonthlyBuckets(List<MonthlyBucket> monthlyBuckets);
         public Task SaveDocument(FSADocument fsaDoc);
+        public Task SaveWeeklyBuckets(List<WeeklyBucket> weeklyBuckets);
 
         public FSADocument CreateFSADoc(string fileName, string loggedUser, DocumentUpload docType);
 

@@ -4,6 +4,7 @@
 	ViewData["Title"] = "Create";
 	Layout = "~/Views/Shared/_Layout.cshtml";
 	List<SelectListItem> listMonths = ViewData["listMonth"] as List<SelectListItem>;
+	List<SelectListItem> listYears = ViewData["listYear"] as List<SelectListItem>;
 }
 
 <h1>Create</h1>
@@ -21,7 +22,7 @@
 			</div>
 			<div class="form-group">
 				<label asp-for="Year" class="control-label"></label>
-				<input asp-for="Year" class="form-control" />
+				<select class="form-control form-select" id="dropDownListRoles" name="year" asp-items=@listYears></select>
 				<span asp-validation-for="Year" class="text-danger"></span>
 			</div>
 			<div class="form-group">
@@ -38,9 +39,9 @@
 							{
 								<tr>
 									<td><span>Week @Html.DisplayFor(Model => Model.FSACalendarDetails[i].Week)</span></td>
-									<td>@Html.EditorFor(Model => Model.FSACalendarDetails[i].StartDate) </td>
+									<td>@Html.EditorFor(Model => Model.FSACalendarDetails[i].StartDate, new {htmlAttributes = new { @class = "form-control" } }) </td>
 									<td>To</td>
-									<td>@Html.EditorFor(Model => Model.FSACalendarDetails[i].EndDate) </td>
+									<td>@Html.EditorFor(Model => Model.FSACalendarDetails[i].EndDate, new {htmlAttributes = new { @class = "form-control" } }) </td>
 									@Html.HiddenFor(Model => Model.FSACalendarDetails[i].Week)
 									@Html.HiddenFor(Model => Model.FSACalendarDetails[i].Id)
 									@Html.HiddenFor(Model => Model.FSACalendarDetails[i].Month)

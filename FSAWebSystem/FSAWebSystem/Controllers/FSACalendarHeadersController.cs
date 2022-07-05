@@ -8,35 +8,38 @@ using Microsoft.EntityFrameworkCore;
 using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
 using System.Globalization;
+using FSAWebSystem.Services.Interface;
 
 namespace FSAWebSystem.Controllers
 {
     public class FSACalendarHeadersController : Controller
     {
-        private readonly FSAWebSystemDbContext _context;
+        private ICalendarService _calendarService;
+        private readonly FSAWebSystemDbContext _db;
 
-        public FSACalendarHeadersController(FSAWebSystemDbContext context)
+        public FSACalendarHeadersController(FSAWebSystemDbContext context, ICalendarService calendarService)
         {
-            _context = context;
+            _db = context;
+            _calendarService = calendarService;
         }
 
         // GET: FSACalendarHeaders
         public async Task<IActionResult> Index()
         {
-            return _context.FSACalendarHeader != null ?
-                        View(await _context.FSACalendarHeader.ToListAsync()) :
+            return _db.FSACalendarHeader != null ?
+                        View(await _db.FSACalendarHeader.ToListAsync()) :
                         Problem("Entity set 'FSAWebSystemDbContext.FSACalendarHeader'  is null.");
         }
 
         // GET: FSACalendarHeaders/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {
-            if (id == null || _context.FSACalendarHeader == null)
+            if (id == null || _db.FSACalendarHeader == null)
             {
                 return NotFound();
             }
 
-            var fSACalendarHeader = await _context.FSACalendarHeader
+            var fSACalendarHeader = await _db.FSACalendarHeader
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (fSACalendarHeader == null)
             {
@@ -49,8 +52,8 @@ namespace FSAWebSystem.Controllers
         // GET: FSACalendarHeaders/Create
         public IActionResult Create()
         {
-            List<SelectListItem> listMonth = GetListMonth();
-            ViewData["ListMonth"] = listMonth;
+            ViewData["ListMonth"] = _calendarService.GetListMonth();
+            ViewData["ListYear"] = _calendarService.GetListYear();
             FSACalendarHeader fsaCalHeader = new FSACalendarHeader();
             fsaCalHeader.Month = DateTime.Now.Month;
             fsaCalHeader.FSACalendarDetails = new List<FSACalendarDetail>
@@ -69,11 +72,12 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Month,Year, FSACalendarDetails")] FSACalendarHeader fSACalendarHeader, string month)
+        public async Task<IActionResult> Create([Bind("Id,Month,Year, FSACalendarDetails")] FSACalendarHeader fSACalendarHeader, string month, string year)
         {
             ModelState.Remove("Month");
-            List<SelectListItem> listMonth = GetListMonth();
-            ViewData["ListMonth"] = listMonth;
+      
+            ViewData["ListMonth"] = _calendarService.GetListMonth();
+            ViewData["ListYear"] = _calendarService.GetListYear();
             if (ModelState.IsValid)
             {
 
@@ -84,41 +88,47 @@ namespace FSAWebSystem.Controllers
                     ModelState.AddModelError("", "Week 1 to Week 4 must be filled");
                     return View(fSACalendarHeader);
                 }
-               
 
-                foreach(var detail in fSACalendarHeader.FSACalendarDetails)
+
+                var isStartDateLessEndDate = fSACalendarHeader.FSACalendarDetails.Where(x => (x.StartDate.HasValue && x.EndDate.HasValue)).Any(x => x.StartDate?.Date < x.EndDate?.Date);
+                if(!isStartDateLessEndDate)
+				{
+					ModelState.AddModelError("", "Start Date must be less than End Date");
+                    return View(fSACalendarHeader);
+				}
+
+				foreach (var detail in fSACalendarHeader.FSACalendarDetails.Where(x => x.StartDate.HasValue && x.EndDate.HasValue))
                 {
-                    if (detail.Week == 5 && !(detail.StartDate.HasValue && detail.EndDate.HasValue))
-                    {
-                        continue;
-                    }
-                    else
-                    {
+                   
+                        detail.Month = Convert.ToInt32(month);
+                        detail.Year = Convert.ToInt32(year);
                         detail.Id = Guid.NewGuid();
-                    }
-
+                    
                 }
+
+                fSACalendarHeader.FSACalendarDetails = fSACalendarHeader.FSACalendarDetails.Where(x => x.Id != Guid.Empty).ToList();
+
                 fSACalendarHeader.CreatedBy = User.Identity.Name;
                 fSACalendarHeader.CreatedAt = DateTime.Now;
                 fSACalendarHeader.Id = Guid.NewGuid();
-                _context.Add(fSACalendarHeader);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                _calendarService.AddCalendar(fSACalendarHeader);
+                await _db.SaveChangesAsync();
+                return RedirectToAction("Index", "Admin");
             }
 
-            
-            return View(fSACalendarHeader);
+
+            return RedirectToAction("Index", "Admin");
         }
 
         // GET: FSACalendarHeaders/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
-            if (id == null || _context.FSACalendarHeader == null)
+            if (id == null || _db.FSACalendarHeader == null)
             {
                 return NotFound();
             }
 
-            var fSACalendarHeader = await _context.FSACalendarHeader.FindAsync(id);
+            var fSACalendarHeader = await _db.FSACalendarHeader.FindAsync(id);
             if (fSACalendarHeader == null)
             {
                 return NotFound();
@@ -142,8 +152,8 @@ namespace FSAWebSystem.Controllers
             {
                 try
                 {
-                    _context.Update(fSACalendarHeader);
-                    await _context.SaveChangesAsync();
+                    _db.Update(fSACalendarHeader);
+                    await _db.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -164,12 +174,12 @@ namespace FSAWebSystem.Controllers
         // GET: FSACalendarHeaders/Delete/5
         public async Task<IActionResult> Delete(Guid? id)
         {
-            if (id == null || _context.FSACalendarHeader == null)
+            if (id == null || _db.FSACalendarHeader == null)
             {
                 return NotFound();
             }
 
-            var fSACalendarHeader = await _context.FSACalendarHeader
+            var fSACalendarHeader = await _db.FSACalendarHeader
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (fSACalendarHeader == null)
             {
@@ -184,40 +194,26 @@ namespace FSAWebSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            if (_context.FSACalendarHeader == null)
+            if (_db.FSACalendarHeader == null)
             {
                 return Problem("Entity set 'FSAWebSystemDbContext.FSACalendarHeader'  is null.");
             }
-            var fSACalendarHeader = await _context.FSACalendarHeader.FindAsync(id);
+            var fSACalendarHeader = await _db.FSACalendarHeader.FindAsync(id);
             if (fSACalendarHeader != null)
             {
-                _context.FSACalendarHeader.Remove(fSACalendarHeader);
+                _db.FSACalendarHeader.Remove(fSACalendarHeader);
             }
 
-            await _context.SaveChangesAsync();
+            await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool FSACalendarHeaderExists(Guid id)
         {
-            return (_context.FSACalendarHeader?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_db.FSACalendarHeader?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
 
-        public List<SelectListItem> GetListMonth()
-        {
-
-            var months = DateTimeFormatInfo
-                       .InvariantInfo
-                       .MonthNames
-                       .Select((monthName, index) => new SelectListItem
-                       {
-                           Value = (index + 1).ToString(),
-                           Text = monthName
-                       });
-            List<SelectListItem> listMonths = months.ToList();
-            listMonths.Single(x => x.Value == DateTime.Now.Month.ToString()).Selected = true;
-            return listMonths;
-        }
+        
     }
 }

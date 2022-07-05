@@ -98,7 +98,6 @@
 									<td>@Html.DisplayFor(roles => item.RoleName)</td>
 								</tr>
 							}
-
 						</tbody>
 					</table>
 				</div>
@@ -147,7 +146,10 @@
 		<div class="tab-pane fade @(tab == "Calendar" || string.IsNullOrEmpty(tab) ? " active show" : "")" id="calendar" role="tabpanel" aria-labelledby="calendar-tab">
 			<div class="card-header py-3">
 				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-calendar"></i> Calendar</h5>
-				<a asp-area="" asp-controller="FSACalendarHeaders" asp-action="Create"><button class="btn btn-primary float-right m-0"><i class="fas fa-plus"></i> Add Calendar</button></a>
+				@if(Model.FSACalendar == null)
+				{
+					<a asp-area="" asp-controller="FSACalendarHeaders" asp-action="Create"><button class="btn btn-primary float-right m-0 "><i class="fas fa-plus"></i> Add Calendar</button></a>
+				}
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">
@@ -157,30 +159,34 @@
 								<th>Week</th>
 								<th>Start Date</th>
 								<th>End Date</th>
-								<th>Month</th>
 								<th>Year</th>
+								<th>Month</th>
+								<th width="10px">Action</th>
 							</tr>
 						</thead>
 						<tbody>
 							@if (Model.FSACalendar != null)
 							{
-								if (Model.FSACalendar.FSACalendarDetails.Count > 0)
+								@if (Model.FSACalendar.FSACalendarDetails.Count > 0)
 								{
-									foreach (var detail in Model.FSACalendar.FSACalendarDetails)
+									@foreach (var detail in Model.FSACalendar.FSACalendarDetails)
 									{
 										var startDate = detail.StartDate.Value.ToString("dd/MM/yyyy");
 										var endDate = detail.EndDate.Value.ToString("dd/MM/yyyy");
 										<tr>
-											<th>@Html.DisplayFor(Model  => detail.Week)</th>
-											<th>@Html.DisplayFor(Model => startDate)</th>
-											<th>@Html.DisplayFor(Model => endDate)</th>
-											<th>@Html.DisplayFor(Model  => Model.FSACalendar.Month)</th>
-											<th>@Html.DisplayFor(Model  => Model.FSACalendar.Year)</th>
+											<td>@Html.DisplayFor(Model => detail.Week)</td>
+											<td>@Html.DisplayFor(Model => startDate)</td>
+											<td>@Html.DisplayFor(Model => endDate)</td>
+											<td>@Html.DisplayFor(Model => Model.FSACalendar.Month)</td>
+											<td>@Html.DisplayFor(Model => Model.FSACalendar.Year)</td>
+											@if(detail.Week == 1)
+											{
+												<td class="text-center align-middle" rowspan="@Model.FSACalendar.FSACalendarDetails.Count"><a asp-action="Edit" asp-controller="Banners" asp-route-id="@Model.FSACalendar.Id"><i class="fas fa-pen"></i></a></td>
+											}
 										</tr>
 									}
 								}
 							}
-
 						</tbody>
 					</table>
 				</div>
@@ -254,7 +260,7 @@
 							@foreach (var banner in Model.Banners)
 							{
 								<tr>
-									<td>@Html.DisplayFor(Model  => banner.Trade)</td>
+									<td>@Html.DisplayFor(Model => banner.Trade)</td>
 									<td>@Html.DisplayFor(Model => banner.BannerName)</td>
 									<td>@Html.DisplayFor(Model => banner.PlantName)</td>
 									<td>@Html.DisplayFor(Model => banner.PlantCode)</td>
@@ -288,7 +294,7 @@
 								@foreach (var sku in Model.SKUs)
 								{
 									<tr>
-										<td>@Html.DisplayFor(Model  => sku.PCMap)</td>
+										<td>@Html.DisplayFor(Model => sku.PCMap)</td>
 										<td>@Html.DisplayFor(Model => sku.DescriptionMap)</td>
 										<td>@Html.DisplayFor(Model => sku.ProductCategory.CategoryProduct)</td>
 									</tr>

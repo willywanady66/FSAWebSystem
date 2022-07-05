@@ -67,7 +67,7 @@ namespace FSAWebSystem.Services
 
         public async Task SaveMonthlyBuckets(List<MonthlyBucket> monthlyBuckets)
         {
-            await _db.AddRangeAsync(monthlyBuckets);
+            await _db.MonthlyBuckets.AddRangeAsync(monthlyBuckets);
         }
 
         public FSADocument CreateFSADoc(string fileName, string loggedUser, DocumentUpload docType)
@@ -112,7 +112,12 @@ namespace FSAWebSystem.Services
         {
             throw new NotImplementedException();
         }
-    }
+
+		public async Task SaveWeeklyBuckets(List<WeeklyBucket> weeklyBuckets)
+		{
+            await _db.WeeklyBuckets.AddRangeAsync(weeklyBuckets);
+		}
+	}
 
 
 
