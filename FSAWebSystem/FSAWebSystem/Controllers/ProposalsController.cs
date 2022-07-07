@@ -27,9 +27,13 @@ namespace FSAWebSystem.Controllers
         // GET: Proposals
         public async Task<IActionResult> Index()
         {
-            var currentDate = DateTime.Now.Date;
+            List<Proposal> listProposal = new List<Proposal>();
             var fsaDetail = await _calendarService.GetCurrentWeek(DateTime.Now.Date);
-            var listProposal = await _proposalService.GetProposalForView(currentDate.Month, currentDate.Year, fsaDetail.Week);
+            if(fsaDetail != null)
+            {
+                listProposal = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week);
+            }
+           
 
             return View(listProposal);
         }

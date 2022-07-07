@@ -80,7 +80,6 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Role")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
@@ -93,7 +92,7 @@ namespace FSAWebSystem.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<Guid>("UserUnileverId")
+                    b.Property<Guid?>("UserUnileverId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");

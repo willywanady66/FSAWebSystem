@@ -19,8 +19,7 @@ builder.Services.AddDefaultIdentity<FSAWebSystemUser>(options => options.SignIn.
 builder.Services.AddSession(options => {
     options.IdleTimeout = TimeSpan.FromMinutes(10);//You can set Time   
 });
-
-
+    
 builder.Services.AddScoped<IUploadDocumentService, UploadDocumentService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -47,26 +46,25 @@ var context = services.GetRequiredService<FSAWebSystemDbContext>();
 var userMgr = services.GetRequiredService<UserManager<FSAWebSystemUser>>();
 var roleSvc = services.GetRequiredService<IRoleService>();
 
+context.Database.Migrate();
 Configuration.Initialize(context, userMgr, roleSvc);
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+   
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
-#if !DEBUG
-            app.UseResponseCompression();
-#endif
-
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 app.UseAuthentication();;
+
 
 app.UseAuthorization();
 app.UseSession();

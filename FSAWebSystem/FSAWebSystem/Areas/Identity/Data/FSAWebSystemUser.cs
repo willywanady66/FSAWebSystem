@@ -10,9 +10,9 @@ namespace FSAWebSystem.Areas.Identity.Data
 {
     public class FSAWebSystemUser : IdentityUser
     {
-        public Guid UserUnileverId { get; set; }
+        public Guid? UserUnileverId { get; set; }
 
-        public string Role { get; set; }
+        public string? Role { get; set; }
 
         [NotMapped]
         public List<string> BannerName { get; set; }

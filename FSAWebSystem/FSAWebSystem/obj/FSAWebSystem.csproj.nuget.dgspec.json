@@ -1,30 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj": {}
+    "D:\\Willy Wanady\\GitHub\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj": {}
   },
   "projects": {
-    "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj": {
+    "D:\\Willy Wanady\\GitHub\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj",
+        "projectUniqueName": "D:\\Willy Wanady\\GitHub\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj",
         "projectName": "FSAWebSystem",
-        "projectPath": "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj",
-        "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
-        "outputPath": "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\obj\\",
+        "projectPath": "D:\\Willy Wanady\\GitHub\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj",
+        "packagesPath": "C:\\Users\\WILLY WANADY\\.nuget\\packages\\",
+        "outputPath": "D:\\Willy Wanady\\GitHub\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\DELL\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 19.2.config",
+          "C:\\Users\\WILLY WANADY\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\DevExpress 19.2\\Components\\System\\Components\\Packages": {},
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "https://api.nuget.org/v3/index.json": {}
+          "https://api.nuget.org/v3/index.json": {},
+          "https://pkgs.dev.azure.com/TechnosoftAutomotive/2eecbbae-5493-4934-b4df-9892e0999a38/_packaging/Yana.ECommerce/nuget/v3/index.json": {},
+          "https://pkgs.dev.azure.com/TechnosoftAutomotive/_packaging/DMS/nuget/v3/index.json": {}
         },
         "frameworks": {
           "net6.0": {
@@ -103,7 +103,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.301\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.300\\RuntimeIdentifierGraph.json"
         }
       }
     }

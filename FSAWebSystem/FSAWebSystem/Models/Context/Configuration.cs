@@ -34,15 +34,15 @@ namespace FSAWebSystem.Models.Context
                     }
                 };
                 _db.RoleUnilevers.AddRange(listRole);
-                
+                _db.SaveChanges();
             }
 
 
 
             var user = Activator.CreateInstance<FSAWebSystemUser>();
-            user.Email = "ww66696@gmail.com";
+            user.Email = "admin@gmail.com";
             user.UserName = user.Email;
-            var res = await userManager.CreateAsync(user, "Unilever1*");
+            var res = await userManager.CreateAsync(user, "Administrator1*");
             if(res.Succeeded)
             {
                 var userUnilever = new UserUnilever

@@ -30,7 +30,7 @@ namespace FSAWebSystem.Services
 
         public async Task<FSACalendarHeader> GetFSACalendarHeader(int month, int year)
         {
-            var fsaCalendar = await _db.FSACalendarHeader.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleAsync(x => x.Month == month && x.Year == year);
+            var fsaCalendar = await _db.FSACalendarHeader.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Month == month && x.Year == year);
             return fsaCalendar;
         }
 
