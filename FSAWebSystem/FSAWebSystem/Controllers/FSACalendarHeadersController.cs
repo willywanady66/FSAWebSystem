@@ -75,7 +75,7 @@ namespace FSAWebSystem.Controllers
         public async Task<IActionResult> Create([Bind("Id,Month,Year, FSACalendarDetails")] FSACalendarHeader fSACalendarHeader, string month, string year)
         {
             ModelState.Remove("Month");
-      
+
             ViewData["ListMonth"] = _calendarService.GetListMonth();
             ViewData["ListYear"] = _calendarService.GetListYear();
             if (ModelState.IsValid)
@@ -83,7 +83,7 @@ namespace FSAWebSystem.Controllers
 
                 var allWeekHasValue = fSACalendarHeader.FSACalendarDetails.Where(x => x.Week != 5).All(x => x.StartDate.HasValue && x.EndDate.HasValue);
                 var week5HasValue = fSACalendarHeader.FSACalendarDetails.Where(x => x.Week == 5).All(x => x.StartDate.HasValue && x.EndDate.HasValue);
-                if(!allWeekHasValue)
+                if (!allWeekHasValue)
                 {
                     ModelState.AddModelError("", "Week 1 to Week 4 must be filled");
                     return View(fSACalendarHeader);
@@ -91,19 +91,18 @@ namespace FSAWebSystem.Controllers
 
 
                 var isStartDateLessEndDate = fSACalendarHeader.FSACalendarDetails.Where(x => (x.StartDate.HasValue && x.EndDate.HasValue)).Any(x => x.StartDate?.Date < x.EndDate?.Date);
-                if(!isStartDateLessEndDate)
-				{
-					ModelState.AddModelError("", "Start Date must be less than End Date");
-                    return View(fSACalendarHeader);
-				}
-
-				foreach (var detail in fSACalendarHeader.FSACalendarDetails.Where(x => x.StartDate.HasValue && x.EndDate.HasValue))
+                if (!isStartDateLessEndDate)
                 {
-                   
-                        detail.Month = Convert.ToInt32(month);
-                        detail.Year = Convert.ToInt32(year);
-                        detail.Id = Guid.NewGuid();
-                    
+                    ModelState.AddModelError("", "Start Date must be less than End Date");
+                    return View(fSACalendarHeader);
+                }
+
+                foreach (var detail in fSACalendarHeader.FSACalendarDetails.Where(x => x.StartDate.HasValue && x.EndDate.HasValue))
+                {
+
+                    detail.Month = Convert.ToInt32(month);
+                    detail.Year = Convert.ToInt32(year);
+                    detail.Id = Guid.NewGuid();
                 }
 
                 fSACalendarHeader.FSACalendarDetails = fSACalendarHeader.FSACalendarDetails.Where(x => x.Id != Guid.Empty).ToList();
@@ -214,6 +213,6 @@ namespace FSAWebSystem.Controllers
         }
 
 
-        
+
     }
 }

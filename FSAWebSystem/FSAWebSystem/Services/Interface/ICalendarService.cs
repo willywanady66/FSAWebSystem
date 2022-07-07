@@ -7,6 +7,7 @@ namespace FSAWebSystem.Services.Interface
     {
         public Task<FSACalendarHeader> GetFSACalendarHeader(int month, int year);
 
+        public Task<FSACalendarDetail> GetCurrentWeek(DateTime date); 
         public List<SelectListItem> GetListMonth();
 		public List<SelectListItem> GetListYear();
 

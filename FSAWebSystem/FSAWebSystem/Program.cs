@@ -16,6 +16,9 @@ builder.Services.AddDbContext<FSAWebSystemDbContext>(options =>
 builder.Services.AddDefaultIdentity<FSAWebSystemUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<FSAWebSystemDbContext>();
 
+builder.Services.AddSession(options => {
+    options.IdleTimeout = TimeSpan.FromMinutes(10);//You can set Time   
+});
 
 
 builder.Services.AddScoped<IUploadDocumentService, UploadDocumentService>();
@@ -24,13 +27,14 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISKUService, SKUService>();
+builder.Services.AddScoped<IProposalService, ProposalService>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 
 CultureInfo newCulture = (CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
-newCulture.DateTimeFormat.ShortDatePattern = "dd/MMM/yyyy";
+newCulture.DateTimeFormat.ShortDatePattern = "dd/MM/yyyy";
 newCulture.DateTimeFormat.DateSeparator = "/";
 Thread.CurrentThread.CurrentCulture = newCulture;
 
@@ -65,7 +69,7 @@ app.UseRouting();
 app.UseAuthentication();;
 
 app.UseAuthorization();
-
+app.UseSession();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

@@ -79,6 +79,10 @@ namespace FSAWebSystem.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -88,6 +92,9 @@ namespace FSAWebSystem.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<Guid>("UserUnileverId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -196,6 +203,65 @@ namespace FSAWebSystem.Migrations
                     b.HasIndex("FSADocumentId");
 
                     b.ToTable("MonthlyBuckets");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.Bucket.WeeklyBucket", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BannerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("BucketWeek1")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BucketWeek2")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BucketWeek3")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BucketWeek4")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BucketWeek5")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("DispatchConsume")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("MonthlyBucket")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("RatingRate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("RemFSA")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("SKUId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ValidBJ")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WeeklyBuckets");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarDetail", b =>
@@ -312,6 +378,37 @@ namespace FSAWebSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProductCategories");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.Proposal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ProposeAddional")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Remark")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Rephase")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SubmittedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("WeeklyBucketId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Proposals");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.RoleAccess", b =>

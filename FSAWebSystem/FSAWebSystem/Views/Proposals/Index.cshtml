@@ -1,0 +1,114 @@
+﻿@model IEnumerable<FSAWebSystem.Models.Proposal>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+	<h1 class="h3 mb-0 text-gray-800">Propose FSA</h1>
+</div>
+
+<div class="card shadow mb-4 pt-4 pl-2">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="datTableProposal" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Banner</th>
+                        <th>PC Map</th>
+                        <th>Description Map</th>
+                        <th>RR</th>
+                        <th>Monthly Bucket</th>
+                        <th>Current Bucket</th>
+                        <th>Next Week Bucket</th>
+                        <th>Valid + BJ</th>
+                        <th>REM FSA</th>
+                        <th>Rephase</th>
+                        <th>Propose Additional</th>
+                        <th>Remark</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var proposal in Model)
+                    {
+                        <tr>
+                            <td>@Html.DisplayFor(modelItem => proposal.BannerName)</td>
+                            <td>@Html.DisplayFor(modelItem => proposal.PCMap)</td>
+                            <td>@Html.DisplayFor(modelItem => proposal.DescriptionMap)</td>
+                            <td>@Html.DisplayFor(modelItem => proposal.RatingRate)</td>
+                            <td>@Html.DisplayFor(modelItem => proposal.MonthlyBucket)</td>
+                            <td>@Html.DisplayFor(modelItem => proposal.CurrentBucket)</td>
+                            <td>@Html.DisplayFor(modelItem => proposal.NextBucket)</td>
+                            <td>@Html.DisplayFor(modelItem => proposal.ValidBJ)</td>
+                            <td>@Html.DisplayFor(modelItem => proposal.RemFSA,  new {htmlAttributes = new { @class = "form-control" } })</td>
+                            <td>@Html.EditorFor(modelItem => proposal.Rephase, new {htmlAttributes = new { @class = "form-control" } })</td>
+                            <td>@Html.EditorFor(modelItem => proposal.ProposeAddional,  new {htmlAttributes = new { @class = "form-control" } })</td>
+                            <td>@Html.EditorFor(modelItem => proposal.Remark,  new {htmlAttributes = new { @class = "form-control" } })</td>
+                            @Html.HiddenFor(modelItem => proposal.WeeklyBucketId)
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@*<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.MonthlyBucketId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Rephase)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProposeAddional)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Remark)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SubmittedAt)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SubmittedBy)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.MonthlyBucketId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rephase)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProposeAddional)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Remark)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubmittedAt)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubmittedBy)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+*@

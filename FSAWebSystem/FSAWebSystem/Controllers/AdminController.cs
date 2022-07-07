@@ -38,7 +38,7 @@ namespace FSAWebSystem.Controllers
             List<UserUnilever> listUsers = await _userService.GetAllUsers();
              foreach(var user in listUsers)
             {
-                user.BannerName = String.Join(',', user.Banners.Select(x => x.BannerName));
+                user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
             }
             List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
             List<RoleUnilever> listRoles = await _roleServices.GetAllRoles().ToListAsync();

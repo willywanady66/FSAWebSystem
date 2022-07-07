@@ -22,9 +22,15 @@ namespace FSAWebSystem.Services
            await _db.AddAsync(fsaCalendar);
         }
 
-		public async Task<FSACalendarHeader> GetFSACalendarHeader(int month, int year)
+        public async Task<FSACalendarDetail> GetCurrentWeek(DateTime date)
         {
-            var fsaCalendar = await _db.FSACalendarHeader.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Month == month && x.Year == year);
+            var calendarDetail = await _db.FSACalendarDetail.SingleOrDefaultAsync(x => date >= x.StartDate.Value.Date && date <= x.EndDate.Value.Date);
+            return calendarDetail;
+        }
+
+        public async Task<FSACalendarHeader> GetFSACalendarHeader(int month, int year)
+        {
+            var fsaCalendar = await _db.FSACalendarHeader.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleAsync(x => x.Month == month && x.Year == year);
             return fsaCalendar;
         }
 

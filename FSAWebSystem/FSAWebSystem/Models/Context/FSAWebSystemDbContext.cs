@@ -49,5 +49,6 @@ namespace FSAWebSystem.Models.Context
         public DbSet<MonthlyBucket> MonthlyBuckets{ get; set; }
         public DbSet<WeeklyBucket> WeeklyBuckets{ get; set; }
         public DbSet<WorkLevel> WorkLevels{ get; set; }
+        public DbSet<Proposal> Proposals { get; set; }
     }
 }

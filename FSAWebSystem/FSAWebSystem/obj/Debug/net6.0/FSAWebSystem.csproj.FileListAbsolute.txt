@@ -1148,3 +1148,4 @@ F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\ob
 F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Debug\net6.0\FSAWebSystem.csproj.CopyComplete
 F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Debug\net6.0\refint\FSAWebSystem.dll
 F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Debug\net6.0\FSAWebSystem.genruntimeconfig.cache
+F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\bin\Debug\net6.0\Microsoft.AspNet.Identity.Core.dll
