@@ -5,6 +5,8 @@ using FSAWebSystem.Models.Context;
 using FSAWebSystem.Services.Interface;
 using FSAWebSystem.Services;
 using System.Globalization;
+using AspNetCoreHero.ToastNotification;
+using AspNetCoreHero.ToastNotification.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("FSAWebSystemDbContextConnection") ?? throw new InvalidOperationException("Connection string 'FSAWebSystemDbContextConnection' not found.");
@@ -28,6 +30,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISKUService, SKUService>();
 builder.Services.AddScoped<IProposalService, ProposalService>();
 // Add services to the container.
+builder.Services.AddNotyf(config => { config.DurationInSeconds = 5; config.IsDismissable = true; config.Position = NotyfPosition.BottomRight; });
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -64,6 +67,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseAuthentication();;
+app.UseNotyf();
 
 
 app.UseAuthorization();

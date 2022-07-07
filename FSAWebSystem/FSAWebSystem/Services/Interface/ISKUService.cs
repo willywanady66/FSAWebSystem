@@ -5,7 +5,8 @@ namespace FSAWebSystem.Services.Interface
 	public interface ISKUService
 	{
 		public IQueryable<SKU> GetAllProducts();
-
+			
+		public Task<SKU> GetSKU(string pcMap);
 
 		public IQueryable<ProductCategory> GetAllProductCategories();
 

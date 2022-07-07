@@ -1720,3 +1720,5 @@ D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Debug\net6.0\s
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Debug\net6.0\FSAWebSystem.csproj.CopyComplete
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Debug\net6.0\FSAWebSystem.genruntimeconfig.cache
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Debug\net6.0\ref\FSAWebSystem.dll
+F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\bin\Debug\net6.0\AspNetCoreHero.ToastNotification.Views.dll
+F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\bin\Debug\net6.0\AspNetCoreHero.ToastNotification.dll

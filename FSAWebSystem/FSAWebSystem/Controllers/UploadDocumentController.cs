@@ -1,4 +1,5 @@
-﻿using FSAWebSystem.Models;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using FSAWebSystem.Models;
 using FSAWebSystem.Models.Bucket;
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Services;
@@ -11,6 +12,7 @@ using NPOI.SS.UserModel;
 using NPOI.SS.Util;
 using System.ComponentModel;
 using System.Data;
+using System.Linq;
 using System.Net;
 
 namespace FSAWebSystem.Controllers
@@ -22,12 +24,14 @@ namespace FSAWebSystem.Controllers
         public IBannerService _bannerService;
         public IUploadDocumentService _uploadDocService;
         private readonly FSAWebSystemDbContext _db;
-        public UploadDocumentController(ISKUService skuService, IBannerService bannerService, IUploadDocumentService uploadDocService, FSAWebSystemDbContext db)
+        private readonly INotyfService _notyfService;
+        public UploadDocumentController(ISKUService skuService, IBannerService bannerService, IUploadDocumentService uploadDocService, FSAWebSystemDbContext db, INotyfService notyfService)
         {
             _db = db;
             _skuService = skuService;
             _bannerService = bannerService;
             _uploadDocService = uploadDocService;
+            _notyfService = notyfService;
         }
 
 
@@ -153,7 +157,7 @@ namespace FSAWebSystem.Controllers
                         case DocumentUpload.SKU:
                             columns = _uploadDocService.GetSKUColumns();
                             dt = CreateDataTable(sheet, columns);
-                            await SaveSKUs(dt, excelDocument.FileName, loggedUser, doc);
+                            await SaveSKUs(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.MonthlyBucket:
                             columns = _uploadDocService.GetMonthlyBucketColumns();
@@ -161,16 +165,24 @@ namespace FSAWebSystem.Controllers
                             await SaveMonthlyBuckets(dt, excelDocument.FileName, loggedUser, doc);
                             break;
                     }
+                    if(!errorMessages.Any())
+                    {
+                        await _db.SaveChangesAsync();
+                        _notyfService.Success(doc.ToString() + " successfully uploaded");
+                    }
+                    
                 }
                 catch (Exception ex)
                 {
 
                 }
             }
-
-
-            await _db.SaveChangesAsync();
-
+            else
+            {
+                _notyfService.Error("Please Select File.");
+            }
+            TempData["ErrorMessages"] = errorMessages;
+            TempData["Tab"] = "UploadDoc";
             return RedirectToAction("Index", "Admin", errorMessages);
         }
 
@@ -226,7 +238,7 @@ namespace FSAWebSystem.Controllers
             return dt;
         }
 
-        private async Task SaveSKUs(DataTable dt, string fileName,  string loggedUser, DocumentUpload documentType)
+        private async Task SaveSKUs(DataTable dt, string fileName,  string loggedUser, DocumentUpload documentType, List<string> errorMessages)
         {
             List<SKU> listSKU = new List<SKU>();
             FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
@@ -239,34 +251,62 @@ namespace FSAWebSystem.Controllers
                     DescriptionMap = row["Description Map"].ToString(),
                     Category = row["Category"].ToString()
                 };
-
                 listSKU.Add(sku);
             }
-            var categoriesExist = await _db.ProductCategories.AnyAsync();
 
-            if (categoriesExist)
+            ValidateExcel(listSKU, errorMessages);
+
+            if(!errorMessages.Any())
             {
-                var count = await _db.Database.ExecuteSqlRawAsync("DELETE FROM ProductCategories");
+                var savedCategory = _skuService.GetAllProductCategories() as IEnumerable<ProductCategory>;
+
+                var categoryFromExcel = listSKU.Select(x => x.Category).Distinct().ToList();
+
+                var categoryToAdd = categoryFromExcel.Where(x => !savedCategory.Select(y => y.CategoryProduct).ToList().Contains(x)).ToList();
+
+                IEnumerable<ProductCategory> listCategory = (from category in categoryToAdd
+                                                             select category).Select(x => new ProductCategory { Id = Guid.NewGuid(), CategoryProduct = x, CreatedAt = DateTime.Now, CreatedBy = loggedUser, FSADocumentId = fsaDoc.Id }).AsEnumerable();
+
+                listCategory = !listCategory.Any() ? savedCategory : listCategory;
+
+                List<SKU> skuToAdd = new List<SKU>();
+                foreach (var sku in listSKU)
+                {
+                    var savedSKU = await _skuService.GetSKU(sku.PCMap);
+
+                    if (savedSKU != null)
+                    {
+                        if (savedSKU.DescriptionMap != sku.DescriptionMap || savedSKU.ProductCategory.CategoryProduct != sku.Category)
+                        {
+                            savedSKU.DescriptionMap = sku.DescriptionMap;
+                            savedSKU.ModifiedBy = loggedUser;
+                            savedSKU.ModifiedAt = DateTime.Now;
+                            savedSKU.FSADocumentId = fsaDoc.Id;
+                            savedSKU.ProductCategory = listCategory.Single(x => x.CategoryProduct == sku.Category);
+                        }
+                    }
+                    else
+                    {
+                        sku.Id = Guid.NewGuid();
+                        sku.CreatedAt = DateTime.Now;
+                        sku.CreatedBy = loggedUser;
+                        var category = listCategory.Single(x => x.CategoryProduct == sku.Category);
+                        sku.ProductCategory = category;
+                        sku.FSADocumentId = fsaDoc.Id;
+                        skuToAdd.Add(sku);
+                    }
+                }
+
+                await _uploadDocService.SaveDocument(fsaDoc);
+                if (categoryToAdd.Any())
+                {
+                    await _skuService.SaveProductCategories(listCategory.ToList());
+                }
+
+                await _skuService.SaveSKUs(skuToAdd);
             }
 
-
-            var categoryToAdd = listSKU.Select(x => x.Category).Distinct().ToList();
-
-            List<ProductCategory> listCategory = (from category in categoryToAdd
-                                                  select category).Select(x => new ProductCategory { Id = Guid.NewGuid(), CategoryProduct = x, CreatedAt = DateTime.Now, CreatedBy = loggedUser, FSADocumentId = fsaDoc.Id }).ToList();
-
-            foreach (var sku in listSKU)
-            {
-                sku.Id = Guid.NewGuid();
-                sku.ProductCategory = listCategory.Single(x => x.CategoryProduct == sku.Category);
-                sku.CreatedAt = DateTime.Now;
-                sku.CreatedBy = loggedUser;
-                sku.FSADocumentId = fsaDoc.Id;
-            }
-
-            await _uploadDocService.SaveDocument(fsaDoc);
-            await _skuService.SaveProductCategories(listCategory);
-            await _skuService.SaveSKUs(listSKU);
+           
         }
 
         private async Task SaveMonthlyBuckets(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType)
@@ -355,6 +395,34 @@ namespace FSAWebSystem.Controllers
 
             await _uploadDocService.SaveWeeklyBuckets(weeklyBuckets);
 		}
+
+
+        private static void ValidateExcel<T>(List<T> list, List<string> errorMessages)
+        {
+            string column = string.Empty;
+            Type classType = (typeof(SKU));
+
+            switch(typeof(T).Name)
+            {
+                case nameof(SKU):
+                    column = "PCMap";
+                    break;
+                case nameof(Banner):
+                    column = "BannerName";
+                    break;
+
+            }
+
+
+            var groups = list.GroupBy(x => x.GetType().GetProperty(column).GetValue(x, null)).ToList();
+            foreach (var grp in groups)
+            {
+                if(grp.Count() > 1)
+                {
+                    errorMessages.Add("Unable to add duplicate " + column + " : " + grp.Key + ". Please remove one record.");
+                }
+            }
+        }
 
         private static string ConvertNumber(string input)
         {

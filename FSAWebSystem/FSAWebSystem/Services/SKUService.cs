@@ -20,6 +20,11 @@ namespace FSAWebSystem.Services
 			return _db.SKUs;
 		}
 
+		public async Task<SKU> GetSKU(string pcMap)
+        {
+			return await _db.SKUs.SingleOrDefaultAsync(x => x.PCMap == pcMap);
+        }
+
 
 		public  IQueryable<ProductCategory> GetAllProductCategories()
 		{
