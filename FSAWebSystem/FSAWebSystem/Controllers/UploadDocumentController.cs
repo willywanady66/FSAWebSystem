@@ -574,8 +574,7 @@ namespace FSAWebSystem.Controllers
             }
 
             var bannersNameNotInDb = (from monthlyBucket in listMonthlyBucket
-                                     where !(from banner in banners
-                                             select banner.BannerName).Contains(monthlyBucket.BannerName)
+                                     where !banners.Any(x => x.BannerName == monthlyBucket.BannerName && x.PlantCode == monthlyBucket.PlantCode)
                                      select monthlyBucket.BannerName).ToList();
             foreach(var bannerNotInDb in bannersNameNotInDb)
             {
