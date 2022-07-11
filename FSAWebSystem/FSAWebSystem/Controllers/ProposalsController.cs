@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Services.Interface;
+using FSAWebSystem.Models.ViewModels;
 
 namespace FSAWebSystem.Controllers
 {
@@ -27,15 +28,34 @@ namespace FSAWebSystem.Controllers
         // GET: Proposals
         public async Task<IActionResult> Index()
         {
+            
+
+            return View();
+        }
+
+
+        public async Task<IActionResult> GetProposalPagination(DataTableParam param)
+        {
             List<Proposal> listProposal = new List<Proposal>();
+            var listData = Json(new { });
             var fsaDetail = await _calendarService.GetCurrentWeek(DateTime.Now.Date);
-            if(fsaDetail != null)
+            if (fsaDetail != null)
             {
-                listProposal = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week);
+                var data = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week, param);
+
+                listData = Json(new
+                {
+                    param.sEcho,
+                    recordsTotal = data.TotalRecord,
+                    recordsFiltered = data.TotalRecord,
+                    aaData = data.Proposals
+                });
             }
+
            
 
-            return View(listProposal);
+            return listData;
+
         }
 
         // GET: Proposals/Details/5

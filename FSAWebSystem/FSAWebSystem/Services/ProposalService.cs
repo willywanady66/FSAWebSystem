@@ -1,5 +1,6 @@
 ﻿using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
+using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,9 +13,9 @@ namespace FSAWebSystem.Services
         {
             _db = db;
         }
-        public async Task<List<Proposal>> GetProposalForView(int month, int year, int week, string bannerName = "")
+        public async Task<ProposalData> GetProposalForView(int month, int year, int week, DataTableParam param, string bannerName = "")
         {
-            var listProposal = await (from weeklyBucket in _db.WeeklyBuckets
+            var proposals = (from weeklyBucket in _db.WeeklyBuckets
                                 join banner in _db.Banners on weeklyBucket.BannerId equals banner.Id
                                 join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
                                 where (!string.IsNullOrEmpty(bannerName) && banner.BannerName == bannerName) || string.IsNullOrEmpty(bannerName)
@@ -24,15 +25,22 @@ namespace FSAWebSystem.Services
                                     Id = Guid.NewGuid(),
                                     WeeklyBucketId = weeklyBucket.Id,
                                     BannerName = banner.BannerName,
+                                    PlantCode = banner.PlantCode,
+                                    PlantName = banner.PlantName,
                                     PCMap = sku.PCMap,
                                     DescriptionMap = sku.DescriptionMap,
                                     RatingRate = weeklyBucket.RatingRate,
                                     MonthlyBucket = weeklyBucket.MonthlyBucket,
                                     CurrentBucket = (decimal)weeklyBucket.GetType().GetProperty("BucketWeek" + week.ToString()).GetValue(weeklyBucket, null),
                                     NextBucket = (decimal)weeklyBucket.GetType().GetProperty("BucketWeek" + (week+1).ToString()).GetValue(weeklyBucket, null)
-                                }).ToListAsync();
-
-            return listProposal;
+                                });
+            var totalCount = proposals.Count();
+            var listProposal = await proposals.Skip(param.iDisplayStart).Take(param.iDisplayLength).ToListAsync();
+            return new ProposalData
+            {
+                TotalRecord = totalCount,
+                Proposals = listProposal
+            };
         }
     }
 }

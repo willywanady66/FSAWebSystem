@@ -1,10 +1,12 @@
 ﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using FSAWebSystem.Areas.Identity.Data;
 using FSAWebSystem.Models;
 using FSAWebSystem.Models.Bucket;
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Services;
 using FSAWebSystem.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NPOI.HSSF.UserModel;
@@ -14,6 +16,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Net;
+using System.Globalization;
 
 namespace FSAWebSystem.Controllers
 {
@@ -23,15 +26,22 @@ namespace FSAWebSystem.Controllers
         public ISKUService _skuService;
         public IBannerService _bannerService;
         public IUploadDocumentService _uploadDocService;
+        public IRoleService _roleService;
+        public IUserService _userService;
+        private readonly UserManager<FSAWebSystemUser> _userManager;
         private readonly FSAWebSystemDbContext _db;
         private readonly INotyfService _notyfService;
-        public UploadDocumentController(ISKUService skuService, IBannerService bannerService, IUploadDocumentService uploadDocService, FSAWebSystemDbContext db, INotyfService notyfService)
+        public UploadDocumentController(ISKUService skuService, IBannerService bannerService, IUploadDocumentService uploadDocService, IRoleService roleService, IUserService userService, UserManager<FSAWebSystemUser> userManager,
+            FSAWebSystemDbContext db, INotyfService notyfService)
         {
             _db = db;
             _skuService = skuService;
             _bannerService = bannerService;
             _uploadDocService = uploadDocService;
             _notyfService = notyfService;
+            _roleService = roleService;
+            _userService = userService;
+            _userManager = userManager;
         }
 
 
@@ -51,6 +61,9 @@ namespace FSAWebSystem.Controllers
 
             switch (doc)
             {
+                case DocumentUpload.User:
+                    columns = _uploadDocService.GetUserColumns();
+                    break;
                 case DocumentUpload.Banner:
                     columns = _uploadDocService.GetBannerColumns();
                     break;
@@ -112,7 +125,7 @@ namespace FSAWebSystem.Controllers
             var doc = (DocumentUpload)(Convert.ToInt32(documentType));
             List<string> errorMessages = new List<string>();
             var currDate = DateTime.Now;
-           
+
             if (excelDocument != null)
             {
                 if (!excelDocument.FileName.Contains(doc.ToString()))
@@ -123,12 +136,12 @@ namespace FSAWebSystem.Controllers
                     return RedirectToAction("Index", "Admin");
                 }
 
-                if(doc == DocumentUpload.MonthlyBucket)
-				{
+                if (doc == DocumentUpload.MonthlyBucket)
+                {
                     var isCalendarExist = await _db.FSACalendarHeader.AnyAsync(x => x.Month == currDate.Month && x.Year == currDate.Year);
                     var monthName = currDate.ToString("MMMM");
                     if (!isCalendarExist)
-					{
+                    {
                         errorMessages.Add("Please Input FSACalendar for " + monthName + "-" + currDate.Year.ToString());
                         TempData["ErrorMessages"] = errorMessages;
                         TempData["Tab"] = "UploadDoc";
@@ -149,10 +162,15 @@ namespace FSAWebSystem.Controllers
                 {
                     switch (doc)
                     {
+                        case DocumentUpload.User:
+                            columns = _uploadDocService.GetUserColumns();
+                            dt = CreateDataTable(sheet, columns);
+                            await SaveUsers(dt, excelDocument.Name, loggedUser, doc, errorMessages);
+                            break;
                         case DocumentUpload.Banner:
                             columns = _uploadDocService.GetBannerColumns();
                             dt = CreateDataTable(sheet, columns);
-                            await SaveBanners(dt, excelDocument.FileName, loggedUser, doc);
+                            await SaveBanners(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.SKU:
                             columns = _uploadDocService.GetSKUColumns();
@@ -162,15 +180,21 @@ namespace FSAWebSystem.Controllers
                         case DocumentUpload.MonthlyBucket:
                             columns = _uploadDocService.GetMonthlyBucketColumns();
                             dt = CreateDataTable(sheet, columns);
-                            await SaveMonthlyBuckets(dt, excelDocument.FileName, loggedUser, doc);
+                            await SaveMonthlyBuckets(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                     }
-                    if(!errorMessages.Any())
+                    if (!errorMessages.Any())
                     {
                         await _db.SaveChangesAsync();
                         _notyfService.Success(doc.ToString() + " successfully uploaded");
                     }
-                    
+                    else
+                    {
+                        TempData["ErrorMessages"] = errorMessages;
+                        TempData["Tab"] = "UploadDoc";
+                        _notyfService.Error("Upload Failed.");
+                    }
+
                 }
                 catch (Exception ex)
                 {
@@ -181,8 +205,7 @@ namespace FSAWebSystem.Controllers
             {
                 _notyfService.Error("Please Select File.");
             }
-            TempData["ErrorMessages"] = errorMessages;
-            TempData["Tab"] = "UploadDoc";
+
             return RedirectToAction("Index", "Admin", errorMessages);
         }
 
@@ -210,7 +233,7 @@ namespace FSAWebSystem.Controllers
                     for (int col = 0; col < sheetRow.LastCellNum; col++)
                     {
                         var cell = sheetRow.GetCell(col);
-                        if (sheetRow != null)
+                        if (cell != null)
                         {
                             switch (cell.CellType)
                             {
@@ -238,7 +261,77 @@ namespace FSAWebSystem.Controllers
             return dt;
         }
 
-        private async Task SaveSKUs(DataTable dt, string fileName,  string loggedUser, DocumentUpload documentType, List<string> errorMessages)
+        private async Task SaveUsers(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessage)
+        {
+            List<UserUnilever> listUser = new List<UserUnilever>();
+            FSADocument fSADocument = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
+            foreach (DataRow row in dt.Rows)
+            {
+                var user = new UserUnilever
+                {
+                    Email = row["Email"].ToString(),
+                    Name = row["Name"].ToString(),
+                    BannerName = row["BannerName"].ToString(),
+                    Password = row["Password"].ToString(),
+                    Role = row["Role"].ToString()
+                };
+                listUser.Add(user);
+            }
+
+            ValidateExcel(listUser, errorMessage);
+
+            if(!errorMessage.Any())
+            {
+                var usersToAdd = new List<UserUnilever>();
+
+                foreach(var user in listUser)
+                {
+                    var savedUser = await _userService.GetUserByEmail(user.Email);
+                    if(savedUser != null)
+                    {
+                        if(savedUser.RoleUnilever.RoleName != user.Role)
+                        {
+                            savedUser.RoleUnilever = await _roleService.GetRoleByName(user.Role);
+                            savedUser.ModifiedAt = DateTime.Now;
+                            savedUser.ModifiedBy = loggedUser;
+                            savedUser.FSADocumentId = fSADocument.Id;
+                        }
+                    }
+                    else
+                    {
+                        user.Id = Guid.NewGuid();
+                        user.RoleUnilever = await _roleService.GetRoleByName(user.Role);
+                        user.CreatedAt = DateTime.Now;
+                        user.CreatedBy = loggedUser;
+                        user.FSADocumentId = fSADocument.Id;
+                        usersToAdd.Add(user);
+                    }
+                }
+
+                foreach(var user in usersToAdd)
+                {
+                    var userLogin = new FSAWebSystemUser
+                    {
+                        Email = user.Email,
+                        UserName = user.Name,
+                        UserUnileverId = user.Id,
+                        Role = user.Role
+                    };
+                    var res =await _userManager.CreateAsync(userLogin, user.Password);
+                    if(res.Succeeded)
+                    {
+
+                    }
+                }
+
+                await _uploadDocService.SaveDocument(fSADocument);
+                await _userService.SaveUsers(usersToAdd);
+                
+            }
+
+        }
+
+        private async Task SaveSKUs(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
         {
             List<SKU> listSKU = new List<SKU>();
             FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
@@ -256,7 +349,7 @@ namespace FSAWebSystem.Controllers
 
             ValidateExcel(listSKU, errorMessages);
 
-            if(!errorMessages.Any())
+            if (!errorMessages.Any())
             {
                 var savedCategory = _skuService.GetAllProductCategories() as IEnumerable<ProductCategory>;
 
@@ -306,10 +399,10 @@ namespace FSAWebSystem.Controllers
                 await _skuService.SaveSKUs(skuToAdd);
             }
 
-           
+
         }
 
-        private async Task SaveMonthlyBuckets(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType)
+        private async Task SaveMonthlyBuckets(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
         {
             List<MonthlyBucket> listMonthlyBucket = new List<MonthlyBucket>();
 
@@ -318,36 +411,59 @@ namespace FSAWebSystem.Controllers
             //List<ProductCategory> categories = _skuService.GetAllProductCategories().ToList();
 
             FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
-
+            int i = 0;
             foreach (DataRow dr in dt.Rows)
             {
 
-                var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
-                var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
+                //var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
+                //var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
                 var currentDate = DateTime.Now;
+                if(i == 25)
+                {
+                    var z = 0;
+                }
                 var monthlyBucket = new MonthlyBucket
                 {
                     Id = Guid.NewGuid(),
-                    BannerId = banner.Id,
-                    SKUId = sku.Id,
+                    //BannerId = banner.Id,
+                    //SKUId = sku.Id,
+                    BannerName = dr["Banner"].ToString(),
+                    PlantCode = dr["Plant Code"].ToString(),
+                    PCMap = dr["PC Map"].ToString(),
                     Price = Convert.ToDecimal(ConvertNumber(dr["Price"].ToString())),
-                    PlantContribution = Convert.ToDecimal(ConvertNumber(dr["Plant Contribution"].ToString())) * 100,
-                    RatingRate = Convert.ToDecimal(ConvertNumber(dr["Rating Rate"].ToString())) ,
+                    PlantContribution = Decimal.Parse(ConvertNumber(dr["Plant Contribution"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint) * 100,
+                    RatingRate = Convert.ToDecimal(ConvertNumber(dr["Rating Rate"].ToString())),
                     TCT = Convert.ToDecimal(ConvertNumber(dr["TCT"].ToString())) * 100,
                     MonthlyTarget = Convert.ToDecimal(ConvertNumber(dr["Monthly Target"].ToString())) * 100,
                     Month = currentDate.Month,
                     Year = currentDate.Year,
                     FSADocument = fsaDoc
                 };
+                
                 listMonthlyBucket.Add(monthlyBucket);
+                i++;
             }
 
-            await _uploadDocService.SaveMonthlyBuckets(listMonthlyBucket);
-            await _uploadDocService.SaveDocument(fsaDoc);
-            await CreateWeeklyBucket(listMonthlyBucket);
+            ValidateMonthlyBucketExcel(listMonthlyBucket, errorMessages);
+            if(!errorMessages.Any())
+            {
+                foreach(var monthlyBucket in listMonthlyBucket)
+                {
+                    var sku = skus.Single(x => x.PCMap == monthlyBucket.PCMap);
+                    var banner = banners.Single(x => x.BannerName == monthlyBucket.BannerName && x.PlantCode == monthlyBucket.PlantCode);
+
+                    monthlyBucket.SKUId = sku.Id;
+                    monthlyBucket.BannerId= banner.Id;
+                }
+                await _uploadDocService.SaveMonthlyBuckets(listMonthlyBucket);
+                await _uploadDocService.SaveDocument(fsaDoc);
+                await CreateWeeklyBucket(listMonthlyBucket);
+            }
+
+           
         }
 
-        private async Task SaveBanners (DataTable dt, string fileName, string loggedUser, DocumentUpload documentType)
+        private async Task SaveBanners(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
         {
             List<Banner> banners = new List<Banner>();
             FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
@@ -367,16 +483,49 @@ namespace FSAWebSystem.Controllers
 
                 banners.Add(banner);
             }
-            await _uploadDocService.SaveDocument(fsaDoc);
-            await _bannerService.SaveBanners(banners);
-           
+            ValidateBannerExcel(banners, errorMessages);
+
+            if (!errorMessages.Any())
+            {
+                var savedBanners = _bannerService.GetAllBanner();
+                var bannersToAdd = new List<Banner>();
+
+                foreach (var banner in banners)
+                {
+                    var savedBanner = await savedBanners.SingleOrDefaultAsync(x => x.BannerName == banner.BannerName && x.PlantCode == banner.PlantCode);
+                    if (savedBanner != null)
+                    {
+                        if (savedBanner.PlantName != banner.PlantName || savedBanner.Trade != banner.Trade)
+                        {
+                            savedBanner.Trade = banner.Trade;
+                            savedBanner.PlantName = banner.PlantName;
+                            savedBanner.ModifiedAt = DateTime.Now;
+                            savedBanner.ModifiedBy = loggedUser;
+                            savedBanner.FSADocumentId = fsaDoc.Id;
+                        }
+                    }
+                    else
+                    {
+                        banner.Id = Guid.NewGuid();
+                        banner.CreatedAt = DateTime.Now;
+                        banner.CreatedBy = loggedUser;
+                        banner.FSADocumentId = fsaDoc.Id;
+                        bannersToAdd.Add(banner);
+                    }
+                }
+
+                await _uploadDocService.SaveDocument(fsaDoc);
+                await _bannerService.SaveBanners(bannersToAdd);
+
+
+            }
         }
 
-		private async Task CreateWeeklyBucket(List<MonthlyBucket> monthlyBuckets)
-		{
+        private async Task CreateWeeklyBucket(List<MonthlyBucket> monthlyBuckets)
+        {
             List<WeeklyBucket> weeklyBuckets = new List<WeeklyBucket>();
-            foreach(var monthlyBucket in monthlyBuckets)
-			{
+            foreach (var monthlyBucket in monthlyBuckets)
+            {
                 var weeklyBucket = new WeeklyBucket();
 
                 weeklyBucket.Id = Guid.NewGuid();
@@ -385,43 +534,150 @@ namespace FSAWebSystem.Controllers
                 weeklyBucket.BannerId = monthlyBucket.BannerId;
                 weeklyBucket.SKUId = monthlyBucket.SKUId;
                 weeklyBucket.RatingRate = monthlyBucket.RatingRate;
-                var mBucket = monthlyBucket.RatingRate * (monthlyBucket.TCT /100) * (monthlyBucket.MonthlyTarget/100);
+                var mBucket = monthlyBucket.RatingRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100);
                 weeklyBucket.MonthlyBucket = mBucket;
                 weeklyBucket.BucketWeek1 = mBucket * ((decimal)50 / (decimal)100);
                 weeklyBucket.BucketWeek2 = mBucket * ((decimal)50 / (decimal)100);
 
                 weeklyBuckets.Add(weeklyBucket);
-			}
+            }
 
             await _uploadDocService.SaveWeeklyBuckets(weeklyBuckets);
-		}
+        }
+
+        private void ValidateMonthlyBucketExcel(List<MonthlyBucket> listMonthlyBucket, List<string> errorMessages)
+        {
+
+            var banners = _bannerService.GetAllActiveBanner();
+            var skus = _skuService.GetAllProducts();
+            if(listMonthlyBucket.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
+            {
+                errorMessages.Add("Please fill all PCMap and BannerName column");
+            }
+
+            //var emptyPrices = listMonthlyBucket.Where(x => x.Price < 1).Select(x => new { x.PCMap, x.BannerName }).ToList();
+            //if(emptyPrices.Any())
+            //{
+            //    Parallel.ForEach(emptyPrices, x =>
+            //    {
+            //        errorMessages.Add("Price is empty on PCMap: " x.PCMap " and Banner Name: " + x.BannerName);
+            //    });
+            //}
+
+            var skuGroups = listMonthlyBucket.GroupBy(x => new {x.BannerName, x.PCMap, x.PlantCode}).ToList();
+            foreach (var skuGrp in skuGroups)
+            {
+                if (skuGrp.Count() > 1)
+                {
+                    errorMessages.Add("Unable to add duplicate record on Banner Name: " + skuGrp.Key.BannerName + ", PCMap: " + skuGrp.Key.PCMap + " and Plant Code : " + skuGrp.Key.PlantCode + ". Please remove one record.");
+                }
+            }
+
+            var bannersNameNotInDb = (from monthlyBucket in listMonthlyBucket
+                                     where !(from banner in banners
+                                             select banner.BannerName).Contains(monthlyBucket.BannerName)
+                                     select monthlyBucket.BannerName).ToList();
+            foreach(var bannerNotInDb in bannersNameNotInDb)
+            {
+                errorMessages.Add("Banner Name: " + bannerNotInDb + " doesn't exist in database");
+            }
+
+            var pcMapsNotInDb = (from monthlyBucket in listMonthlyBucket
+                                      where !(from sku in skus
+                                              select sku.PCMap).Contains(monthlyBucket.PCMap)
+                                      select monthlyBucket.PCMap).Distinct().ToList();
+            foreach (var pcMapNotInDb in pcMapsNotInDb)
+            {
+                errorMessages.Add("PCMap: " + pcMapNotInDb + " doesn't exist in database");
+            }
+        }
+
+
+        private static void ValidateBannerExcel(List<Banner> listBanner, List<string> errorMessages)
+        {
+            if (listBanner.Any(x => string.IsNullOrEmpty(x.BannerName) || string.IsNullOrEmpty(x.PlantCode)))
+            {
+                errorMessages.Add("Please fill all BannerName and PlantCode column");
+            }
+
+            var bannerGroups = listBanner.GroupBy(x => new { x.BannerName, x.PlantCode }).ToList();
+            foreach (var bannerGrp in bannerGroups)
+            {
+                if (bannerGrp.Count() > 1)
+                {
+                    errorMessages.Add("There is duplicate record of Banner Name: " + bannerGrp.Key.BannerName + " and Plant Code : " + bannerGrp.Key.PlantCode + ". Please remove one record.");
+                }
+            }
+        }
 
 
         private static void ValidateExcel<T>(List<T> list, List<string> errorMessages)
         {
-            string column = string.Empty;
-            Type classType = (typeof(SKU));
+            string mainColumn = string.Empty;
+            var className = typeof(T).Name;
+            IEnumerable<Banner> banners = new List<Banner>().AsEnumerable();
+            IEnumerable<RoleUnilever> roles = new List<RoleUnilever>().AsEnumerable();
+            IEnumerable<UserUnilever> users = new List<UserUnilever>().AsEnumerable();
+            List<string> columnToCheck = new List<string>();
 
-            switch(typeof(T).Name)
+            var classType = typeof(T);
+            switch (className)
             {
                 case nameof(SKU):
-                    column = "PCMap";
+                    mainColumn = "PCMap";
                     break;
-                case nameof(Banner):
-                    column = "BannerName";
+                case nameof(UserUnilever):
+                    mainColumn = "Email";
+                    //banners = _bannerService.GetAllBanner().AsEnumerable();
+                    //roles = _roleService.GetAllRoles().AsEnumerable();
+                    columnToCheck.Add("Email");
+                    columnToCheck.Add("Name");
+                    columnToCheck.Add("Password");
+                    columnToCheck.Add("Role");
                     break;
-
             }
 
-
-            var groups = list.GroupBy(x => x.GetType().GetProperty(column).GetValue(x, null)).ToList();
-            foreach (var grp in groups)
+            if (list.Any(x => string.IsNullOrEmpty(GetColStringValue(x, mainColumn))))
             {
-                if(grp.Count() > 1)
+                errorMessages.Add("Please fill all " + mainColumn + " column");
+            }
+
+            foreach (var col in columnToCheck)
+            {
+                var emptyColumnValues = list.Where(x => string.IsNullOrEmpty(GetColStringValue(x, col))).Select(x => GetColStringValue(x, mainColumn)).ToList();
+                if(emptyColumnValues.Any())
                 {
-                    errorMessages.Add("Unable to add duplicate " + column + " : " + grp.Key + ". Please remove one record.");
+                    Parallel.ForEach(emptyColumnValues, x =>
+                    {
+                        errorMessages.Add(col + " cannot by empty on " + mainColumn + ": " + x);
+                    });
+                   
                 }
             }
+   
+
+            var groups = list.GroupBy(x => x.GetType().GetProperty(mainColumn).GetValue(x, null)).ToList();
+            foreach (var grp in groups)
+            {
+                if (grp.Count() > 1)
+                {
+                    errorMessages.Add("There is duplicate record of " + mainColumn + " : " + grp.Key + ". Please remove one record.");
+                }
+            }
+        }
+
+        private static void CheckExistInDb<T>(IEnumerable<T> list, List<string> errorMessages, string column, string colValue)
+        {
+            if (list.Any(x => x.GetType().GetProperty(column).GetValue(x, null).ToString() == colValue))
+            {
+                errorMessages.Add(column + ": " + colValue + " already exist in database");
+            }
+        }
+
+        private static string GetColStringValue<T>(T obj, string column)
+        {
+            var value = obj.GetType().GetProperty(column).GetValue(obj, null)?.ToString();
+            return value;
         }
 
         private static string ConvertNumber(string input)
@@ -430,8 +686,4 @@ namespace FSAWebSystem.Controllers
         }
 
     }
-
-
-
-
 }

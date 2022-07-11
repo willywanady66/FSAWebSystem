@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "QS6/vjClh6+FNpuYtBj3F3HJKfD9PH+UuKcN68DocNg=",
+  "Hash": "/NW1cGzi5G4VwQwOydctrq7OEQXz3aNtozxJ2NiruHU=",
   "Source": "FSAWebSystem",
   "BasePath": "_content/FSAWebSystem",
   "Mode": "Default",
@@ -1392,6 +1392,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\js\\demo\\datatables-demo.js"
+    },
+    {
+      "Identity": "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\wwwroot\\js\\Proposal\\dataTable.js",
+      "SourceId": "FSAWebSystem",
+      "SourceType": "Discovered",
+      "ContentRoot": "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\wwwroot\\",
+      "BasePath": "_content/FSAWebSystem",
+      "RelativePath": "js/Proposal/dataTable.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\Proposal\\dataTable.js"
     },
     {
       "Identity": "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\wwwroot\\js\\sb-admin-2.js",

@@ -1,4 +1,6 @@
-﻿namespace FSAWebSystem.Models.Bucket
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace FSAWebSystem.Models.Bucket
 {
     public class MonthlyBucket
     {
@@ -15,5 +17,12 @@
         public int Month { get; set; }
         public int Year { get; set; }
         public FSADocument FSADocument { get; set; }
+
+        [NotMapped]
+        public string BannerName { get; set; }
+        [NotMapped]
+        public string PCMap { get; set; }
+        [NotMapped]
+        public string PlantCode { get; set; }
     }
 }

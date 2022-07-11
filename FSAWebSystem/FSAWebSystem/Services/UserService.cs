@@ -24,6 +24,16 @@ namespace FSAWebSystem.Services
             return await _db.UsersUnilever.Include(x => x.Banners).SingleOrDefaultAsync(x => x.Id == id);
         }
 
+        public async Task<UserUnilever> GetUserByEmail(string email)
+        {
+            return await _db.UsersUnilever.Include(x => x.Banners).SingleOrDefaultAsync(x => x.Email == email);
+        }
+
+        public async Task SaveUsers (List<UserUnilever> users)
+        {
+            _db.UsersUnilever.AddRange(users);
+        }
+
         public async Task<List<Banner>> GetUserBanners(Guid id)
         {
             var user = await GetUser(id);

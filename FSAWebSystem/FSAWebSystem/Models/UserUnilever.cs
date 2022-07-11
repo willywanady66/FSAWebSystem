@@ -17,9 +17,14 @@ namespace FSAWebSystem.Models
 		public string? ModifiedBy { get; set; }
 
 		public bool IsActive { get; set; }
+		public Guid? FSADocumentId { get; set; }
 
 		//[NotMapped] public Banner Banner { get; set; }
 		[NotMapped]
 		public string BannerName { get; set; }
+        [NotMapped]
+		public string Password { get; set; }
+        [NotMapped]
+		public string Role { get; set; }
 	}
 }

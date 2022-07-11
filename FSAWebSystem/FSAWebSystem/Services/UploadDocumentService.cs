@@ -103,12 +103,12 @@ namespace FSAWebSystem.Services
             await _db.FSADocuments.AddAsync(fsaDoc);
         }
 
-        List<string> IUploadDocumentService.GetWeeklyDispatchColumns()
+        public List<string> GetWeeklyDispatchColumns()
         {
             throw new NotImplementedException();
         }
 
-        List<string> IUploadDocumentService.GetDailyOrderColumns()
+        public List<string> GetDailyOrderColumns()
         {
             throw new NotImplementedException();
         }
@@ -117,12 +117,26 @@ namespace FSAWebSystem.Services
 		{
             await _db.WeeklyBuckets.AddRangeAsync(weeklyBuckets);
 		}
-	}
+
+        public List<string> GetUserColumns()
+        {
+            return new List<string>
+            {
+                "Name",
+                "Email",
+                "Password",
+                "Role",
+                "BannerName"
+            };
+        }
+    }
 
 
 
     public enum DocumentUpload
     {
+        [Description("User")]
+        User,
         [Description("Banner")]
         Banner,
         [Description("SKU")]

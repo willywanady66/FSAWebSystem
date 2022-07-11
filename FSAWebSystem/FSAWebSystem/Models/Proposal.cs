@@ -16,7 +16,12 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public string BannerName { get; set; }
         [NotMapped]
+        public string PlantCode { get; set; }
+        [NotMapped]
+        public string PlantName { get; set; }
+        [NotMapped]
         public string PCMap { get; set; }
+        
         [NotMapped]
         public string DescriptionMap { get; set; }
         [NotMapped]
@@ -31,5 +36,11 @@ namespace FSAWebSystem.Models
         public decimal ValidBJ { get; set; }
         [NotMapped]
         public decimal RemFSA { get; set; }
+    }
+
+    public class ProposalData
+    {
+        public int TotalRecord { get; set; }
+        public List<Proposal> Proposals { get; set; }
     }
 }

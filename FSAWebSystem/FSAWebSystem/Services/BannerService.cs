@@ -32,9 +32,14 @@ namespace FSAWebSystem.Services
             viewData["ListBanner"] = listBanner.ItemList;
         }
 
-        public IQueryable<Banner> GetAllBanner()
+        public IQueryable<Banner> GetAllActiveBanner()
         {
             return _db.Banners.Where(x => x.IsActive);
+        }
+
+        public IQueryable<Banner> GetAllBanner()
+        {
+            return _db.Banners;
         }
 
         public async Task<Banner> GetBanner(Guid id)
@@ -42,20 +47,20 @@ namespace FSAWebSystem.Services
             return await _db.Banners.FindAsync(id);
         }
 
-        public Banner GetBannerByName(string name)
+        public async Task<Banner> GetBannerByName(string name)
         {
 
-            throw new NotImplementedException();
+            return await _db.Banners.SingleOrDefaultAsync(x => x.BannerName == name);
         }
 
         public async Task<bool> IsBannerExist(string name)
         {
-            return await _db.Banners.AnyAsync(x => x.BannerName.ToUpper() == name.ToUpper());
+            return await _db.Banners.Where(x => x.IsActive).AnyAsync(x => x.BannerName.ToUpper() == name.ToUpper());
         }
 
         public async Task<bool> IsBannerUsed(string name)
         {
-            var usedBanner = await _db.Banners.Include(x => x.UserUnilevers).SingleOrDefaultAsync(x => x.BannerName.ToUpper() == name.ToUpper());
+            var usedBanner = await _db.Banners.Where(x => x.IsActive).Include(x => x.UserUnilevers).SingleOrDefaultAsync(x => x.BannerName.ToUpper() == name.ToUpper());
             return usedBanner.UserUnilevers.Any();
 
         }
