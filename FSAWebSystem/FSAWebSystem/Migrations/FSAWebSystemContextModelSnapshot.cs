@@ -243,6 +243,9 @@ namespace FSAWebSystem.Migrations
                     b.Property<decimal>("MonthlyBucket")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("PlantContribution")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("RatingRate")
                         .HasColumnType("decimal(18,2)");
 

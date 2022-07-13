@@ -17,6 +17,7 @@ using System.Data;
 using System.Linq;
 using System.Net;
 using System.Globalization;
+using System.Reflection;
 
 namespace FSAWebSystem.Controllers
 {
@@ -28,11 +29,13 @@ namespace FSAWebSystem.Controllers
         public IUploadDocumentService _uploadDocService;
         public IRoleService _roleService;
         public IUserService _userService;
+        public IBucketService _bucketService;
         private readonly UserManager<FSAWebSystemUser> _userManager;
         private readonly FSAWebSystemDbContext _db;
         private readonly INotyfService _notyfService;
-        public UploadDocumentController(ISKUService skuService, IBannerService bannerService, IUploadDocumentService uploadDocService, IRoleService roleService, IUserService userService, UserManager<FSAWebSystemUser> userManager,
-            FSAWebSystemDbContext db, INotyfService notyfService)
+        private readonly ICalendarService _calendarService;
+        public UploadDocumentController(ISKUService skuService, IBannerService bannerService, IUploadDocumentService uploadDocService, IRoleService roleService, IUserService userService, IBucketService bucketService,
+            UserManager<FSAWebSystemUser> userManager,FSAWebSystemDbContext db, INotyfService notyfService, ICalendarService calendarService)
         {
             _db = db;
             _skuService = skuService;
@@ -42,6 +45,8 @@ namespace FSAWebSystem.Controllers
             _roleService = roleService;
             _userService = userService;
             _userManager = userManager;
+            _bucketService = bucketService;
+            _calendarService = calendarService;
         }
 
 
@@ -72,6 +77,12 @@ namespace FSAWebSystem.Controllers
                     break;
                 case DocumentUpload.MonthlyBucket:
                     columns = _uploadDocService.GetMonthlyBucketColumns();
+                    break;
+                case DocumentUpload.WeeklyDispatch:
+                    columns = _uploadDocService.GetWeeklyDispatchColumns();
+                    break;
+                case DocumentUpload.DailyOrder:
+                    columns = _uploadDocService.GetDailyOrderColumns();
                     break;
             }
 
@@ -181,6 +192,16 @@ namespace FSAWebSystem.Controllers
                             columns = _uploadDocService.GetMonthlyBucketColumns();
                             dt = CreateDataTable(sheet, columns);
                             await SaveMonthlyBuckets(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+                            break;
+                        case DocumentUpload.WeeklyDispatch:
+                            columns = _uploadDocService.GetWeeklyDispatchColumns();
+                            dt = CreateDataTable(sheet, columns);
+                            await SaveWeeklyBucket(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+                            break;
+                        case DocumentUpload.DailyOrder:
+                            columns = _uploadDocService.GetDailyOrderColumns();
+                            dt = CreateDataTable(sheet, columns);
+                            await SaveDailyOrder(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                     }
                     if (!errorMessages.Any())
@@ -411,37 +432,31 @@ namespace FSAWebSystem.Controllers
             //List<ProductCategory> categories = _skuService.GetAllProductCategories().ToList();
 
             FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
-            int i = 0;
+      
             foreach (DataRow dr in dt.Rows)
             {
 
                 //var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
                 //var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
                 var currentDate = DateTime.Now;
-                if(i == 25)
-                {
-                    var z = 0;
-                }
+    
                 var monthlyBucket = new MonthlyBucket
                 {
                     Id = Guid.NewGuid(),
-                    //BannerId = banner.Id,
-                    //SKUId = sku.Id,
                     BannerName = dr["Banner"].ToString(),
                     PlantCode = dr["Plant Code"].ToString(),
                     PCMap = dr["PC Map"].ToString(),
-                    Price = Convert.ToDecimal(ConvertNumber(dr["Price"].ToString())),
+                    Price = Decimal.Parse(ConvertNumber(dr["Price"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint),
                     PlantContribution = Decimal.Parse(ConvertNumber(dr["Plant Contribution"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint) * 100,
-                    RatingRate = Convert.ToDecimal(ConvertNumber(dr["Rating Rate"].ToString())),
-                    TCT = Convert.ToDecimal(ConvertNumber(dr["TCT"].ToString())) * 100,
-                    MonthlyTarget = Convert.ToDecimal(ConvertNumber(dr["Monthly Target"].ToString())) * 100,
+                    RatingRate = Decimal.Parse(ConvertNumber(dr["Rating Rate"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint),
+                    TCT = Decimal.Parse(ConvertNumber(dr["Price"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint) * 100,
+                    MonthlyTarget = Decimal.Parse(ConvertNumber(dr["Monthly Target"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint) * 100,
                     Month = currentDate.Month,
                     Year = currentDate.Year,
                     FSADocument = fsaDoc
                 };
                 
                 listMonthlyBucket.Add(monthlyBucket);
-                i++;
             }
 
             ValidateMonthlyBucketExcel(listMonthlyBucket, errorMessages);
@@ -453,7 +468,7 @@ namespace FSAWebSystem.Controllers
                     var banner = banners.Single(x => x.BannerName == monthlyBucket.BannerName && x.PlantCode == monthlyBucket.PlantCode);
 
                     monthlyBucket.SKUId = sku.Id;
-                    monthlyBucket.BannerId= banner.Id;
+                    monthlyBucket.BannerId = banner.Id;
                 }
                 await _uploadDocService.SaveMonthlyBuckets(listMonthlyBucket);
                 await _uploadDocService.SaveDocument(fsaDoc);
@@ -521,6 +536,114 @@ namespace FSAWebSystem.Controllers
             }
         }
 
+        private async Task SaveWeeklyBucket(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
+        {
+            List<WeeklyBucket> weeklyBuckets = new List<WeeklyBucket>();
+
+            FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
+            var currentDate = DateTime.Now;
+            foreach (DataRow dr in dt.Rows)
+            {
+
+                //var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
+                //var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
+             
+
+                var weeklyBucket = new WeeklyBucket
+                {
+                    BannerName = dr["Banner Name"].ToString(),
+                    PlantCode = dr["Plant Code"].ToString(),
+                    PCMap = dr["Material"].ToString(),
+                    DispatchConsume = Convert.ToDecimal(ConvertNumber(dr["Dispatch / Consume"].ToString())),
+                    Month = currentDate.Month,
+                    Year = currentDate.Year
+                };
+
+                weeklyBuckets.Add(weeklyBucket);
+            }
+
+            ValidateWeeklyBucketExcel(weeklyBuckets, errorMessages, currentDate);
+
+            if(!errorMessages.Any())
+            {
+                var calendarDetail = await _calendarService.GetCalendarDetail(currentDate);
+                var skus = _skuService.GetAllProducts();
+                var banners = _bannerService.GetAllActiveBanner();
+                var savedWeeklyBuckets = _bucketService.GetWeeklyBucket();
+               
+                foreach (var weeklyBucket in weeklyBuckets)
+                {
+                    var bannerId = banners.Single(x => x.BannerName == weeklyBucket.BannerName && x.PlantCode == weeklyBucket.PlantCode).Id;
+                    var skuId = skus.Single(x => x.PCMap == weeklyBucket.PCMap).Id;
+                    var savedWeeklyBucket = savedWeeklyBuckets.Single(x => x.BannerId == bannerId && x.SKUId == skuId && x.Year == weeklyBucket.Year && x.Month == weeklyBucket.Month);
+                    var currentWeekBucket = decimal.Zero;
+                    var remainingBucket = decimal.Zero;
+                    var totalDispatch = decimal.Zero;
+                    if(calendarDetail.Week == 3)
+                    {
+                        remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek1;
+                    }
+                    else if(calendarDetail.Week == 4)
+                    {
+                        remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek2;
+                    }
+                    else if(calendarDetail.Week == 5)
+                    {
+                        remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek3;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                    totalDispatch = savedWeeklyBucket.DispatchConsume * (savedWeeklyBucket.PlantContribution / 100);
+                    currentWeekBucket = remainingBucket - totalDispatch;
+                    //PropertyInfo propertyInfo = savedWeeklyBucket.GetType().GetProperty("BucketWeek" + calendarDetail.Week.ToString());
+                    savedWeeklyBucket.GetType().GetProperty("BucketWeek3").SetValue(savedWeeklyBucket, currentWeekBucket);
+                }
+            }
+        }
+
+        private async Task SaveDailyOrder(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
+        {
+            List<DailyOrder> dailyOrders = new List<DailyOrder>();
+
+            FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
+            var currentDate = DateTime.Now;
+            foreach (DataRow dr in dt.Rows)
+            {
+
+                //var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
+                //var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
+                var dailyOrder = new DailyOrder
+                {
+                    BannerName = dr["Banner Name"].ToString(),
+                    PlantCode = dr["Plant Code"].ToString(),
+                    PCMap = dr["PC Map"].ToString(),
+                    ValidBJ = Convert.ToDecimal(ConvertNumber(dr["Valid Order + BJ"].ToString())),
+                    Month = currentDate.Month,
+                    Year = currentDate.Year
+                };
+
+                dailyOrders.Add(dailyOrder);
+            }
+
+            ValidateDailyOrderExcel(dailyOrders, errorMessages, currentDate);
+
+            if (!errorMessages.Any())
+            {
+                var banners = _bannerService.GetAllActiveBanner();
+                var weeklyBuckets = _bucketService.GetWeeklyBucket();
+                var skus = _skuService.GetAllProducts();
+                foreach(var dailyOrder in dailyOrders)
+                {
+                    var bannerId = banners.Single(x => x.BannerName == dailyOrder.BannerName && x.PlantCode == dailyOrder.PlantCode).Id;
+                    var skuId = skus.Single(x => x.PCMap == dailyOrder.PCMap).Id;
+                    var weeklyBucket = weeklyBuckets.Single(x => x.BannerId == bannerId && x.SKUId == skuId && x.Year == dailyOrder.Year && x.Month == dailyOrder.Month);
+                    weeklyBucket.ValidBJ += dailyOrder.ValidBJ;
+                }
+            }
+        }
+
         private async Task CreateWeeklyBucket(List<MonthlyBucket> monthlyBuckets)
         {
             List<WeeklyBucket> weeklyBuckets = new List<WeeklyBucket>();
@@ -534,6 +657,7 @@ namespace FSAWebSystem.Controllers
                 weeklyBucket.BannerId = monthlyBucket.BannerId;
                 weeklyBucket.SKUId = monthlyBucket.SKUId;
                 weeklyBucket.RatingRate = monthlyBucket.RatingRate;
+                weeklyBucket.PlantContribution = monthlyBucket.PlantContribution;
                 var mBucket = monthlyBucket.RatingRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100);
                 weeklyBucket.MonthlyBucket = mBucket;
                 weeklyBucket.BucketWeek1 = mBucket * ((decimal)50 / (decimal)100);
@@ -547,22 +671,12 @@ namespace FSAWebSystem.Controllers
 
         private void ValidateMonthlyBucketExcel(List<MonthlyBucket> listMonthlyBucket, List<string> errorMessages)
         {
-
             var banners = _bannerService.GetAllActiveBanner();
             var skus = _skuService.GetAllProducts();
             if(listMonthlyBucket.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
             {
                 errorMessages.Add("Please fill all PCMap and BannerName column");
             }
-
-            //var emptyPrices = listMonthlyBucket.Where(x => x.Price < 1).Select(x => new { x.PCMap, x.BannerName }).ToList();
-            //if(emptyPrices.Any())
-            //{
-            //    Parallel.ForEach(emptyPrices, x =>
-            //    {
-            //        errorMessages.Add("Price is empty on PCMap: " x.PCMap " and Banner Name: " + x.BannerName);
-            //    });
-            //}
 
             var skuGroups = listMonthlyBucket.GroupBy(x => new {x.BannerName, x.PCMap, x.PlantCode}).ToList();
             foreach (var skuGrp in skuGroups)
@@ -573,15 +687,17 @@ namespace FSAWebSystem.Controllers
                 }
             }
 
-            var bannersNameNotInDb = (from monthlyBucket in listMonthlyBucket
-                                     where !banners.Any(x => x.BannerName == monthlyBucket.BannerName && x.PlantCode == monthlyBucket.PlantCode)
-                                     select monthlyBucket.BannerName).ToList();
+            var bannerPlantCodesFromExcel = listMonthlyBucket.Select(x => new { x.BannerName, x.PlantCode }).Distinct().ToList();
+
+            var bannersNameNotInDb = (from monthlyBucket in bannerPlantCodesFromExcel
+                                      where !banners.Any(x => x.BannerName == monthlyBucket.BannerName && x.PlantCode == monthlyBucket.PlantCode)
+                                     select monthlyBucket ).ToList();
             foreach(var bannerNotInDb in bannersNameNotInDb)
             {
-                errorMessages.Add("Banner Name: " + bannerNotInDb + " doesn't exist in database");
+                errorMessages.Add("Banner Name: " + bannerNotInDb.BannerName + " and Plant Code: " + bannerNotInDb.PlantCode + "doesn't exist in Monthly Bucket");
             }
 
-            var pcMapsNotInDb = (from monthlyBucket in listMonthlyBucket
+            var pcMapsNotInDb = (from monthlyBucket in listMonthlyBucket.DistinctBy(x => x.PCMap)
                                       where !(from sku in skus
                                               select sku.PCMap).Contains(monthlyBucket.PCMap)
                                       select monthlyBucket.PCMap).Distinct().ToList();
@@ -591,6 +707,98 @@ namespace FSAWebSystem.Controllers
             }
         }
 
+        private void ValidateWeeklyBucketExcel(List<WeeklyBucket> listWeeklyBucket, List<string> errorMessages, DateTime currentDate)
+        {
+            if (listWeeklyBucket.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
+            {
+                errorMessages.Add("Please fill all PCMap and BannerName column");
+            }
+
+            var bannersNotExist = (from weeklyBucket in listWeeklyBucket
+                                         where!(
+                                         from monthlyBucket in _bucketService.GetMonthlyBucket().AsEnumerable().DistinctBy(x => x.BannerId)
+                                         join banner in _bannerService.GetAllActiveBanner().AsEnumerable() on monthlyBucket.BannerId equals banner.Id
+                                         select new
+                                         {
+                                             banner.BannerName,
+                                             banner.PlantCode,
+                                         }).Any(x => x.BannerName == weeklyBucket.BannerName && x.PlantCode == weeklyBucket.PlantCode)
+                                         select new
+                                         {
+                                             weeklyBucket.BannerName,
+                                             weeklyBucket.PlantCode
+                                         }).ToList();
+           
+            foreach(var banner in bannersNotExist)
+            {
+                errorMessages.Add("Banner Name: " + banner.BannerName + " and Plant Code: " + banner.PlantCode + " doesn't exist on Monthly Bucket");
+            }
+
+            var skusNotExist = (from weeklyBucket in listWeeklyBucket
+                                   where !(
+                                   from monthlyBucket in _bucketService.GetMonthlyBucket().AsEnumerable().DistinctBy(x => x.BannerId)
+                                   join sku in _skuService.GetAllProducts().AsEnumerable() on monthlyBucket.SKUId equals sku.Id
+                                   select new
+                                   {
+                                       sku.PCMap
+                                   }).Any(x => x.PCMap == weeklyBucket.PCMap)
+                                   select new
+                                   {
+                                       weeklyBucket.PCMap
+                                   }).ToList();
+            foreach (var sku in skusNotExist)
+            {
+                errorMessages.Add("PC Map: " + sku.PCMap + " doesn't exist on Monthly Bucket");
+            }
+
+        }
+
+        private void ValidateDailyOrderExcel(List<DailyOrder> listDailyOrder, List<string> errorMessages, DateTime currentDate)
+        {
+            if (listDailyOrder.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
+            {
+                errorMessages.Add("Please fill all PCMap and BannerName column");
+            }
+
+            var bannersNotExist = (from dailyOrder in listDailyOrder
+                                   where !(
+                                   from weeklyBucket in _bucketService.GetWeeklyBucket().AsEnumerable().DistinctBy(x => x.BannerId)
+                                   join banner in _bannerService.GetAllActiveBanner().AsEnumerable() on weeklyBucket.BannerId equals banner.Id
+                                   where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
+                                   select new
+                                   {
+                                       banner.BannerName,
+                                       banner.PlantCode,
+                                   }).Any(x => x.BannerName == dailyOrder.BannerName && x.PlantCode == dailyOrder.PlantCode)
+                                   select new
+                                   {
+                                       dailyOrder.BannerName,
+                                       dailyOrder.PlantCode
+                                   }).ToList();
+
+            foreach (var banner in bannersNotExist)
+            {
+                errorMessages.Add("Banner Name: " + banner.BannerName + " and Plant Code: " + banner.PlantCode + " doesn't exist on Weekly Bucket");
+            }
+
+            var skusNotExist = (from dailyOrder in listDailyOrder
+                                where !(
+                                from weeklyBucket in _bucketService.GetWeeklyBucket().AsEnumerable().DistinctBy(x => x.BannerId)
+                                join sku in _skuService.GetAllProducts().AsEnumerable() on weeklyBucket.SKUId equals sku.Id
+                                where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
+                                select new
+                                {
+                                    sku.PCMap
+                                }).Any(x => x.PCMap == dailyOrder.PCMap)
+                                select new
+                                {
+                                    dailyOrder.PCMap
+                                }).ToList();
+            foreach (var sku in skusNotExist)
+            {
+                errorMessages.Add("PC Map: " + sku.PCMap + " doesn't exist on Weekly Bucket");
+            }
+        }
 
         private static void ValidateBannerExcel(List<Banner> listBanner, List<string> errorMessages)
         {
@@ -608,7 +816,6 @@ namespace FSAWebSystem.Controllers
                 }
             }
         }
-
 
         private static void ValidateExcel<T>(List<T> list, List<string> errorMessages)
         {

@@ -133,6 +133,8 @@ namespace FSAWebSystem.Controllers
             }
             ModelState.Remove("RoleUnilever");
             ModelState.Remove("BannerName");
+            ModelState.Remove("Password");
+            ModelState.Remove("Role");
             if (ModelState.IsValid)
             {
                 try

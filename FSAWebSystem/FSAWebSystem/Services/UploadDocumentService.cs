@@ -85,19 +85,6 @@ namespace FSAWebSystem.Services
             return fsaDoc;
         }
 
-        public List<string> GetWeeklyDispatchColumn()
-        {
-            return new List<string>
-            {
-                "Unik",
-                "Account",
-                "Material",
-                "Material Description",
-                "Description",
-                "Dispatch / Consume",
-            };
-        }
-
         public async Task SaveDocument(FSADocument fsaDoc)
         {
             await _db.FSADocuments.AddAsync(fsaDoc);
@@ -105,12 +92,35 @@ namespace FSAWebSystem.Services
 
         public List<string> GetWeeklyDispatchColumns()
         {
-            throw new NotImplementedException();
+            return new List<string>
+            {
+                "Unik",
+                "Account",
+                "Banner Name",
+                "Plant Code",
+                "Material",
+                "Material Description",
+                "Description",
+                "Dispatch / Consume",
+            };
         }
 
         public List<string> GetDailyOrderColumns()
         {
-            throw new NotImplementedException();
+            return new List<string>
+            {
+                "Account",
+                "Banner Name",
+                "Plant Code",
+                "Category Name",
+                "Market Name",
+                "Corp Brand Name",
+                "PC Map",
+                "PC Description",
+                "Flag SKU FSA",
+                "Original Order",
+                "Valid Order + BJ"
+            };
         }
 
 		public async Task SaveWeeklyBuckets(List<WeeklyBucket> weeklyBuckets)

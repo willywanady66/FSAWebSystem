@@ -28,7 +28,7 @@ namespace FSAWebSystem.Services
         {
             var banners = GetAllBanner().ToList();
             MultiDropDownListViewModel listBanner = new MultiDropDownListViewModel();
-            listBanner.ItemList = banners.Select(x => new SelectListItem { Text = x.BannerName, Value = x.Id.ToString() }).ToList();
+            listBanner.ItemList = banners.Select(x => new SelectListItem { Text = x.BannerName + " (" + x.PlantName + ')', Value = x.Id.ToString() }).ToList();
             viewData["ListBanner"] = listBanner.ItemList;
         }
 

@@ -1,4 +1,6 @@
-﻿namespace FSAWebSystem.Models.Bucket
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace FSAWebSystem.Models.Bucket
 {
     public class WeeklyBucket
     {
@@ -7,6 +9,7 @@
         public int Year { get; set; }
         public Guid BannerId { get; set; }
         public Guid SKUId { get; set; }
+        public decimal PlantContribution { get; set; }
         public decimal MonthlyBucket { get; set; }
         public decimal RatingRate { get; set; }
         public decimal BucketWeek1 { get; set; }
@@ -19,5 +22,13 @@
         public decimal DispatchConsume {get;set; }
         public DateTime? CreatedAt { get; set; }
         public string? CreatedBy { get; set; }
+
+        [NotMapped]
+        public string BannerName { get; set; }
+        [NotMapped]
+        public string PlantCode { get; set; }
+        [NotMapped]
+        public string PCMap { get; set; }
+
     }
 }

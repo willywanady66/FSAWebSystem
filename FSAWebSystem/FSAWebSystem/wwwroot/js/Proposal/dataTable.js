@@ -6,6 +6,7 @@
         "bSort": true,
         "aoColumns": [
             { "mData": "bannerName" },
+            { "mData": "plantName" },
             { "mData": "pcMap" },
             { "mData": "descriptionMap" },
             { "mData": "ratingRate" },

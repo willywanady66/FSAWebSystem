@@ -29,6 +29,7 @@ builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISKUService, SKUService>();
 builder.Services.AddScoped<IProposalService, ProposalService>();
+builder.Services.AddScoped<IBucketService, BucketService>();
 // Add services to the container.
 builder.Services.AddNotyf(config => { config.DurationInSeconds = 5; config.IsDismissable = true; config.Position = NotyfPosition.BottomRight; });
 builder.Services.AddControllersWithViews();

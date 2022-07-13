@@ -6,6 +6,6 @@ namespace FSAWebSystem.Services.Interface
     public interface IProposalService
     {
 
-        public Task<ProposalData> GetProposalForView(int month, int year, int week, DataTableParam param, string bannerName ="");
+        public Task<ProposalData> GetProposalForView(int month, int year, int week, DataTableParam param, Guid userId);
     }
 }

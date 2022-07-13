@@ -22,7 +22,7 @@ namespace FSAWebSystem.Services
            await _db.AddAsync(fsaCalendar);
         }
 
-        public async Task<FSACalendarDetail> GetCurrentWeek(DateTime date)
+        public async Task<FSACalendarDetail> GetCalendarDetail(DateTime date)
         {
             var calendarDetail = await _db.FSACalendarDetail.SingleOrDefaultAsync(x => date >= x.StartDate.Value.Date && date <= x.EndDate.Value.Date);
             return calendarDetail;

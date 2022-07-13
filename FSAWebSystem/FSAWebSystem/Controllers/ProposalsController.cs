@@ -9,6 +9,8 @@ using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Services.Interface;
 using FSAWebSystem.Models.ViewModels;
+using Microsoft.AspNetCore.Identity;
+using FSAWebSystem.Areas.Identity.Data;
 
 namespace FSAWebSystem.Controllers
 {
@@ -17,12 +19,16 @@ namespace FSAWebSystem.Controllers
         private readonly FSAWebSystemDbContext _context;
         private readonly IProposalService _proposalService;
         private readonly ICalendarService _calendarService;
+        private readonly IUserService _userService;
+        private readonly UserManager<FSAWebSystemUser> _userManager;
 
-        public ProposalsController(FSAWebSystemDbContext context, IProposalService proposalService, ICalendarService calendarService)
+        public ProposalsController(FSAWebSystemDbContext context, IProposalService proposalService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager,IUserService userService)
         {
             _context = context;
             _proposalService = proposalService;
             _calendarService = calendarService;
+            _userManager = userManager;
+            _userService = userService;
         }
 
         // GET: Proposals
@@ -36,12 +42,15 @@ namespace FSAWebSystem.Controllers
 
         public async Task<IActionResult> GetProposalPagination(DataTableParam param)
         {
+            var user = await _userManager.GetUserAsync(User);
+            var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
+            var bannersThisUser = userUnilever.Banners;
             List<Proposal> listProposal = new List<Proposal>();
             var listData = Json(new { });
-            var fsaDetail = await _calendarService.GetCurrentWeek(DateTime.Now.Date);
+            var fsaDetail = await _calendarService.GetCalendarDetail(DateTime.Now.Date);
             if (fsaDetail != null)
             {
-                var data = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week, param);
+                var data = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week, param, userUnilever.Id);
 
                 listData = Json(new
                 {
