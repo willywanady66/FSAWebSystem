@@ -8,185 +8,185 @@ build_property.PlatformNeutralAssembly =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = FSAWebSystem
 build_property.RootNamespace = FSAWebSystem
-build_property.ProjectDir = F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\
+build_property.ProjectDir = D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\
 build_property.RazorLangVersion = 6.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = true
-build_property.MSBuildProjectDirectory = F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem
+build_property.MSBuildProjectDirectory = D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem
 build_property._RazorSourceGeneratorDebug = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/ForgotPassword.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/ForgotPassword.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcQWNjb3VudFxGb3Jnb3RQYXNzd29yZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Login.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Logout.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Logout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcQWNjb3VudFxMb2dvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Manage/Index.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Manage/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcQWNjb3VudFxNYW5hZ2VcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Manage/_ManageNav.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Manage/_ManageNav.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcQWNjb3VudFxNYW5hZ2VcX01hbmFnZU5hdi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Manage/_ViewImports.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Manage/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcQWNjb3VudFxNYW5hZ2VcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Register.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/_ViewImports.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/Account/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcQWNjb3VudFxfVmlld0ltcG9ydHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/_ValidationScriptsPartial.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcX1ZhbGlkYXRpb25TY3JpcHRzUGFydGlhbC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/_ViewImports.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/_ViewStart.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Areas/Identity/Pages/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcSWRlbnRpdHlcUGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Admin/Index.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Admin/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Banners/Create.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Banners/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmFubmVyc1xDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Banners/Details.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Banners/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmFubmVyc1xEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Banners/Edit.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Banners/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmFubmVyc1xFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/FSACalendarHeaders/Create.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/FSACalendarHeaders/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRlNBQ2FsZW5kYXJIZWFkZXJzXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/FSACalendarHeaders/Delete.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/FSACalendarHeaders/Delete.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRlNBQ2FsZW5kYXJIZWFkZXJzXERlbGV0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/FSACalendarHeaders/Details.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/FSACalendarHeaders/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRlNBQ2FsZW5kYXJIZWFkZXJzXERldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/FSACalendarHeaders/Edit.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/FSACalendarHeaders/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRlNBQ2FsZW5kYXJIZWFkZXJzXEVkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/FSACalendarHeaders/Index.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/FSACalendarHeaders/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRlNBQ2FsZW5kYXJIZWFkZXJzXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Home/Index.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Home/Privacy.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/ProductCategories/Create.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/ProductCategories/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdENhdGVnb3JpZXNcQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/ProductCategories/Delete.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/ProductCategories/Delete.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdENhdGVnb3JpZXNcRGVsZXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/ProductCategories/Details.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/ProductCategories/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdENhdGVnb3JpZXNcRGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/ProductCategories/Edit.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/ProductCategories/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdENhdGVnb3JpZXNcRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/ProductCategories/Index.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/ProductCategories/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdENhdGVnb3JpZXNcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Proposals/Index.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Proposals/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvcG9zYWxzXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Shared/Error.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Shared/_LoginPartial.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Shared/_LoginPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Mb2dpblBhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Shared/_ValidationScriptsPartial.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/SKUs/Create.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/SKUs/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU0tVc1xDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/SKUs/Delete.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/SKUs/Delete.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU0tVc1xEZWxldGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/SKUs/Details.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/SKUs/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU0tVc1xEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/SKUs/Edit.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/SKUs/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU0tVc1xFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/SKUs/Index.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/SKUs/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU0tVc1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/UserUnilevers/Create.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/UserUnilevers/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclVuaWxldmVyc1xDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/UserUnilevers/Delete.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/UserUnilevers/Delete.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclVuaWxldmVyc1xEZWxldGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/UserUnilevers/Details.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/UserUnilevers/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclVuaWxldmVyc1xEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/UserUnilevers/Edit.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/UserUnilevers/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclVuaWxldmVyc1xFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/UserUnilevers/Index.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/UserUnilevers/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclVuaWxldmVyc1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/_ViewImports.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/_ViewStart.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Project Freelance/Gitt/FSAWebSystem/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Shared/_Layout.cshtml]
+[D:/Willy Wanady/GitHub/FSAWebSystem/FSAWebSystem/FSAWebSystem/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-f64bwjp2zx

@@ -569,3 +569,6 @@ D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\FSAWebSystem.pdb
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\FSAWebSystem.genruntimeconfig.cache
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\ref\FSAWebSystem.dll
+D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\bin\Release\net6.0\AspNetCoreHero.ToastNotification.Views.dll
+D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\bin\Release\net6.0\AspNetCoreHero.ToastNotification.dll
+D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\bin\Release\net6.0\LazZiya.TagHelpers.dll

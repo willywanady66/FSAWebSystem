@@ -292,7 +292,10 @@ D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\PubTmp\Out\FSAWebSystem.dll
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\PubTmp\Out\FSAWebSystem.runtimeconfig.json
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\PubTmp\Out\FSAWebSystem.pdb
+D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\PubTmp\Out\AspNetCoreHero.ToastNotification.Views.dll
+D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\PubTmp\Out\AspNetCoreHero.ToastNotification.dll
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\PubTmp\Out\Humanizer.dll
+D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\PubTmp\Out\LazZiya.TagHelpers.dll
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\PubTmp\Out\MessagePack.dll
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\PubTmp\Out\MessagePack.Annotations.dll
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Release\net6.0\PubTmp\Out\Microsoft.AspNet.Identity.Core.dll

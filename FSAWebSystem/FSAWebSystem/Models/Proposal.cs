@@ -38,11 +38,5 @@ namespace FSAWebSystem.Models
         public decimal RemFSA { get; set; }
     }
 
-    public class ProposalData
-    {
-        public int TotalRecord { get; set; }
-        public int PageSize { get; set; }
-        public int PageNo { get; set; }
-        public List<Proposal> Proposals { get; set; }
-    }
+    
 }

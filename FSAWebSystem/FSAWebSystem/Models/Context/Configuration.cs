@@ -38,15 +38,17 @@ namespace FSAWebSystem.Models.Context
             }
 
 
-
+           
             var user = Activator.CreateInstance<FSAWebSystemUser>();
             user.Email = "admin@gmail.com";
             user.UserName = user.Email;
+            user.UserUnileverId = Guid.NewGuid();
             var res = await userManager.CreateAsync(user, "Administrator1*");
             if(res.Succeeded)
             {
                 var userUnilever = new UserUnilever
                 {
+                    Id = (Guid)user.UserUnileverId,
                     Name = user.UserName,
                     Email = user.Email,
                     CreatedAt = DateTime.Now,

@@ -1,5 +1,6 @@
 ﻿using FSAWebSystem.Models;
 using FSAWebSystem.Models.ViewModels;
+using static FSAWebSystem.Models.ViewModels.ProposalViewModel;
 
 namespace FSAWebSystem.Services.Interface
 {

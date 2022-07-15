@@ -3,6 +3,7 @@ using FSAWebSystem.Models.Context;
 using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
 using Microsoft.EntityFrameworkCore;
+using static FSAWebSystem.Models.ViewModels.ProposalViewModel;
 
 namespace FSAWebSystem.Services
 {
@@ -72,11 +73,12 @@ namespace FSAWebSystem.Services
 
 
             var totalCount = proposals.Count();
-            var listProposal = proposals.Skip(param.iDisplayStart).Take(param.iDisplayLength).ToList();
+            var listProposal = proposals.Skip(param.start).Take(param.length).ToList();
             return new ProposalData
             {
-                TotalRecord = totalCount,
-                Proposals = listProposal
+                proposalInputs = param.proposalInputs,
+                totalRecord = totalCount,
+                proposals = listProposal
             };
         }
     }

@@ -11,6 +11,7 @@ using FSAWebSystem.Services.Interface;
 using FSAWebSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using FSAWebSystem.Areas.Identity.Data;
+using static FSAWebSystem.Models.ViewModels.ProposalViewModel;
 
 namespace FSAWebSystem.Controllers
 {
@@ -46,7 +47,7 @@ namespace FSAWebSystem.Controllers
             return View();
         }
 
-
+        [HttpPost]
         public async Task<IActionResult> GetProposalPagination(DataTableParam param)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -54,21 +55,23 @@ namespace FSAWebSystem.Controllers
             var bannersThisUser = userUnilever.Banners;
             List<Proposal> listProposal = new List<Proposal>();
             var listData = Json(new { });
+            var data = new ProposalData();
             var fsaDetail = await _calendarService.GetCalendarDetail(DateTime.Now.Date);
             if (fsaDetail != null)
             {
-                var data = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week, param, userUnilever.Id);
+                data = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week, param, userUnilever.Id);
 
-                listData = Json(new
-                {
-                    param.sEcho,
-                    recordsTotal = data.TotalRecord,
-                    recordsFiltered = data.TotalRecord,
-                    aaData = data.Proposals
-                });
+                
             }
 
+            listData = Json(new
+            {
 
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.proposals
+            });
 
             return listData;
 
