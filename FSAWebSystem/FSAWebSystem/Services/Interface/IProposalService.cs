@@ -7,5 +7,6 @@ namespace FSAWebSystem.Services.Interface
     {
 
         public Task<ProposalData> GetProposalForView(int month, int year, int week, DataTableParam param, Guid userId);
+        //public Task<ProposalData> GetProposalForView(int month, int year, int week, int pageNo, Guid userId);
     }
 }

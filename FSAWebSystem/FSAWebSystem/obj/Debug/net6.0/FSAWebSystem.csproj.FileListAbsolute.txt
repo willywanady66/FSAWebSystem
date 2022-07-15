@@ -1722,3 +1722,4 @@ D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Debug\net6.0\F
 D:\Willy Wanady\GitHub\FSAWebSystem\FSAWebSystem\FSAWebSystem\obj\Debug\net6.0\ref\FSAWebSystem.dll
 F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\bin\Debug\net6.0\AspNetCoreHero.ToastNotification.Views.dll
 F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\bin\Debug\net6.0\AspNetCoreHero.ToastNotification.dll
+F:\Project Freelance\Gitt\FSAWebSystem\FSAWebSystem\FSAWebSystem\FSAWebSystem\bin\Debug\net6.0\LazZiya.TagHelpers.dll

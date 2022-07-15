@@ -34,7 +34,14 @@ namespace FSAWebSystem.Controllers
         // GET: Proposals
         public async Task<IActionResult> Index()
         {
-            
+            //var user = await _userManager.GetUserAsync(User);
+            //var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
+            //var data = new ProposalData();
+            //var fsaDetail = await _calendarService.GetCalendarDetail(DateTime.Now.Date);
+            //if (fsaDetail != null)
+            //{
+            //    data = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week, 1, userUnilever.Id);
+            //}
 
             return View();
         }
@@ -61,7 +68,7 @@ namespace FSAWebSystem.Controllers
                 });
             }
 
-           
+
 
             return listData;
 

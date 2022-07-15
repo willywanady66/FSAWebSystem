@@ -4,6 +4,10 @@
         maxHeight: 450
     });
 
+   
     const selectedText = document.querySelector(".multiselect-selected-text");
-    selectedText.classList.add("text-wrap");
+    if (selectedText) {
+        selectedText.classList.add("text-wrap");
+    }
+
 });

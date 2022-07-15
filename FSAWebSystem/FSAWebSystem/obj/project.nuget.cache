@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "vuDtgrswTEIjMWUrOxIT3btz8tvJORkF2M0NWxbISslgs3yGGhDVdVQsMvHK1qo27xmFJcwoC7BwoI6vuWkDwA==",
+  "dgSpecHash": "Qm25qdG0VtJJlY55cjCR2vzdUBYI9arChF1Qvbz3MxgMqhwlOeUF65DSv2pSXDrdpFY8SC18WY6llx/KAtcKmQ==",
   "success": true,
   "projectFilePath": "F:\\Project Freelance\\Gitt\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem\\FSAWebSystem.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\DELL\\.nuget\\packages\\aspnetcorehero.toastnotification\\1.1.0\\aspnetcorehero.toastnotification.1.1.0.nupkg.sha512",
     "C:\\Users\\DELL\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
+    "C:\\Users\\DELL\\.nuget\\packages\\lazziya.taghelpers\\6.0.2\\lazziya.taghelpers.6.0.2.nupkg.sha512",
     "C:\\Users\\DELL\\.nuget\\packages\\messagepack\\2.1.152\\messagepack.2.1.152.nupkg.sha512",
     "C:\\Users\\DELL\\.nuget\\packages\\messagepack.annotations\\2.1.152\\messagepack.annotations.2.1.152.nupkg.sha512",
     "C:\\Users\\DELL\\.nuget\\packages\\messagepackanalyzer\\2.1.152\\messagepackanalyzer.2.1.152.nupkg.sha512",

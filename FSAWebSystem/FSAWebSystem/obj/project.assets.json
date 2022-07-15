@@ -34,6 +34,18 @@
           "lib/netstandard2.0/Humanizer.dll": {}
         }
       },
+      "LazZiya.TagHelpers/6.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/LazZiya.TagHelpers.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/LazZiya.TagHelpers.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "MessagePack/2.1.152": {
         "type": "package",
         "dependencies": {
@@ -3476,6 +3488,33 @@
         "lib/netstandard2.0/Humanizer.dll",
         "lib/netstandard2.0/Humanizer.xml",
         "logo.png"
+      ]
+    },
+    "LazZiya.TagHelpers/6.0.2": {
+      "sha512": "qYWVS9Mx61jmYrI+iNhw6vyH5u4W/VsAy0aTeKplNDU63K2WVSI7RdvWKSXuti0kZn+iQGkwpHz820ukCTTpPQ==",
+      "type": "package",
+      "path": "lazziya.taghelpers/6.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "icon.png",
+        "lazziya.taghelpers.6.0.2.nupkg.sha512",
+        "lazziya.taghelpers.nuspec",
+        "lib/net5.0/LazZiya.TagHelpers.dll",
+        "lib/net5.0/LazZiya.TagHelpers.xml",
+        "lib/net6.0/LazZiya.TagHelpers.dll",
+        "lib/net6.0/LazZiya.TagHelpers.xml",
+        "lib/netcoreapp2.0/LazZiya.TagHelpers.dll",
+        "lib/netcoreapp2.0/LazZiya.TagHelpers.xml",
+        "lib/netcoreapp2.1/LazZiya.TagHelpers.dll",
+        "lib/netcoreapp2.1/LazZiya.TagHelpers.xml",
+        "lib/netcoreapp2.2/LazZiya.TagHelpers.dll",
+        "lib/netcoreapp2.2/LazZiya.TagHelpers.xml",
+        "lib/netcoreapp3.0/LazZiya.TagHelpers.dll",
+        "lib/netcoreapp3.0/LazZiya.TagHelpers.xml",
+        "lib/netcoreapp3.1/LazZiya.TagHelpers.dll",
+        "lib/netcoreapp3.1/LazZiya.TagHelpers.xml",
+        "license.txt"
       ]
     },
     "MessagePack/2.1.152": {
@@ -10504,6 +10543,7 @@
   "projectFileDependencyGroups": {
     "net6.0": [
       "AspNetCoreHero.ToastNotification >= 1.1.0",
+      "LazZiya.TagHelpers >= 6.0.2",
       "Microsoft.AspNet.Identity.Core >= 2.2.3",
       "Microsoft.AspNet.WebApi.Core >= 5.2.9",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 6.0.6",
@@ -10560,6 +10600,10 @@
           "AspNetCoreHero.ToastNotification": {
             "target": "Package",
             "version": "[1.1.0, )"
+          },
+          "LazZiya.TagHelpers": {
+            "target": "Package",
+            "version": "[6.0.2, )"
           },
           "Microsoft.AspNet.Identity.Core": {
             "target": "Package",
@@ -10622,7 +10666,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.301\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.302\\RuntimeIdentifierGraph.json"
       }
     }
   },
