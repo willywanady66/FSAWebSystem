@@ -64,6 +64,21 @@ namespace FSAWebSystem.Controllers
                 
             }
 
+            if(param.proposalInputs != null)
+            {
+                var weeklyBucketIds = data.proposals.Select(x => x.WeeklyBucketId).ToList();
+                var proposalForUpdate = param.proposalInputs.Where(x => (!string.IsNullOrEmpty(x.remark) || x.proposeAdditional > 0 || x.rephase > 0) && weeklyBucketIds.Contains(Guid.Parse(x.weeklyBucketId))).ToList();
+                foreach (var proposalInput in proposalForUpdate)
+                {
+                    var proposal = data.proposals.SingleOrDefault(x => x.WeeklyBucketId == Guid.Parse(proposalInput.weeklyBucketId));
+                    proposal.Rephase = proposalInput.rephase;
+                    proposal.ProposeAdditional = proposalInput.proposeAdditional;
+                    proposal.Remark = proposalInput.remark;
+                }
+            }
+          
+
+
             listData = Json(new
             {
 
@@ -77,6 +92,15 @@ namespace FSAWebSystem.Controllers
 
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> SaveProposal(List<ProposalInput> proposals)
+        {
+            List<string> errorMessages = new List<string>();
+            ValidateProposalInput(proposals, errorMessages);
+            TempData["ErrorMessages"] = errorMessages;
+            return Ok(proposals);
+        }
         // GET: Proposals/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {
@@ -209,6 +233,17 @@ namespace FSAWebSystem.Controllers
         private bool ProposalExists(Guid id)
         {
           return (_context.Proposals?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        public void ValidateProposalInput(List<ProposalInput> proposalInputs, List<string> errorMessages)
+        {
+            foreach(var proposal in proposalInputs)
+            {
+                if(proposal.rephase > proposal.nextWeekBucket)
+                {
+                    errorMessages.Add(string.Format("Cannot request rephase more than next week bucket value on Bucket Name: {0} and PCMap: {1}", proposal.bannerName, proposal.pcMap));
+                }
+            }
         }
     }
 }

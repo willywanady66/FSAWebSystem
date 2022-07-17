@@ -5,12 +5,18 @@ namespace FSAWebSystem.Models
     public class Proposal
     {
         public Guid Id { get; set; }
+        public int Week { get; set; }
+        public int Month { get; set; }
+        public int Year { get; set; }
         public Guid WeeklyBucketId { get; set; }
         public decimal Rephase { get; set; }
-        public decimal ProposeAddional { get; set; }
+        public decimal ProposeAdditional { get; set; }
         public string Remark { get; set; }
         public DateTime SubmittedAt { get; set; }
         public string SubmittedBy { get; set; }
+        public string ApprovalStatus { get; set; }
+        public string ApprovedBy { get; set; }
+        public string RejectionReason { get; set; }
 
 
         [NotMapped]
@@ -36,6 +42,8 @@ namespace FSAWebSystem.Models
         public decimal ValidBJ { get; set; }
         [NotMapped]
         public decimal RemFSA { get; set; }
+        [NotMapped]
+        public Guid UserId { get; set; }
     }
 
     
