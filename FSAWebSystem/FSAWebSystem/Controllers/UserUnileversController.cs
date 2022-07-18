@@ -11,6 +11,9 @@ using FSAWebSystem.Services.Interface;
 using FSAWebSystem.Models.ViewModels;
 using System.Dynamic;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using FSAWebSystem.Areas.Identity.Data;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace FSAWebSystem.Controllers
 {
@@ -20,13 +23,15 @@ namespace FSAWebSystem.Controllers
         private readonly IBannerService _bannerService;
         private readonly IRoleService _roleService;
         private readonly IUserService _userService;
+        private readonly UserManager<FSAWebSystemUser> _userManager;
 
-        public UserUnileversController(FSAWebSystemDbContext context, IBannerService bannerService, IRoleService roleService, IUserService userService)
+        public UserUnileversController(FSAWebSystemDbContext context, IBannerService bannerService, IRoleService roleService, IUserService userService, UserManager<FSAWebSystemUser> userManager)
         {
             _context = context;
             _bannerService = bannerService;
             _roleService = roleService;
             _userService = userService;
+            _userManager = userManager;
         }
 
         // GET: UserUnilevers
@@ -85,18 +90,15 @@ namespace FSAWebSystem.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(userUnilever);
+            return RedirectToAction("Index", "Admin");
         }
 
         // GET: UserUnilevers/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
+        public async Task<IActionResult> Edit(string id)
         {
-            if (id == null || _context.UsersUnilever == null)
-            {
-                return NotFound();
-            }
 
-            var userUnilever = await _userService.GetUser((Guid)id);
+            var userUnilever = await _userService.GetUser(Guid.Parse(id));
+            userUnilever.UserId = id;
             if (userUnilever == null)
             {
                 return NotFound();
@@ -125,29 +127,44 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind ("Id,Name,Email,CreatedAt,CreatedBy")] UserUnilever userUnilever, string[] bannerIds, string roleUnileverId)
+        public async Task<IActionResult> Edit(Guid id, [Bind ("Id,Name,Email,IsActive,UserId,CreatedAt,CreatedBy")] UserUnilever userUnilever, string[] bannerIds, string roleUnileverId)
         {
             if (id != userUnilever.Id)
             {
                 return NotFound();
             }
             ModelState.Remove("RoleUnilever");
+            ModelState.Remove("UserId");
             ModelState.Remove("BannerName");
-            ModelState.Remove("Password");
+            ModelState.Remove("Password"); 
             ModelState.Remove("Role");
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var savedUser = await _userService.GetUser(userUnilever.Id);
-                    List<Guid> selectedBannerId = (from bannerId in bannerIds select Guid.Parse(bannerId)).ToList();
+					var savedUser = await _userService.GetUser(Guid.Parse(userUnilever.UserId));
+
+					List<Guid> selectedBannerId = (from bannerId in bannerIds select Guid.Parse(bannerId)).ToList();
                     var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerId.Contains(x.Id)).ToList();
-             
+                    var user = await _userManager.FindByIdAsync(userUnilever.UserId);
+
+                    user.UserName = userUnilever.Email; 
+                    user.NormalizedUserName = userUnilever.Email; ;
+                    user.Email = userUnilever.Email;
+                    user.NormalizedEmail = userUnilever.Email;
+                    await _userManager.UpdateAsync(user);
+
+                    var claims = await _userManager.GetClaimsAsync(user);
+
+                    await _userManager.RemoveClaimAsync(user, claims.FirstOrDefault(x => x.Type == "Role"));
+
+                
                     savedUser.Banners = selectedBanners;
                     savedUser.Name = userUnilever.Name;
                     savedUser.Email = userUnilever.Email;
                     savedUser.RoleUnilever = await _roleService.GetRole(Guid.Parse(roleUnileverId));
                     savedUser.IsActive = userUnilever.IsActive;
+                    await _userManager.AddClaimAsync(user, new Claim("Role", savedUser.RoleUnilever.RoleName));
                     await _userService.Update(savedUser, User.Identity.Name);
                     await _context.SaveChangesAsync();
                 }
@@ -162,7 +179,7 @@ namespace FSAWebSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Admin");
             }
             else
             {

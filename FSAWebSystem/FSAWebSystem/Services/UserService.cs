@@ -1,6 +1,8 @@
-﻿using FSAWebSystem.Models;
+﻿using FSAWebSystem.Areas.Identity.Data;
+using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Services.Interface;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace FSAWebSystem.Services
@@ -8,20 +10,36 @@ namespace FSAWebSystem.Services
     public class UserService : IUserService
     {
         public FSAWebSystemDbContext _db;
+        private readonly UserManager<FSAWebSystemUser> _userManager;
 
-        public UserService(FSAWebSystemDbContext db)
-        {
-            _db = db;
-        }
+        public UserService(FSAWebSystemDbContext db, UserManager<FSAWebSystemUser> userManager)
+		{
+			_db = db;
+			_userManager = userManager;
+		}
 
-        public async Task<List<UserUnilever>> GetAllUsers()
+		public async Task<List<UserUnilever>> GetAllUsers()
         {
-            return await _db.UsersUnilever.Include(x => x.Banners).ToListAsync();
+            var users = await (from user in _userManager.Users
+                         join userUnilever in _db.UsersUnilever.Include(x => x.Banners) on user.UserUnileverId equals userUnilever.Id
+                         select new UserUnilever
+                         {
+                             UserId = user.Id,
+                             Id = userUnilever.Id,
+                             Banners = userUnilever.Banners,
+                             RoleUnilever = userUnilever.RoleUnilever,
+                             IsActive = userUnilever.IsActive,
+                             Name = userUnilever.Name,
+                             Email = userUnilever.Email,
+                         }).ToListAsync();
+            return users;
         }
 
         public async Task<UserUnilever> GetUser(Guid id)
         {
-            return await _db.UsersUnilever.Include(x => x.Banners).SingleOrDefaultAsync(x => x.Id == id);
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            var userUnilever = await _db.UsersUnilever.Include(x => x.Banners).SingleOrDefaultAsync(x => x.Id == user.UserUnileverId);
+            return userUnilever;
         }
 
         public async Task<UserUnilever> GetUserByEmail(string email)

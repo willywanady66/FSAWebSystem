@@ -143,19 +143,8 @@ namespace FSAWebSystem.Controllers
         // GET: Banners/Delete/5
         public async Task<IActionResult> Delete(Guid? id)
         {
-            if (id == null || _context.Banners == null)
-            {
-                return NotFound();
-            }
-
-            var banner = await _context.Banners
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (banner == null)
-            {
-                return NotFound();
-            }
-
-            return View(banner);
+            await ValidateDeleteBanner((Guid)id);
+            return RedirectToAction("Index", "Admin");
         }
 
         // POST: Banners/Delete/5
@@ -180,6 +169,14 @@ namespace FSAWebSystem.Controllers
         private bool BannerExists(Guid id)
         {
           return (_context.Banners?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+
+        public async Task ValidateDeleteBanner(Guid bannerId)
+        {
+            var banner = await _bannerService.GetBanner(bannerId);
+
+
         }
     }
 }

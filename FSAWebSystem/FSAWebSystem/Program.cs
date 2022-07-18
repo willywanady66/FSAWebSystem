@@ -15,7 +15,10 @@ builder.Services.AddDbContext<FSAWebSystemDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 
-builder.Services.AddDefaultIdentity<FSAWebSystemUser>(options => options.SignIn.RequireConfirmedAccount = false)
+builder.Services.AddDefaultIdentity<FSAWebSystemUser>(options => {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.User.RequireUniqueEmail = true;
+    })
     .AddEntityFrameworkStores<FSAWebSystemDbContext>();
 
 builder.Services.AddSession(options => {
@@ -40,6 +43,15 @@ CultureInfo newCulture = (CultureInfo)System.Threading.Thread.CurrentThread.Curr
 newCulture.DateTimeFormat.ShortDatePattern = "dd/MM/yyyy";
 newCulture.DateTimeFormat.DateSeparator = "/";
 Thread.CurrentThread.CurrentCulture = newCulture;
+
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireClaim("Role", "Administrator"));
+    options.AddPolicy("ApproverOnly", policy => policy.RequireClaim("Role", "Approver", "Administrator"));
+    options.AddPolicy("ReqOnly", policy => policy.RequireClaim("Role", "Requestor", "Administrator"));
+    //options.AddPolicy("AdminOnly", policy => policy.RequireClaim("Role", "Administrator"));
+});
 
 
 var app = builder.Build();

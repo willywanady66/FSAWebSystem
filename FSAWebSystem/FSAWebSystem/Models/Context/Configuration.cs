@@ -1,6 +1,7 @@
 ﻿using FSAWebSystem.Areas.Identity.Data;
 using FSAWebSystem.Services.Interface;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace FSAWebSystem.Models.Context
 {
@@ -46,6 +47,7 @@ namespace FSAWebSystem.Models.Context
             var res = await userManager.CreateAsync(user, "Administrator1*");
             if(res.Succeeded)
             {
+               
                 var userUnilever = new UserUnilever
                 {
                     Id = (Guid)user.UserUnileverId,
@@ -53,8 +55,10 @@ namespace FSAWebSystem.Models.Context
                     Email = user.Email,
                     CreatedAt = DateTime.Now,
                     CreatedBy = "System",
-                    RoleUnilever = await _roleService.GetRoleByName("administrator")
+                    RoleUnilever = await _roleService.GetRoleByName("Administrator")
                 };
+
+                await userManager.AddClaimAsync(user, new Claim("Role", userUnilever.RoleUnilever.RoleName));
                 if (!_db.UsersUnilever.Any())
                 {
                     _db.UsersUnilever.Add(userUnilever);

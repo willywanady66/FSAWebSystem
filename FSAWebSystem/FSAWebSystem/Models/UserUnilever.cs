@@ -26,5 +26,7 @@ namespace FSAWebSystem.Models
 		public string Password { get; set; }
         [NotMapped]
 		public string Role { get; set; }
+		[NotMapped]
+		public string UserId { get; set; }
 	}
 }

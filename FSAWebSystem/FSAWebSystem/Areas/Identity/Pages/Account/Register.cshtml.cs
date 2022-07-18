@@ -138,14 +138,33 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
             if (ModelState.IsValid)
             {
-                var user = CreateUser();
+                var selectedBannerIds = bannerIds.Select(x => Guid.Parse(x)).ToList();
+                var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerIds.Contains(x.Id)).ToList();
+                var userUnilever = new UserUnilever
+                {
+                    Name = Input.Name,
+                    Email = Input.Email,
+                    //Password = Input.Password,
+                    Id = Guid.NewGuid(),
+                    CreatedAt = DateTime.Now,
+                    CreatedBy = User.Identity.Name,
+                    RoleUnilever = await _roleService.GetRole(Guid.Parse(roleId)),
+                    Banners = selectedBanners
+                };
 
+                var user = CreateUser();
+                user.UserUnileverId = userUnilever.Id;
+                user.Role = userUnilever.RoleUnilever.RoleName;
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                var result = await _userManager.CreateAsync(user, Input.Password);
+                
 
+
+                var result = await _userManager.CreateAsync(user, Input.Password);
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("Role", userUnilever.RoleUnilever.RoleName));
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
@@ -153,37 +172,29 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-                    var selectedBannerIds = bannerIds.Select(x => Guid.Parse(x)).ToList();
-                    var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerIds.Contains(x.Id)).ToList();
+                  
 
-                    var userUnilever = new UserUnilever
-                    {
-                        Name = Input.Name,
-                        Email = Input.Email,
-                        //Password = Input.Password,
-                        Id = Guid.NewGuid(),
-                        CreatedAt = DateTime.Now,
-                        CreatedBy = User.Identity.Name,
-                        RoleUnilever = await _roleService.GetRole(Guid.Parse(roleId)),
-                        Banners = selectedBanners
-                    };
+                   
 
                     _db.UsersUnilever.Add(userUnilever);
-                    _db.SaveChanges();
+                   await _db.SaveChangesAsync();
 
                 }
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
+                    await FillDropdowns(ViewData);
+                    return Page();
                 }
             }
             else
             {
                 await FillDropdowns(ViewData);
+                return Page();
             }
 
             // If we got this far, something failed, redisplay form
-            return Page();
+            return RedirectToAction("Index","Admin");
         }
 
         private FSAWebSystemUser CreateUser()

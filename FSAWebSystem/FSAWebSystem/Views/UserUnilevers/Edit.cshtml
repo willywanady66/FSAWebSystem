@@ -6,7 +6,7 @@
 	List<SelectListItem> listBanner = ViewData["ListBanner"] as List<SelectListItem>;
 	 List<SelectListItem> listRole = ViewData["ListRole"] as List<SelectListItem>;
 }
-
+<script src="~/js/User/multidropdown.js"></script>
 <h1>Edit</h1>
 
 <h4>UserUnilever</h4>
@@ -16,6 +16,7 @@
 		<form asp-action="Edit">
 			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 			<input type="hidden" asp-for="Id" />
+			<input type="hidden" asp-for="UserId" />
 			<input type="hidden" asp-for="CreatedAt" />
 			<input type="hidden" asp-for="CreatedBy" />
 			<div class="form-group">
@@ -58,4 +59,3 @@
 	<a asp-action="Index">Back to List</a>
 </div>
 
-					<script src="~/js/User/multidropdown.js"></script>

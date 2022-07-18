@@ -30,17 +30,27 @@ namespace FSAWebSystem.Controllers
             _calendarService = calendarService;
         }
 
-        [Authorize]
+        [Authorize(Policy ="AdminOnly")]
+		
         public async Task<IActionResult> Index()
         {
             var currentDate = DateTime.Now;
+            List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
             var listDocumentUpload = Enum.GetValues(typeof(DocumentUpload)).Cast<DocumentUpload>().Select(x => new SelectListItem { Text = UploadDocumentService.GetEnumDesc(x), Value = ((int) x).ToString() }).ToList();
             List<UserUnilever> listUsers = await _userService.GetAllUsers();
              foreach(var user in listUsers)
             {
-                user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
+                if(user.Banners.Count == listBanners.Where(x => x.IsActive).Count())
+				{
+                    user.BannerName = "All Banners";
+				}
+				else
+                {
+                    user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
+                }
+               
             }
-            List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
+            
             List<RoleUnilever> listRoles = await _roleServices.GetAllRoles().ToListAsync();
             List<ProductCategory> listCategory = await _skuService.GetAllProductCategories().ToListAsync();
             List<SKU> listSKU = await _skuService.GetAllProducts().ToListAsync();

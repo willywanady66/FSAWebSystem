@@ -1,23 +1,29 @@
-﻿using FSAWebSystem.Models;
+﻿using FSAWebSystem.Areas.Identity.Data;
+using FSAWebSystem.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace FSAWebSystem.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly UserManager<FSAWebSystemUser> _userManager;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger,UserManager<FSAWebSystemUser> userManager)
         {
             _logger = logger;
+            _userManager = userManager;
         }
 
         [Authorize]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var user = await _userManager.GetUserAsync(User);
+            return View(user);
         }
 
         [Authorize]

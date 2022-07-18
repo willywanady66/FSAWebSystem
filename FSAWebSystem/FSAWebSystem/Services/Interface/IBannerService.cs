@@ -17,7 +17,8 @@ namespace FSAWebSystem.Services.Interface
 
         public Task FillBannerDropdown(ViewDataDictionary viewData);
 
-        public Task<bool> IsBannerUsed(string name); 
+        public Task<bool> IsBannerUsed(string name);
+        public Task<bool> DeleteBanner(Guid id);
         //public Task DeleteUserBanner(List<Banner> userBanners);
     }
 }

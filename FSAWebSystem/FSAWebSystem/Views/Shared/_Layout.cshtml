@@ -1,6 +1,4 @@
-﻿
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
@@ -17,12 +15,13 @@
 	<link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
 
 	<link rel="stylesheet" href="~/css/bootstrap-multiselect.css" type="text/css">
-	<link rel="	"
 	<script src="~/lib/jquery/dist/jquery.min.js"></script>
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
 	
 </head>
+
+
 
 <body id="page-top">
 	<div id="wrapper">
@@ -56,28 +55,50 @@
 
 				<hr class="sidebar-divider"> </hr>
 
+				@if(User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
+				{
+					if(User.Claims.Single(x => x.Type == "Role").Value == "Administrator" || User.Claims.Single(x => x.Type == "Role").Value == "Requestor")
+					{
 				<li class="nav-item active">
 					<a class="nav-link text-center" asp-area="" asp-controller="Proposals" asp-action="Index">
 						<h5 class="font-weight-bold">PROPOSAL</h5>
 					</a>
 				</li>
-
+				
 				<hr class="sidebar-divider"> </hr>
+					}
+				}
 
+
+				@if(User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
+				{
+					if(User.Claims.Single(x => x.Type == "Role").Value == "Approver" || User.Claims.Single(x => x.Type == "Role").Value == "Administrator")
+					{
 				<li class="nav-item active">
 					<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
 						<h5 class="font-weight-bold">APPROVAL</h5>
 					</a>
 				</li>
-
 				<hr class="sidebar-divider"> </hr>
+					}}
 
-				<li class="nav-item active">
+				
+
+				@if(User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
+				{
+					if(User.Claims.Single(x => x.Type == "Role").Value == "Administrator")
+					{
+						<li class="nav-item active">
 					<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
 						<h5 class="font-weight-bold">ADMIN</h5>
 					</a>
 				</li>
 				<hr class="sidebar-divider"> </hr>
+					}
+				}
+					
+		
+				
 			</ul>
 		}
 
@@ -87,6 +108,8 @@
 
 			<!-- Main Content -->
 			<div id="content">
+					@if (User.Identity.IsAuthenticated)
+		{
 				<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 					<ul class="navbar-nav ml-auto">
 						<li class="nav-item dropdown">
@@ -101,14 +124,14 @@
 									<i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
 									Profile
 								</a>
-								<a class="dropdown-item" href="#">
+	@*							<a class="dropdown-item" href="#">
 									<i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
 									Settings
-								</a>
-								<a class="dropdown-item" href="#">
+								</a>*@
+@*								<a class="dropdown-item" href="#">
 									<i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
 									Activity Log
-								</a>
+								</a>*@
 								<div class="dropdown-divider"></div>
 								<a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
 									<i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -118,6 +141,7 @@
 						</li>
 					</ul>
 				</nav>
+				}
 				<div class="container-fluid">
 					@RenderBody()
 				</div>
@@ -131,12 +155,12 @@
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+					<h5 class="modal-title" id="exampleModalLabel">Ready to Logout?</h5>
 					<button class="close" type="button" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">×</span>
 					</button>
 				</div>
-				<div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+				<div class="modal-body">Are you sure want to Logout?</div>
 				<div class="modal-footer">
 					<form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
 						<button type="submit" class="btn btn-primary">Logout</button>
@@ -167,8 +191,7 @@
 	<script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
 	<!-- Page level custom scripts -->
-	<script src="~/js/Admin/dataTables.js"></script>
-	<script src="~/js/Proposal/dataTable.js"></script>
+
 
 
 

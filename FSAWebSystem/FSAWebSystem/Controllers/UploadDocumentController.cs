@@ -57,7 +57,7 @@ namespace FSAWebSystem.Controllers
             var workbook = new HSSFWorkbook();
             ISheet worksheet = workbook.CreateSheet(doc.ToString());
             var headerRow = worksheet.CreateRow(0).CreateCell(0);
-
+            List<string> errorMessages = new List<string>();
 
             var style = workbook.CreateCellStyle();
             style.Alignment = HorizontalAlignment.Center;
@@ -120,13 +120,14 @@ namespace FSAWebSystem.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                errorMessages.Add(ex.Message);
+                TempData["ErrorMessages"] = errorMessages;
             }
             finally
             {
 
             }
-
+            return RedirectToAction("Index", "Admin", errorMessages);
             //return Ok();
         }
 
@@ -219,7 +220,8 @@ namespace FSAWebSystem.Controllers
                 }
                 catch (Exception ex)
                 {
-
+                    errorMessages.Add(ex.Message);
+                    TempData["ErrorMessages"] = errorMessages;
                 }
             }
             else
@@ -227,7 +229,7 @@ namespace FSAWebSystem.Controllers
                 _notyfService.Error("Please Select File.");
             }
 
-            return RedirectToAction("Index", "Admin", errorMessages);
+            return RedirectToAction("Index", "Admin");
         }
 
 

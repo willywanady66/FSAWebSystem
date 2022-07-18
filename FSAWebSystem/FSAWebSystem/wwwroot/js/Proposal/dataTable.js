@@ -129,7 +129,7 @@
         $(this).attr('value', $(this).val());
     });
 
-    $('button').click(function () {
+    $('#submitProposalBtn').click(function () {
         let proposals = getUserInput(proposalInputs);
         $.ajax({
             type: "POST",

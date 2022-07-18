@@ -17,11 +17,16 @@ namespace FSAWebSystem.Services
             _db = db;
         }
 
+        public Task<bool> DeleteBanner(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
         //public async Task DeleteUserBanners(List<Banner> userBanners)
         //{
         //    _db.Banners.RemoveRange(userBanners);
         //    await _db.SaveChangesAsync();
-           
+
         //}
 
         public async Task FillBannerDropdown(ViewDataDictionary viewData)

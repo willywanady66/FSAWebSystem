@@ -12,6 +12,7 @@ using FSAWebSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using FSAWebSystem.Areas.Identity.Data;
 using static FSAWebSystem.Models.ViewModels.ProposalViewModel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FSAWebSystem.Controllers
 {
@@ -33,6 +34,9 @@ namespace FSAWebSystem.Controllers
         }
 
         // GET: Proposals
+
+
+        [Authorize(Policy = ("ReqOnly"))]
         public async Task<IActionResult> Index()
         {
             //var user = await _userManager.GetUserAsync(User);
@@ -47,11 +51,12 @@ namespace FSAWebSystem.Controllers
             return View();
         }
 
+
         [HttpPost]
         public async Task<IActionResult> GetProposalPagination(DataTableParam param)
         {
             var user = await _userManager.GetUserAsync(User);
-            var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
+            var userUnilever = await _userService.GetUser(Guid.Parse(user.Id));
             var bannersThisUser = userUnilever.Banners;
             List<Proposal> listProposal = new List<Proposal>();
             var listData = Json(new { });
