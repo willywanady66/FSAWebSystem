@@ -348,9 +348,3 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-FSAWebSystem/FSAWebSystem/obj/Release/net6.0/PubTmp/Out/appsettings.json
-*.json
-*.pdb
-FSAWebSystem/FSAWebSystem/bin/Debug/net6.0/FSAWebSystem.dll
-*.v2
-FSAWebSystem/.vs/FSAWebSystem/v17/.suo
