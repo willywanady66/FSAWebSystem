@@ -39,7 +39,7 @@ namespace FSAWebSystem.Controllers
         {
               return _context.UsersUnilever != null ? 
                           View(await _context.UsersUnilever.ToListAsync()) :
-                          Problem("Entity set 'FSAWebSystemDbContext.UsersUnilever'  is null.");
+                          Problem("Entity set 'FSAWebSystemDbContext.UsersUnilever' is null.");
         }
 
         // GET: UserUnilevers/Details/5
@@ -60,39 +60,6 @@ namespace FSAWebSystem.Controllers
 
             return View(userUnilever);
         }
-
-        // GET: UserUnilevers/Create
-        public async Task<IActionResult> Create()
-        {
-            var banners = _bannerService.GetAllBanner().ToList();
-
-            MultiDropDownListViewModel listBanner = new MultiDropDownListViewModel();
-            listBanner.ItemList = banners.Select(x => new SelectListItem { Text = x.BannerName, Value = x.Id.ToString() }).ToList();
-            //foreach (var banner in banners)
-            //{
-            //    listBanner.ItemList.Add(new SelectListItem { Text = banner.BannerName, Value = banner.Id.ToString() });
-            //}
-            ViewBag.Banners = listBanner.ItemList;
-            return View();
-        }
-
-        // POST: UserUnilevers/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Email,Password,CreatedAt,CreatedBy,ModifiedAt,ModifiedBy")] UserUnilever userUnilever)
-        {
-            if (ModelState.IsValid)
-            {
-                userUnilever.Id = Guid.NewGuid();
-                _context.Add(userUnilever);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return RedirectToAction("Index", "Admin");
-        }
-
         // GET: UserUnilevers/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
@@ -138,6 +105,7 @@ namespace FSAWebSystem.Controllers
             ModelState.Remove("BannerName");
             ModelState.Remove("Password"); 
             ModelState.Remove("Role");
+            ModelState.Remove("Message");
             if (ModelState.IsValid)
             {
                 try
@@ -189,41 +157,7 @@ namespace FSAWebSystem.Controllers
         }
 
         // GET: UserUnilevers/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
-        {
-            if (id == null || _context.UsersUnilever == null)
-            {
-                return NotFound();
-            }
-
-            var userUnilever = await _context.UsersUnilever
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (userUnilever == null)
-            {
-                return NotFound();
-            }
-
-            return View(userUnilever);
-        }
-
-        // POST: UserUnilevers/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            if (_context.UsersUnilever == null)
-            {
-                return Problem("Entity set 'FSAWebSystemDbContext.UsersUnilever'  is null.");
-            }
-            var userUnilever = await _context.UsersUnilever.FindAsync(id);
-            if (userUnilever != null)
-            {
-                _context.UsersUnilever.Remove(userUnilever);
-            }
-            
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+     
 
         private bool UserUnileverExists(Guid id)
         {
@@ -235,6 +169,5 @@ namespace FSAWebSystem.Controllers
             await _bannerService.FillBannerDropdown(viewData);
             await _roleService.FillRoleDropdown(viewData);
         }
-
     }
 }
