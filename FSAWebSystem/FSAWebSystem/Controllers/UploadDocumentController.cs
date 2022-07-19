@@ -176,32 +176,32 @@ namespace FSAWebSystem.Controllers
                     {
                         case DocumentUpload.User:
                             columns = _uploadDocService.GetUserColumns();
-                            dt = CreateDataTable(sheet, columns);
+                            dt = CreateDataTable(sheet, columns, errorMessages);
                             await SaveUsers(dt, excelDocument.Name, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.Banner:
                             columns = _uploadDocService.GetBannerColumns();
-                            dt = CreateDataTable(sheet, columns);
+                            dt = CreateDataTable(sheet, columns, errorMessages);
                             await SaveBanners(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.SKU:
                             columns = _uploadDocService.GetSKUColumns();
-                            dt = CreateDataTable(sheet, columns);
+                            dt = CreateDataTable(sheet, columns, errorMessages);
                             await SaveSKUs(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.MonthlyBucket:
                             columns = _uploadDocService.GetMonthlyBucketColumns();
-                            dt = CreateDataTable(sheet, columns);
+                            dt = CreateDataTable(sheet, columns, errorMessages);
                             await SaveMonthlyBuckets(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.WeeklyDispatch:
                             columns = _uploadDocService.GetWeeklyDispatchColumns();
-                            dt = CreateDataTable(sheet, columns);
+                            dt = CreateDataTable(sheet, columns, errorMessages);
                             await SaveWeeklyBucket(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.DailyOrder:
                             columns = _uploadDocService.GetDailyOrderColumns();
-                            dt = CreateDataTable(sheet, columns);
+                            dt = CreateDataTable(sheet, columns, errorMessages);
                             await SaveDailyOrder(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                     }
@@ -233,7 +233,7 @@ namespace FSAWebSystem.Controllers
         }
 
 
-        private DataTable CreateDataTable(ISheet sheet, List<string> columns)
+        private DataTable CreateDataTable(ISheet sheet, List<string> columns, List<string> errorMessage)
         {
 
             var dt = new DataTable();
@@ -242,19 +242,23 @@ namespace FSAWebSystem.Controllers
             {
                 dt.Columns.Add(column);
             }
-
+            var currentRow = 0;
+            var currentCol = 0;
             for (int row = 2; row <= sheet.LastRowNum; row++)
             {
+                currentRow = row + 1;
                 if (sheet.GetRow(row) == null || sheet.GetRow(row).Cells.All(cell => cell.CellType == CellType.Blank))
                 {
                     continue;
                 }
                 try
                 {
+                    
                     DataRow dr = dt.NewRow();
                     var sheetRow = sheet.GetRow(row);
                     for (int col = 0; col < sheetRow.LastCellNum; col++)
                     {
+                        currentCol = col+1;
                         var cell = sheetRow.GetCell(col);
                         if (cell != null)
                         {
@@ -278,7 +282,7 @@ namespace FSAWebSystem.Controllers
                 }
                 catch (Exception ex)
                 {
-
+                    errorMessage.Add(ex.Message + " on Column: " + currentCol + " and Row: " + currentRow);
                 }
             }
             return dt;
@@ -434,32 +438,40 @@ namespace FSAWebSystem.Controllers
             //List<ProductCategory> categories = _skuService.GetAllProductCategories().ToList();
 
             FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
-      
-            foreach (DataRow dr in dt.Rows)
+            var row = 0;
+            try
             {
-
-                //var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
-                //var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
-                var currentDate = DateTime.Now;
-    
-                var monthlyBucket = new MonthlyBucket
+                foreach (DataRow dr in dt.Rows)
                 {
-                    Id = Guid.NewGuid(),
-                    BannerName = dr["Banner"].ToString(),
-                    PlantCode = dr["Plant Code"].ToString(),
-                    PCMap = dr["PC Map"].ToString(),
-                    Price = Decimal.Parse(ConvertNumber(dr["Price"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint),
-                    PlantContribution = Decimal.Parse(ConvertNumber(dr["Plant Contribution"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint) * 100,
-                    RatingRate = Decimal.Parse(ConvertNumber(dr["Rating Rate"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint),
-                    TCT = Decimal.Parse(ConvertNumber(dr["Price"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint) * 100,
-                    MonthlyTarget = Decimal.Parse(ConvertNumber(dr["Monthly Target"].ToString()), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint) * 100,
-                    Month = currentDate.Month,
-                    Year = currentDate.Year,
-                    FSADocument = fsaDoc
-                };
-                
-                listMonthlyBucket.Add(monthlyBucket);
+                    row += 1;
+                    //var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
+                    //var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
+                    var currentDate = DateTime.Now;
+
+                    var monthlyBucket = new MonthlyBucket
+                    {
+                        Id = Guid.NewGuid(),
+                        BannerName = dr["Banner"].ToString(),
+                        PlantCode = dr["Plant Code"].ToString(),
+                        PCMap = dr["PC Map"].ToString(),
+                        Price = Decimal.Parse(ConvertNumber(dr["Price"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = ","}),
+                        PlantContribution = Decimal.Parse(ConvertNumber(dr["Plant Contribution"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }) * 100,
+                        RatingRate = Decimal.Parse(ConvertNumber(dr["Rating Rate"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        TCT = Decimal.Parse(ConvertNumber(dr["TCT"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }) * 100,
+                        MonthlyTarget = Decimal.Parse(ConvertNumber(dr["Monthly Target"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }) * 100,
+                        Month = currentDate.Month,
+                        Year = currentDate.Year, 
+                        FSADocument = fsaDoc
+                    };
+
+                    listMonthlyBucket.Add(monthlyBucket);
+                }
             }
+            catch (Exception ex)
+            {
+                errorMessages.Add(ex.Message);
+            }
+            
 
             ValidateMonthlyBucketExcel(listMonthlyBucket, errorMessages);
             if(!errorMessages.Any())
@@ -556,7 +568,7 @@ namespace FSAWebSystem.Controllers
                     BannerName = dr["Banner Name"].ToString(),
                     PlantCode = dr["Plant Code"].ToString(),
                     PCMap = dr["Material"].ToString(),
-                    DispatchConsume = Convert.ToDecimal(ConvertNumber(dr["Dispatch / Consume"].ToString())),
+                    DispatchConsume = Decimal.Parse(ConvertNumber(dr["Dispatch / Consume"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
                     Month = currentDate.Month,
                     Year = currentDate.Year
                 };
@@ -621,7 +633,7 @@ namespace FSAWebSystem.Controllers
                     BannerName = dr["Banner Name"].ToString(),
                     PlantCode = dr["Plant Code"].ToString(),
                     PCMap = dr["PC Map"].ToString(),
-                    ValidBJ = Convert.ToDecimal(ConvertNumber(dr["Valid Order + BJ"].ToString())),
+                    ValidBJ = Decimal.Parse(ConvertNumber(dr["Valid Order + BJ"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
                     Month = currentDate.Month,
                     Year = currentDate.Year
                 };

@@ -63,9 +63,17 @@ namespace FSAWebSystem.Models.Context
                 {
                     _db.UsersUnilever.Add(userUnilever);
                 }
+                try
+                {
+                    _db.SaveChanges();
+                    Console.WriteLine("Success");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+               
             }
-
-            _db.SaveChanges();
         }
 
         
