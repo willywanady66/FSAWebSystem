@@ -627,11 +627,11 @@ namespace FSAWebSystem.Controllers
                     }
                     else
                     {
+                        errorMessages.Add("Cannot Upload Weekly Dispatch on Week: " + calendarDetail.Week);
                         return;
                     }
                     totalDispatch = weeklyBucket.DispatchConsume * (savedWeeklyBucket.PlantContribution / 100);
                     currentWeekBucket = remainingBucket - totalDispatch;
-                    //PropertyInfo propertyInfo = savedWeeklyBucket.GetType().GetProperty("BucketWeek" + calendarDetail.Week.ToString());
                     savedWeeklyBucket.GetType().GetProperty("BucketWeek" + (calendarDetail.Week + 2).ToString()).SetValue(savedWeeklyBucket, currentWeekBucket);
                 }
             }
