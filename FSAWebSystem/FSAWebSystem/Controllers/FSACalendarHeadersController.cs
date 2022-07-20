@@ -126,8 +126,17 @@ namespace FSAWebSystem.Controllers
             {
                 return NotFound();
             }
+            ViewData["ListMonth"] = _calendarService.GetListMonth();
+            ViewData["ListYear"] = _calendarService.GetListYear();
 
-            var fSACalendarHeader = await _db.FSACalendarHeader.FindAsync(id);
+            var months = (List<SelectListItem>)ViewData["ListMonth"];
+            var years = (List<SelectListItem>)ViewData["ListYear"];
+            var currentDate = DateTime.Now;
+            months.Single(x => x.Value == currentDate.Month.ToString()).Selected = true;
+            years.Single(x => x.Value == currentDate.Year.ToString()).Selected = true;
+    
+
+            var fSACalendarHeader = await _calendarService.GetFSACalendarHeader(currentDate.Month, currentDate.Year);
             if (fSACalendarHeader == null)
             {
                 return NotFound();
@@ -140,8 +149,12 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Month,Year,CreatedAt,CreatedBy,ModifiedAt,ModifiedBy")] FSACalendarHeader fSACalendarHeader)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Month,Year, FSACalendarDetails")] FSACalendarHeader fSACalendarHeader)
         {
+            ModelState.Remove("Month");
+            ViewData["ListMonth"] = _calendarService.GetListMonth();
+            ViewData["ListYear"] = _calendarService.GetListYear();
+
             if (id != fSACalendarHeader.Id)
             {
                 return NotFound();
@@ -149,9 +162,35 @@ namespace FSAWebSystem.Controllers
 
             if (ModelState.IsValid)
             {
+                var savedCalendar = await _calendarService.GetFSACalendarById(id);
+                var allWeekHasValue = fSACalendarHeader.FSACalendarDetails.Where(x => x.Week != 5).All(x => x.StartDate.HasValue && x.EndDate.HasValue);
+                var week5HasValue = fSACalendarHeader.FSACalendarDetails.Where(x => x.Week == 5).All(x => x.StartDate.HasValue && x.EndDate.HasValue);
+                if (!allWeekHasValue)
+                {
+                    ModelState.AddModelError("", "Week 1 to Week 4 must be filled");
+                    return View(fSACalendarHeader);
+                }
+
+
+                var isStartDateLessEndDate = fSACalendarHeader.FSACalendarDetails.Where(x => (x.StartDate.HasValue && x.EndDate.HasValue)).All(x => x.StartDate?.Date < x.EndDate?.Date);
+                if (!isStartDateLessEndDate)
+                {
+                    ModelState.AddModelError("", "Start Date must be less than End Date");
+                    return View(fSACalendarHeader);
+                }
+
                 try
                 {
-                    _db.Update(fSACalendarHeader);
+                    savedCalendar.ModifiedBy = User.Identity.Name;
+                    savedCalendar.ModifiedAt = DateTime.Now;
+
+                    foreach(var savedDetail in savedCalendar.FSACalendarDetails)
+                    {
+                        savedDetail.StartDate = fSACalendarHeader.FSACalendarDetails.Single(x => x.Id == savedDetail.Id).StartDate;
+                        savedDetail.EndDate = fSACalendarHeader.FSACalendarDetails.Single(x => x.Id == savedDetail.Id).EndDate;
+                    }
+
+                    _calendarService.UpdateCalendar(savedCalendar);
                     await _db.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -165,7 +204,7 @@ namespace FSAWebSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Admin");
             }
             return View(fSACalendarHeader);
         }

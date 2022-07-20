@@ -113,9 +113,9 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var userUnilever = await _userService.GetUserByEmail(Input.Email);
-                if(userUnilever != null)
+                if (userUnilever != null)
                 {
-                    if(userUnilever.IsActive)
+                    if (userUnilever.IsActive)
                     {
                         var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
@@ -140,10 +140,8 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
                         }
                     }
                 }
-  
-                    ModelState.AddModelError(string.Empty, "User Not Found!");
-                    return Page();
-               
+                ModelState.AddModelError(string.Empty, "User Not Found!");
+                return Page();
             }
 
             // If we got this far, something failed, redisplay form

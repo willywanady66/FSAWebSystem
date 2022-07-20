@@ -12,17 +12,17 @@
 <h4>FSACalendarHeader</h4>
 <hr />
 <div class="row">
-	<div class="col-md-6">
+	<div class="col-sm-12 col-md-8 col-lg-6">
 		<form asp-action="Create">
 			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 			<div class="form-group">
 				<label asp-for="Month" class="control-label"></label>
-				<select class="form-control form-select" id="dropDownListRoles" name="month" asp-items=@listMonths></select>
+				<select class="form-control form-select" id="dropDownListMonths" name="Month" asp-items=@listMonths></select>
 				<span asp-validation-for="Month" class="text-danger"></span>
 			</div>
 			<div class="form-group">
 				<label asp-for="Year" class="control-label"></label>
-				<select class="form-control form-select" id="dropDownListRoles" name="year" asp-items=@listYears></select>
+				<select class="form-control form-select" id="dropDownListYears" name="Year" asp-items=@listYears></select>
 				<span asp-validation-for="Year" class="text-danger"></span>
 			</div>
 			<div class="form-group">
@@ -57,9 +57,5 @@
 			</div>
 		</form>
 	</div>
-</div>
-
-<div>
-	<a asp-action="Index">Back to List</a>
 </div>
 

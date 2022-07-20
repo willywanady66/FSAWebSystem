@@ -17,9 +17,14 @@ namespace FSAWebSystem.Services
             _db = db;
         }
 
-		public async Task AddCalendar(FSACalendarHeader fsaCalendar)
-		{
-           await _db.AddAsync(fsaCalendar);
+        public async Task AddCalendar(FSACalendarHeader fsaCalendar)
+        {
+            await _db.AddAsync(fsaCalendar);
+        }
+
+        public void UpdateCalendar(FSACalendarHeader fSACalendar)
+        {
+            _db.Update(fSACalendar);
         }
 
         public async Task<FSACalendarDetail> GetCalendarDetail(DateTime date)
@@ -31,6 +36,12 @@ namespace FSAWebSystem.Services
         public async Task<FSACalendarHeader> GetFSACalendarHeader(int month, int year)
         {
             var fsaCalendar = await _db.FSACalendarHeader.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Month == month && x.Year == year);
+            return fsaCalendar;
+        }
+
+        public async Task<FSACalendarHeader> GetFSACalendarById(Guid id)
+        {
+            var fsaCalendar = await _db.FSACalendarHeader.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Id == id);
             return fsaCalendar;
         }
 
@@ -60,5 +71,12 @@ namespace FSAWebSystem.Services
             listYears.Single(x => x.Value == DateTime.Now.Year.ToString()).Selected = true;
             return listYears;
 		}
+
+        public List<int> GetListYear2()
+        {
+            var thisYear = DateTime.Now.Year;
+            var years = Enumerable.Range(thisYear - 2, 5).ToList();
+            return years;
+        }
 	}
 }
