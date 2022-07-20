@@ -613,15 +613,15 @@ namespace FSAWebSystem.Controllers
                     var currentWeekBucket = decimal.Zero;
                     var remainingBucket = decimal.Zero;
                     var totalDispatch = decimal.Zero;
-                    if(calendarDetail.Week == 3)
+                    if(calendarDetail.Week == 1)
                     {
                         remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek1;
                     }
-                    else if(calendarDetail.Week == 4)
+                    else if(calendarDetail.Week == 2)
                     {
                         remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek2;
                     }
-                    else if(calendarDetail.Week == 5)
+                    else if(calendarDetail.Week == 3)
                     {
                         remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek3;
                     }
@@ -629,10 +629,10 @@ namespace FSAWebSystem.Controllers
                     {
                         return;
                     }
-                    totalDispatch = savedWeeklyBucket.DispatchConsume * (savedWeeklyBucket.PlantContribution / 100);
+                    totalDispatch = weeklyBucket.DispatchConsume * (savedWeeklyBucket.PlantContribution / 100);
                     currentWeekBucket = remainingBucket - totalDispatch;
                     //PropertyInfo propertyInfo = savedWeeklyBucket.GetType().GetProperty("BucketWeek" + calendarDetail.Week.ToString());
-                    savedWeeklyBucket.GetType().GetProperty("BucketWeek3").SetValue(savedWeeklyBucket, currentWeekBucket);
+                    savedWeeklyBucket.GetType().GetProperty("BucketWeek" + (calendarDetail.Week + 2).ToString()).SetValue(savedWeeklyBucket, currentWeekBucket);
                 }
             }
         }
@@ -747,6 +747,7 @@ namespace FSAWebSystem.Controllers
             {
                 errorMessages.Add("Please fill all PCMap and BannerName column");
             }
+            var z = _bucketService.GetMonthlyBucket().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId }).ToList();
 
             var bannersNotExist = (from weeklyBucket in listWeeklyBucket
                                          where!(
@@ -770,7 +771,7 @@ namespace FSAWebSystem.Controllers
 
             var skusNotExist = (from weeklyBucket in listWeeklyBucket
                                    where !(
-                                   from monthlyBucket in _bucketService.GetMonthlyBucket().AsEnumerable().DistinctBy(x => x.BannerId)
+                                   from monthlyBucket in _bucketService.GetMonthlyBucket().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId } )
                                    join sku in _skuService.GetAllProducts().AsEnumerable() on monthlyBucket.SKUId equals sku.Id
                                    select new
                                    {

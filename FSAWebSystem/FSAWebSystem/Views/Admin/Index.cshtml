@@ -185,7 +185,7 @@
 											<td>@Html.DisplayFor(Model => Model.FSACalendar.Month)</td>
 											@if(detail.Week == 1)
 											{
-												<td class="text-center align-middle" rowspan="@Model.FSACalendar.FSACalendarDetails.Count"><a asp-action="Edit" asp-controller="Banners" asp-route-id="@Model.FSACalendar.Id"><i class="fas fa-pen"></i></a></td>
+												<td class="text-center align-middle" rowspan="@Model.FSACalendar.FSACalendarDetails.Count"><a asp-action="Edit" asp-controller="FSACalendar" asp-route-id="@Model.FSACalendar.Id"><i class="fas fa-pen"></i></a></td>
 											}
 										</tr>
 									}
