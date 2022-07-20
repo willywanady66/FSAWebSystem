@@ -323,6 +323,21 @@ namespace FSAWebSystem.Controllers
                             savedUser.ModifiedBy = loggedUser;
                             savedUser.FSADocumentId = fSADocument.Id;
                         }
+                        var savedUserLogin = await _userManager.FindByEmailAsync(savedUser.Email);
+                        if(!string.IsNullOrEmpty(user.Password))
+                        {
+                            foreach(var validator in _userManager.PasswordValidators)
+                            {
+                                var result = await validator.ValidateAsync(_userManager, savedUserLogin, user.Password);
+                                if(!result.Succeeded)
+                                {
+                                    foreach(var error in result.Errors)
+                                    {
+                                        errorMessage.Add(error.Description);
+                                    }
+                                }
+                            }
+                        }
                     }
                     else
                     {
@@ -333,6 +348,11 @@ namespace FSAWebSystem.Controllers
                         user.FSADocumentId = fSADocument.Id;
                         usersToAdd.Add(user);
                     }
+                }
+
+                if (errorMessage.Any())
+                {
+                    return;
                 }
 
                 foreach(var user in usersToAdd)
@@ -852,7 +872,7 @@ namespace FSAWebSystem.Controllers
                     //roles = _roleService.GetAllRoles().AsEnumerable();
                     columnToCheck.Add("Email");
                     columnToCheck.Add("Name");
-                    columnToCheck.Add("Password");
+                    //columnToCheck.Add("Password");
                     columnToCheck.Add("Role");
                     break;
             }
@@ -871,7 +891,6 @@ namespace FSAWebSystem.Controllers
                     {
                         errorMessages.Add(col + " cannot by empty on " + mainColumn + ": " + x);
                     });
-                   
                 }
             }
    

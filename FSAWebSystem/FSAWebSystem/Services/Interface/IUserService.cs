@@ -1,4 +1,6 @@
-﻿using FSAWebSystem.Models;
+﻿using FSAWebSystem.Areas.Identity.Data;
+using FSAWebSystem.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace FSAWebSystem.Services.Interface
 {
@@ -11,5 +13,7 @@ namespace FSAWebSystem.Services.Interface
         public Task<UserUnilever> Update(UserUnilever user, string loggedUser);
 
         public Task<List<Banner>> GetUserBanners (Guid id);
+
+        public Task<UserUnilever> CreateUser(string name, string email, string password, string[] bannerIds, string roleId, string loggedUser, IUserStore<FSAWebSystemUser> userStore, IUserEmailStore<FSAWebSystemUser> _emailStore);
     }
 }

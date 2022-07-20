@@ -24,7 +24,7 @@ builder.Services.AddDefaultIdentity<FSAWebSystemUser>(options => {
 builder.Services.AddSession(options => {
     options.IdleTimeout = TimeSpan.FromMinutes(10);//You can set Time   
 });
-    
+
 builder.Services.AddScoped<IUploadDocumentService, UploadDocumentService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IUserService, UserService>();

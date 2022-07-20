@@ -54,6 +54,7 @@
 								@*<th>Date Added</th>*@
 								<th>User Roles</th>
 								<th>Banner</th>
+								<th>Status</th>
 								<th>Action</th>
 							</tr>
 						</thead>
@@ -66,6 +67,7 @@
 									@*<td>@Html.DisplayFor(Model => user.CreatedAt)</td>*@
 									<td>@Html.DisplayFor(Model => user.RoleUnilever.RoleName)</td>
 									<td>@Html.DisplayFor(Model => user.BannerName)</td>
+									<td>@(@user.IsActive ? "Active" : "Non-Active")</td>
 									<td class="text-center"><a asp-action="Edit" asp-controller="UserUnilevers" asp-route-id="@user.UserId"><i class="fas fa-pen"></i></a></td>
 								</tr>
 							}

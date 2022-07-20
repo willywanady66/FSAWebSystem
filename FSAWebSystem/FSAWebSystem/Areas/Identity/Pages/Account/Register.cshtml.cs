@@ -25,6 +25,7 @@ using FSAWebSystem.Services.Interface;
 using FSAWebSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using AspNetCoreHero.ToastNotification.Abstractions;
 
 namespace FSAWebSystem.Areas.Identity.Pages.Account
 {
@@ -39,13 +40,15 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
         private readonly FSAWebSystemDbContext _db;
         private readonly IBannerService _bannerService;
         private readonly IRoleService _roleService;
+        private readonly IUserService _userService;
+        private readonly INotyfService _notyfService;
         public RegisterModel(
             UserManager<FSAWebSystemUser> userManager,
             IUserStore<FSAWebSystemUser> userStore,
             SignInManager<FSAWebSystemUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            FSAWebSystemDbContext db, IBannerService bannerService, IRoleService roleService)
+            FSAWebSystemDbContext db, IBannerService bannerService, IRoleService roleService, IUserService userService, INotyfService notyfService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -56,7 +59,8 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             _db = db;
             _bannerService = bannerService;
             _roleService = roleService;
-
+            _userService = userService;
+            _notyfService = notyfService;
         }
 
         /// <summary>
@@ -137,77 +141,23 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string[] bannerIds, string roleId, string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (ModelState.IsValid)
             {
-                var selectedBannerIds = bannerIds.Select(x => Guid.Parse(x)).ToList();
-                var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerIds.Contains(x.Id)).ToList();
-                var userUnilever = new UserUnilever
-                {
-                    Name = Input.Name,
-                    Email = Input.Email,
-                    //Password = Input.Password,
-                    Id = Guid.NewGuid(),
-                    CreatedAt = DateTime.Now,
-                    CreatedBy = User.Identity.Name,
-                    RoleUnilever = await _roleService.GetRole(Guid.Parse(roleId)),
-                    Banners = selectedBanners
-                };
-
-                var user = CreateUser();
-                user.UserUnileverId = userUnilever.Id;
-                user.Role = userUnilever.RoleUnilever.RoleName;
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                
-
-
-                var result = await _userManager.CreateAsync(user, Input.Password);
-                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("Role", userUnilever.RoleUnilever.RoleName));
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User created a new account with password.");
-
-                    var userId = await _userManager.GetUserIdAsync(user);
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-
-                  
-
-                   
-
-                    _db.UsersUnilever.Add(userUnilever);
-                   await _db.SaveChangesAsync();
-
-                }
-                foreach (var error in result.Errors)
+                var userUnilever = await _userService.CreateUser(Input.Name, Input.Email, Input.Password, bannerIds, roleId, User.Identity.Name, _userStore, _emailStore);
+                foreach (var error in userUnilever.Message)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                     await FillDropdowns(ViewData);
                     return Page();
                 }
+                _notyfService.Success("User " + userUnilever.Name + " successfully added");
+                return RedirectToAction("Index", "Admin");
             }
             else
             {
                 await FillDropdowns(ViewData);
                 return Page();
-            }
-
-            // If we got this far, something failed, redisplay form
-            return RedirectToAction("Index","Admin");
-        }
-
-        private FSAWebSystemUser CreateUser()
-        {
-            try
-            {
-                return Activator.CreateInstance<FSAWebSystemUser>();
-            }
-            catch
-            {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(User)}'. " +
-                    $"Ensure that '{nameof(User)}' is not an abstract class and has a parameterless constructor, or alternatively " +
-                    $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
             }
         }
 

@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using FSAWebSystem.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FSAWebSystem.Services
 {
@@ -11,11 +12,19 @@ namespace FSAWebSystem.Services
     {
         public FSAWebSystemDbContext _db;
         private readonly UserManager<FSAWebSystemUser> _userManager;
+        //private readonly IUserStore<FSAWebSystemUser> _userStore;
+        //private readonly IUserEmailStore<FSAWebSystemUser> _emailStore;
+        private readonly IBannerService _bannerService;
+        private readonly IRoleService _roleService;
 
-        public UserService(FSAWebSystemDbContext db, UserManager<FSAWebSystemUser> userManager)
+
+        public UserService(FSAWebSystemDbContext db, UserManager<FSAWebSystemUser> userManager, IBannerService bannerService, IRoleService roleService)
 		{
 			_db = db;
 			_userManager = userManager;
+            _bannerService = bannerService;
+            _roleService = roleService;
+
 		}
 
 		public async Task<List<UserUnilever>> GetAllUsers()
@@ -66,6 +75,43 @@ namespace FSAWebSystem.Services
             _db.UsersUnilever.Update(user);
             await _db.SaveChangesAsync();
             return user;
+        }
+
+
+        public async Task<UserUnilever> CreateUser(string name, string email, string password, string[] bannerIds, string roleId, string loggedUser, IUserStore<FSAWebSystemUser> _userStore, IUserEmailStore<FSAWebSystemUser> _emailStore)
+        {
+            var selectedBannerIds = bannerIds.Select(x => Guid.Parse(x)).ToList();
+            var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerIds.Contains(x.Id)).ToList();
+            var userUnilever = new UserUnilever
+            {
+                Name = name,
+                Email = email,
+                //Password = Input.Password,
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.Now,
+                CreatedBy = loggedUser,
+                RoleUnilever = await _roleService.GetRole(Guid.Parse(roleId)),
+                Banners = selectedBanners
+            };
+
+            var user = Activator.CreateInstance<FSAWebSystemUser>();
+            user.UserUnileverId = userUnilever.Id;
+            user.Role = userUnilever.RoleUnilever.RoleName;
+            await _userStore.SetUserNameAsync(user, email, CancellationToken.None);
+            await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
+
+            var result = await _userManager.CreateAsync(user, password);
+            await _userManager.AddClaimAsync(user, new Claim("Role", userUnilever.RoleUnilever.RoleName));
+            if (result.Succeeded)
+            {
+                _db.UsersUnilever.Add(userUnilever);
+                await _db.SaveChangesAsync();
+            }
+            else
+            {
+                userUnilever.Message = result.Errors;
+            }
+            return userUnilever;
         }
     }
 }

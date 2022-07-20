@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -28,5 +29,7 @@ namespace FSAWebSystem.Models
 		public string Role { get; set; }
 		[NotMapped]
 		public string UserId { get; set; }
+        [NotMapped]
+        public IEnumerable<IdentityError> Message { get; set; }
 	}
 }
