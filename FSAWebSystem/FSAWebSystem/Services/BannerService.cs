@@ -42,6 +42,46 @@ namespace FSAWebSystem.Services
             return _db.Banners.Where(x => x.IsActive);
         }
 
+        public async Task<BannerPagingData> GetBannerPagination(DataTableParam param)
+        {
+            var banners = _db.Banners.AsQueryable();
+            if (!string.IsNullOrEmpty(param.search.value))
+            {
+                var search = param.search.value.ToLower();
+                banners = banners.Where(x => x.BannerName.ToLower().Contains(search) || x.Trade.ToLower().Contains(search) || x.PlantCode.ToLower().Contains(search) || x.PlantName.ToLower().Contains(search));
+            }
+
+            if (param.order.Any())
+            {
+                var order = param.order[0];
+                switch (order.column)
+                {
+                    case 0:
+                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.Trade) : banners.OrderBy(x => x.Trade);
+                        break;
+                    case 1:
+                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.BannerName) : banners.OrderBy(x => x.BannerName);
+                        break;
+                    case 2:
+                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.PlantCode) : banners.OrderBy(x => x.PlantCode);
+                        break;
+                    case 3:
+                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.PlantName) : banners.OrderBy(x => x.PlantName);
+                        break;
+                    
+                }
+            }
+
+
+            var totalCount = banners.Count();
+            var listBanner = await banners.Skip(param.start).Take(param.length).ToListAsync();
+            return new BannerPagingData
+            {
+                totalRecord = totalCount,
+                banners = listBanner
+            };
+        }
+
         public IQueryable<Banner> GetAllBanner()
         {
             return _db.Banners;

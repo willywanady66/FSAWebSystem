@@ -36,7 +36,7 @@ namespace FSAWebSystem.Controllers
         public async Task<IActionResult> Index()
         {
             var currentDate = DateTime.Now;
-            List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
+            //List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
             var listDocumentUpload = Enum.GetValues(typeof(DocumentUpload)).Cast<DocumentUpload>().Select(x => new SelectListItem { Text = UploadDocumentService.GetEnumDesc(x), Value = ((int) x).ToString() }).ToList();
             //List<UserUnilever> listUsers = await _userService.GetAllUsers();
     //         foreach(var user in listUsers)
@@ -53,16 +53,16 @@ namespace FSAWebSystem.Controllers
     //        }
             
             List<RoleUnilever> listRoles = await _roleServices.GetAllRoles().ToListAsync();
-            List<ProductCategory> listCategory = await _skuService.GetAllProductCategories().ToListAsync();
-            List<SKU> listSKU = await _skuService.GetAllProducts().ToListAsync();
+            //List<ProductCategory> listCategory = await _skuService.GetAllProductCategories().ToListAsync();
+            //List<SKU> listSKU = await _skuService.GetAllProducts().ToListAsync();
             FSACalendarHeader fsaCalendar = await _calendarService.GetFSACalendarHeader(currentDate.Month, currentDate.Year);
             AdminModel model = new AdminModel
             {
                 //Users = listUsers,
-                Banners = listBanners,
+                //Banners = listBanners,
                 Roles = listRoles,
-                SKUs = listSKU,
-                Categories = listCategory,
+                //SKUs = listSKU,
+                //Categories = listCategory,
                 DocumentUploads = listDocumentUpload,
                 LoggedUser = User.Identity.Name,
                 FSACalendar = fsaCalendar
@@ -73,7 +73,6 @@ namespace FSAWebSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> GetUserPagination(DataTableParam param)
         {
-            var listData = Json(new { });
             List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
             var data = await _userService.GetAllUsersPagination(param);
 
@@ -88,7 +87,7 @@ namespace FSAWebSystem.Controllers
                     user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
                 }
             }
-            listData = Json(new 
+            var listData = Json(new 
             {
                 draw = param.draw,
                 recordsTotal = data.totalRecord,
@@ -99,7 +98,48 @@ namespace FSAWebSystem.Controllers
             return listData;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> GetBannerPagination(DataTableParam param)
+        {
+      
+            var data = await _bannerService.GetBannerPagination(param);
+            var listData = Json(new
+            {
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.banners
+            });
+            return listData;   
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> GetCategoryPagination(DataTableParam param)
+        {
+            var data = await _skuService.GetCategoryPagination(param);
+            var listData = Json(new
+            {
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.categories
+            });
+            return listData;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetSKUPagination(DataTableParam param)
+        {
+            var data = await _skuService.GetSKUPagination(param);
+            var listData = Json(new
+            {
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.skus
+            });
+            return listData;
+        }
 
             [Authorize]
         public async Task<IActionResult> UploadDocument(IFormFile excelDocument, string document)

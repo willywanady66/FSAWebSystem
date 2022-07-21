@@ -51,11 +51,12 @@
 							<tr>
 								<th>Name</th>
 								<th>Email</th>
-								@*<th>Date Added</th>*@
 								<th>User Roles</th>
 								<th>Banner</th>
 								<th>Status</th>
 								<th>Action</th>
+								<th class="hide_column">Id</th>
+								<th class="hide_column">UserId</th>
 							</tr>
 						</thead>
 						
@@ -261,7 +262,7 @@
 								<th class="text-center">Action</th>
 							</tr>
 						</thead>
-						<tbody>
+@*						<tbody>
 							@foreach (var banner in Model.Banners)
 							{
 								<tr>
@@ -272,7 +273,7 @@
 									<td class="text-center"><a asp-action="Delete" asp-controller="Banners" asp-route-id="@banner.Id"><i class="fas fa-trash"></i></a></td>
 								</tr>
 							}
-						</tbody>
+						</tbody>*@
 					</table>
 				</div>
 			</div>
@@ -293,7 +294,7 @@
 								<th>Category</th>
 							</tr>
 						</thead>
-						<tbody>
+					@*	<tbody>
 							@if (Model.SKUs != null)
 							{
 								@foreach (var sku in Model.SKUs)
@@ -305,7 +306,7 @@
 									</tr>
 								}
 							}
-						</tbody>
+						</tbody>*@
 					</table>
 				</div>
 			</div>
@@ -327,7 +328,7 @@
 								<th>Category</th>
 							</tr>
 						</thead>
-						<tbody>
+@*						<tbody>
 							@if (Model.Categories != null)
 							{
 								@foreach (var category in Model.Categories.Select((categ, index) => new { categ.CategoryProduct, Index = index + 1 }))
@@ -338,7 +339,7 @@
 									</tr>
 								}
 							}
-						</tbody>
+						</tbody>*@
 					</table>
 				</div>
 			</div>

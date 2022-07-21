@@ -400,7 +400,7 @@ namespace FSAWebSystem.Controllers
             {
                 var savedCategory = _skuService.GetAllProductCategories() as IEnumerable<ProductCategory>;
 
-                var categoryFromExcel = listSKU.Select(x => x.Category).Distinct().ToList();
+                var categoryFromExcel = listSKU.Select(x => x.Category).Distinct();
 
                 var categoryToAdd = categoryFromExcel.Where(x => !savedCategory.Select(y => y.CategoryProduct).ToList().Contains(x)).ToList();
 
@@ -408,6 +408,14 @@ namespace FSAWebSystem.Controllers
                                                              select category).Select(x => new ProductCategory { Id = Guid.NewGuid(), CategoryProduct = x, CreatedAt = DateTime.Now, CreatedBy = loggedUser, FSADocumentId = fsaDoc.Id }).AsEnumerable();
 
                 listCategory = !listCategory.Any() ? savedCategory : listCategory;
+
+                if (categoryToAdd.Any())
+                {
+                    await _skuService.SaveProductCategories(listCategory.ToList());
+                }
+                _db.SaveChanges();
+
+                savedCategory = _skuService.GetAllProductCategories() as IEnumerable<ProductCategory>;
 
                 List<SKU> skuToAdd = new List<SKU>();
                 foreach (var sku in listSKU)
@@ -430,20 +438,21 @@ namespace FSAWebSystem.Controllers
                         sku.Id = Guid.NewGuid();
                         sku.CreatedAt = DateTime.Now;
                         sku.CreatedBy = loggedUser;
-                        var category = listCategory.Single(x => x.CategoryProduct == sku.Category);
+                        var category = savedCategory.Single(x => x.CategoryProduct == sku.Category);
                         sku.ProductCategory = category;
                         sku.FSADocumentId = fsaDoc.Id;
+                        
                         skuToAdd.Add(sku);
                     }
                 }
-
+               
                 await _uploadDocService.SaveDocument(fsaDoc);
-                if (categoryToAdd.Any())
-                {
-                    await _skuService.SaveProductCategories(listCategory.ToList());
-                }
 
+               
                 await _skuService.SaveSKUs(skuToAdd);
+       
+
+                
             }
 
 

@@ -29,7 +29,9 @@ namespace FSAWebSystem.Models
 		public string Role { get; set; }
 		[NotMapped]
 		public string UserId { get; set; }
-        [NotMapped]
+		[NotMapped]
+		public string Status { get; set; }
+		[NotMapped]
         public IEnumerable<IdentityError> Message { get; set; }
 	}
 }

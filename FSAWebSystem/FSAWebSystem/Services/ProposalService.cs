@@ -82,43 +82,43 @@ namespace FSAWebSystem.Services
                 var search = param.search.value.ToLower();
                 proposals = proposals.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search));
             }
-            if(param.order.Any())
-            {
-                var order = param.order[0];
-                switch (order.column)
+                if(param.order.Any())
                 {
-                    case 0:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.BannerName) : proposals.OrderBy(x => x.BannerName);
-                        break;
-                    case 1:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PlantName) : proposals.OrderBy(x => x.PlantName);
-                        break;
-                    case 2:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PCMap) : proposals.OrderBy(x => x.PCMap);
-                        break;
-                    case 3:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.DescriptionMap) : proposals.OrderBy(x => x.DescriptionMap);
-                        break;
-                    case 4:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RatingRate) : proposals.OrderBy(x => x.RatingRate);
-                        break;
-                    case 5:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.MonthlyBucket) : proposals.OrderBy(x => x.MonthlyBucket);
-                        break;
-                    case 6:
-                        proposals = (order.dir == "desc" ? proposals.AsEnumerable().OrderByDescending(x => x.CurrentBucket).AsQueryable() : proposals.AsEnumerable().OrderBy(x => x.CurrentBucket).AsQueryable());
-                        break;
-                    case 7:
-                        proposals = (order.dir == "desc" ? proposals.AsEnumerable().OrderByDescending(x => x.NextBucket).AsQueryable() : proposals.AsEnumerable().OrderBy(x => x.NextBucket).AsQueryable());
-                        break;
-                    case 8:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.ValidBJ) : proposals.OrderBy(x => x.ValidBJ);
-                        break;
-                    case 9:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RemFSA) : proposals.OrderBy(x => x.RemFSA);
-                        break;
+                    var order = param.order[0];
+                    switch (order.column)
+                    {
+                        case 0:
+                            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.BannerName) : proposals.OrderBy(x => x.BannerName);
+                            break;
+                        case 1:
+                            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PlantName) : proposals.OrderBy(x => x.PlantName);
+                            break;
+                        case 2:
+                            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PCMap) : proposals.OrderBy(x => x.PCMap);
+                            break;
+                        case 3:
+                            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.DescriptionMap) : proposals.OrderBy(x => x.DescriptionMap);
+                            break;
+                        case 4:
+                            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RatingRate) : proposals.OrderBy(x => x.RatingRate);
+                            break;
+                        case 5:
+                            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.MonthlyBucket) : proposals.OrderBy(x => x.MonthlyBucket);
+                            break;
+                        case 6:
+                            proposals = (order.dir == "desc" ? proposals.AsEnumerable().OrderByDescending(x => x.CurrentBucket).AsQueryable() : proposals.AsEnumerable().OrderBy(x => x.CurrentBucket).AsQueryable());
+                            break;
+                        case 7:
+                            proposals = (order.dir == "desc" ? proposals.AsEnumerable().OrderByDescending(x => x.NextBucket).AsQueryable() : proposals.AsEnumerable().OrderBy(x => x.NextBucket).AsQueryable());
+                            break;
+                        case 8:
+                            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.ValidBJ) : proposals.OrderBy(x => x.ValidBJ);
+                            break;
+                        case 9:
+                            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RemFSA) : proposals.OrderBy(x => x.RemFSA);
+                            break;
+                    }
                 }
-            }
          
 
             var totalCount = proposals.Count();
@@ -129,6 +129,16 @@ namespace FSAWebSystem.Services
                 totalRecord = totalCount,
                 proposals = listProposal
             };
+        }
+
+        public async Task<bool> IsProposalExist(FSACalendarDetail fsaDetail)
+        {
+            return await _db.Proposals.AnyAsync(x => x.Week == fsaDetail.Week && x.Month == fsaDetail.Month && x.Year == fsaDetail.Year);
+        }
+
+        public async Task SaveProposals(List<Proposal> listProposal)
+        {
+            await _db.AddRangeAsync(listProposal);
         }
     }
 }

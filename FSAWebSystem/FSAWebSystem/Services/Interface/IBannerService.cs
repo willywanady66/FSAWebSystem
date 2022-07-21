@@ -1,4 +1,5 @@
 ﻿using FSAWebSystem.Models;
+using FSAWebSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace FSAWebSystem.Services.Interface
@@ -6,6 +7,7 @@ namespace FSAWebSystem.Services.Interface
     public interface IBannerService
     {
         public IQueryable<Banner> GetAllBanner();
+        public Task<BannerPagingData> GetBannerPagination(DataTableParam param);
         public IQueryable<Banner> GetAllActiveBanner();
         public Task<Banner> GetBanner(Guid id);
         public Task<Banner> SaveBanner(Banner banner, string user);

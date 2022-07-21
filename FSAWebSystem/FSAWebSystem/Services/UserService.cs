@@ -39,6 +39,7 @@ namespace FSAWebSystem.Services
                              Banners = userUnilever.Banners,
                              RoleUnilever = userUnilever.RoleUnilever,
                              IsActive = userUnilever.IsActive,
+                             Status = userUnilever.IsActive ? "Active" : "Non-Active",
                              Name = userUnilever.Name,
                              Email = userUnilever.Email,
                          }).ToListAsync();
@@ -55,7 +56,9 @@ namespace FSAWebSystem.Services
                              Id = userUnilever.Id,
                              Banners = userUnilever.Banners,
                              RoleUnilever = userUnilever.RoleUnilever,
+                             Role = userUnilever.RoleUnilever.RoleName,
                              IsActive = userUnilever.IsActive,
+                             Status = userUnilever.IsActive ? "Active" : "Non-Active",
                              Name = userUnilever.Name,
                              Email = userUnilever.Email,
                          });

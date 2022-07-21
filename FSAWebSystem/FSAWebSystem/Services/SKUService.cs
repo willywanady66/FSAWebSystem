@@ -1,5 +1,6 @@
 ﻿using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
+using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +26,47 @@ namespace FSAWebSystem.Services
 			return await _db.SKUs.SingleOrDefaultAsync(x => x.PCMap == pcMap);
         }
 
+		public async Task<SKUPagingData> GetSKUPagination(DataTableParam param)
+        {
+            //var skus = _db.SKUs.Include(x => x.ProductCategory).AsQueryable();
+            var skus = (from sku in _db.SKUs.Include(x => x.ProductCategory)
+                        select new SKU
+                        {
+                            PCMap = sku.PCMap,
+                            DescriptionMap = sku.DescriptionMap,
+                            Category = sku.ProductCategory.CategoryProduct
+                        });
+			if (!string.IsNullOrEmpty(param.search.value))
+			{
+				var search = param.search.value.ToLower();
+				skus = skus.Where(x => x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search) || x.Category.ToLower().Contains(search));
+			}
+
+            if (param.order.Any())
+            {
+                var order = param.order[0];
+                switch (order.column)
+                {
+                    case 0:
+                        skus = order.dir == "desc" ? skus.OrderByDescending(x => x.PCMap) : skus.OrderBy(x => x.PCMap);
+                        break;
+                    case 1:
+                        skus = order.dir == "desc" ? skus.OrderByDescending(x => x.DescriptionMap) : skus.OrderBy(x => x.DescriptionMap);
+                        break;
+                    case 2:
+                        skus = order.dir == "desc" ? skus.OrderByDescending(x => x.Category) : skus.OrderBy(x => x.Category);
+                        break;
+                }
+            }
+
+            var totalCount = skus.Count();
+            var listSKU = await skus.Skip(param.start).Take(param.length).ToListAsync();
+            return new SKUPagingData
+            {
+                totalRecord = totalCount,
+                skus = listSKU
+            };
+        }
 
 		public  IQueryable<ProductCategory> GetAllProductCategories()
 		{
@@ -41,7 +83,34 @@ namespace FSAWebSystem.Services
 			await _db.AddRangeAsync(listSKUs);
         }
 
-       
+        public async Task<CategoryPagingData> GetCategoryPagination(DataTableParam param)
+        {
+            var categories = _db.ProductCategories.AsQueryable();
+            if (!string.IsNullOrEmpty(param.search.value))
+            {
+                var search = param.search.value.ToLower();
+                categories = categories.Where(x => x.CategoryProduct.ToLower().Contains(search));
+            }
+
+            if (param.order.Any())
+            {
+                var order = param.order[0];
+                switch (order.column)
+                {
+                    case 1:
+                        categories = order.dir == "desc" ? categories.OrderByDescending(x => x.CategoryProduct) : categories.OrderBy(x => x.CategoryProduct);
+                        break;
+                }
+            }
+
+            var totalCount = categories.Count();
+            var listCategory = await categories.Skip(param.start).Take(param.length).ToListAsync();
+            return new CategoryPagingData
+            {
+                totalRecord = totalCount,
+                categories = listCategory
+            };
+        }
     }
 }
 	 

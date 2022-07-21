@@ -131,13 +131,16 @@
 
     $('#submitProposalBtn').click(function () {
         let proposals = getUserInput(proposalInputs);
+        //$('#submitProposalModal').modal('hide'); 
+        //$("#submitProposalModal").modal("hide");
         $.ajax({
             type: "POST",
             url: "Proposals/SaveProposal",
             data: { "proposals": proposals },
             success: function (data) {
-                var z = data;
+                setTimeout(function () { }, 500);
             }
-        })
+        });
+       
     })
 })
