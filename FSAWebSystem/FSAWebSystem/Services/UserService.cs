@@ -1,6 +1,7 @@
 ﻿using FSAWebSystem.Areas.Identity.Data;
 using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
+using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +43,37 @@ namespace FSAWebSystem.Services
                              Email = userUnilever.Email,
                          }).ToListAsync();
             return users;
+        }
+
+        public async Task<UserPagingData> GetAllUsersPagination(DataTableParam param)
+        {
+            var users = (from user in _userManager.Users
+                         join userUnilever in _db.UsersUnilever.Include(x => x.Banners) on user.UserUnileverId equals userUnilever.Id
+                         select new UserUnilever
+                         {
+                             UserId = user.Id,
+                             Id = userUnilever.Id,
+                             Banners = userUnilever.Banners,
+                             RoleUnilever = userUnilever.RoleUnilever,
+                             IsActive = userUnilever.IsActive,
+                             Name = userUnilever.Name,
+                             Email = userUnilever.Email,
+                         });
+
+            if (!string.IsNullOrEmpty(param.search.value))
+            {
+                var search = param.search.value.ToLower();
+                users = users.Where(x => x.RoleUnilever.RoleName.ToLower().Contains(search) || x.Name.ToLower().Contains(search) || x.Email.ToLower().Contains(search));
+            }
+
+
+            var totalCount = users.Count();
+            var listUser = await users.Skip(param.start).Take(param.length).ToListAsync();
+            return new UserPagingData
+            {
+                totalRecord = totalCount,
+                userUnilevers = listUser
+            };
         }
 
         public async Task<UserUnilever> GetUser(Guid id)

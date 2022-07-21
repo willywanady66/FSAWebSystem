@@ -818,7 +818,7 @@ namespace FSAWebSystem.Controllers
 
             var skusNotExist = (from dailyOrder in listDailyOrder
                                 where !(
-                                from weeklyBucket in _bucketService.GetWeeklyBucket().AsEnumerable().DistinctBy(x => x.BannerId)
+                                from weeklyBucket in _bucketService.GetWeeklyBucket().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId })
                                 join sku in _skuService.GetAllProducts().AsEnumerable() on weeklyBucket.SKUId equals sku.Id
                                 where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
                                 select new

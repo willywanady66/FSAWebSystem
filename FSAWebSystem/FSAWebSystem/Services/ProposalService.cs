@@ -51,7 +51,7 @@ namespace FSAWebSystem.Services
         //    };
         //}
 
-        public async Task<ProposalData> GetProposalForView(int month, int year, int week, DataTableParam param, Guid userId)
+        public async Task<ProposalData> GetProposalForView(int month, int year, int week, DataTableParamProposal param, Guid userId)
         {
             var proposals = (from weeklyBucket in _db.WeeklyBuckets
                              join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
@@ -121,8 +121,8 @@ namespace FSAWebSystem.Services
             }
          
 
-                var totalCount = proposals.Count();
-            var listProposal = proposals.Skip(param.start).Take(param.length).ToList();
+            var totalCount = proposals.Count();
+            var listProposal = await proposals.Skip(param.start).Take(param.length).ToListAsync();
             return new ProposalData
             {
                 proposalInputs = param.proposalInputs,

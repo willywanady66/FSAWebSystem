@@ -53,7 +53,7 @@ namespace FSAWebSystem.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> GetProposalPagination(DataTableParam param)
+        public async Task<IActionResult> GetProposalPagination(DataTableParamProposal param)
         {
             var user = await _userManager.GetUserAsync(User);
             var userUnilever = await _userService.GetUser(Guid.Parse(user.Id));

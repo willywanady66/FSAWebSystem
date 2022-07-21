@@ -1,5 +1,6 @@
 ﻿using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
+using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services;
 using FSAWebSystem.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
@@ -37,19 +38,19 @@ namespace FSAWebSystem.Controllers
             var currentDate = DateTime.Now;
             List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
             var listDocumentUpload = Enum.GetValues(typeof(DocumentUpload)).Cast<DocumentUpload>().Select(x => new SelectListItem { Text = UploadDocumentService.GetEnumDesc(x), Value = ((int) x).ToString() }).ToList();
-            List<UserUnilever> listUsers = await _userService.GetAllUsers();
-             foreach(var user in listUsers)
-            {
-                if(user.Banners.Count == listBanners.Where(x => x.IsActive).Count())
-				{
-                    user.BannerName = "All Banners";
-				}
-				else
-                {
-                    user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
-                }
+            //List<UserUnilever> listUsers = await _userService.GetAllUsers();
+    //         foreach(var user in listUsers)
+    //        {
+    //            if(user.Banners.Count == listBanners.Where(x => x.IsActive).Count())
+				//{
+    //                user.BannerName = "All Banners";
+				//}
+				//else
+    //            {
+    //                user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
+    //            }
                
-            }
+    //        }
             
             List<RoleUnilever> listRoles = await _roleServices.GetAllRoles().ToListAsync();
             List<ProductCategory> listCategory = await _skuService.GetAllProductCategories().ToListAsync();
@@ -57,7 +58,7 @@ namespace FSAWebSystem.Controllers
             FSACalendarHeader fsaCalendar = await _calendarService.GetFSACalendarHeader(currentDate.Month, currentDate.Year);
             AdminModel model = new AdminModel
             {
-                Users = listUsers,
+                //Users = listUsers,
                 Banners = listBanners,
                 Roles = listRoles,
                 SKUs = listSKU,
@@ -69,7 +70,38 @@ namespace FSAWebSystem.Controllers
             return View(model);
         }
 
-        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> GetUserPagination(DataTableParam param)
+        {
+            var listData = Json(new { });
+            List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
+            var data = await _userService.GetAllUsersPagination(param);
+
+            foreach(var user in data.userUnilevers)
+            {
+                if (user.Banners.Count == listBanners.Where(x => x.IsActive).Count())
+                {
+                    user.BannerName = "All Banners";
+                }
+                else
+                {
+                    user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
+                }
+            }
+            listData = Json(new 
+            {
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.userUnilevers
+            });
+
+            return listData;
+        }
+
+
+
+            [Authorize]
         public async Task<IActionResult> UploadDocument(IFormFile excelDocument, string document)
 		{
             return View();
