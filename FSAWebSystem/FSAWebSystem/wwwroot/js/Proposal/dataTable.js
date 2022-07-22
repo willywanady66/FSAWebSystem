@@ -1,4 +1,5 @@
-﻿$(document).ready(function () {
+﻿
+$(document).ready(function () {
     let proposalInputs = new Array();
     let remarks = ["", "Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year"];
     //var proposals = getUserInput(proposalInputs);
@@ -38,7 +39,7 @@
                 "className": "hide_column"
             },
             {
-                "targets": [6, 7],
+                "targets": [6, 7, 9],
                 "render": function (data) {
                     if (data < 0) {
                         data = '(' + data.toString().substring(1) + ')';
@@ -137,8 +138,8 @@
             type: "POST",
             url: "Proposals/SaveProposal",
             data: { "proposals": proposals },
-            success: function (data) {
-                setTimeout(function () { }, 500);
+            success: function () {
+                table.clear().draw();
             }
         });
        

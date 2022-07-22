@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using FSAWebSystem.Areas.Identity.Data;
 using static FSAWebSystem.Models.ViewModels.ProposalViewModel;
 using Microsoft.AspNetCore.Authorization;
+using AspNetCoreHero.ToastNotification.Abstractions;
 
 namespace FSAWebSystem.Controllers
 {
@@ -22,23 +23,25 @@ namespace FSAWebSystem.Controllers
         private readonly IProposalService _proposalService;
         private readonly ICalendarService _calendarService;
         private readonly IUserService _userService;
+        private readonly INotyfService _notyfService;
         private readonly UserManager<FSAWebSystemUser> _userManager;
 
-        public ProposalsController(FSAWebSystemDbContext db, IProposalService proposalService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager, IUserService userService)
+        public ProposalsController(FSAWebSystemDbContext db, IProposalService proposalService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager, IUserService userService, INotyfService notyfService)
         {
             _db = db;
             _proposalService = proposalService;
             _calendarService = calendarService;
             _userManager = userManager;
             _userService = userService;
+            _notyfService = notyfService;
         }
 
         // GET: Proposals
 
 
         [Authorize(Policy = ("ReqOnly"))]
-        public async Task<IActionResult> Index()
-        {
+        public async Task<IActionResult> Index(string message)
+        {              
             return View();
         }
 
@@ -101,6 +104,7 @@ namespace FSAWebSystem.Controllers
         public async Task<IActionResult> SaveProposal(List<ProposalInput> proposals)
         {
             List<string> errorMessages = new List<string>();
+            var message = string.Empty;
             ValidateProposalInput(proposals, errorMessages);
             List<Proposal> listProposal = new List<Proposal>();
             if (!errorMessages.Any() && !proposals.Any(x => string.IsNullOrEmpty(x.weeklyBucketId)))
@@ -120,16 +124,33 @@ namespace FSAWebSystem.Controllers
                         SubmittedAt = DateTime.Now,
                         SubmittedBy = User.Identity.Name,
                         Remark = proposalInput.remark,
+                        ApprovalStatus = ApprovalStatus.Pending,
                     };
                     listProposal.Add(proposal);
                 }
                 await _proposalService.SaveProposals(listProposal);
-                await _db.SaveChangesAsync();
+                try
+                {
+                    await _db.SaveChangesAsync();
+                    
+                    message = "Your Proposal has been saved!";
+                    _notyfService.Success(message);
+                    return Ok(proposals);
+                    
+                }
+                catch (Exception ex)
+                {
+                    message = "Submit Proposal Failed";
+                    _notyfService.Warning(message);
+                }
+            }
+            else
+            {
+                message = "Submit Proposal Failed";
             }
 
-
             TempData["ErrorMessages"] = errorMessages;
-            return Ok(proposals);
+            return BadRequest();
         }
        
         public void ValidateProposalInput(List<ProposalInput> proposalInputs, List<string> errorMessages)

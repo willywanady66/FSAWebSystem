@@ -72,7 +72,7 @@ namespace FSAWebSystem.Services
                                  RatingRate = weeklyBucket.RatingRate,
                                  MonthlyBucket = weeklyBucket.MonthlyBucket,
                                  ValidBJ = weeklyBucket.ValidBJ,
-                                 RemFSA = weeklyBucket.RemFSA,
+                                 RemFSA = weeklyBucket.MonthlyBucket - weeklyBucket.ValidBJ,
                                  CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + week.ToString()).GetValue(weeklyBucket, null)),
                                  NextBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null))
                              });

@@ -11,12 +11,12 @@ namespace FSAWebSystem.Models
         public Guid WeeklyBucketId { get; set; }
         public decimal Rephase { get; set; }
         public decimal ProposeAdditional { get; set; }
-        public string Remark { get; set; }
+        public string? Remark { get; set; }
         public DateTime SubmittedAt { get; set; }
         public string SubmittedBy { get; set; }
-        public string ApprovalStatus { get; set; }
-        public string ApprovedBy { get; set; }
-        public string RejectionReason { get; set; }
+        public ApprovalStatus ApprovalStatus { get; set; }
+        public string? ApprovedBy { get; set; }
+        public string? RejectionReason { get; set; }
 
 
         [NotMapped]
@@ -27,7 +27,7 @@ namespace FSAWebSystem.Models
         public string PlantName { get; set; }
         [NotMapped]
         public string PCMap { get; set; }
-        
+
         [NotMapped]
         public string DescriptionMap { get; set; }
         [NotMapped]
@@ -46,5 +46,12 @@ namespace FSAWebSystem.Models
         public Guid UserId { get; set; }
     }
 
-    
-}
+    public enum ApprovalStatus
+    {
+        Pending,
+        Approved,
+        Rejected,
+        Cancelled
+    }
+
+ }
