@@ -1,9 +1,8 @@
-﻿
-$(document).ready(function () {
+﻿$(document).ready(function () {
     let proposalInputs = new Array();
     let remarks = ["", "Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year"];
     //var proposals = getUserInput(proposalInputs);
-    var table = $("#dataTableProposal").DataTable({
+    var tableProposals = $("#dataTableProposal").DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
@@ -27,7 +26,8 @@ $(document).ready(function () {
             { "data": "rephase" },         //10
             { "data": "proposeAddional" }, //11
             { "data": "remark" },           //12
-            { "data": "weeklyBucketId" }   //13
+            { "data": "weeklyBucketId" } ,  //13
+            {"data": "id"} //14
         ],
         "order": [[0, 'asc']],
         "drawCallback": function (data) {
@@ -35,11 +35,11 @@ $(document).ready(function () {
         },
         "columnDefs": [
             {
-                "targets": 13,
+                "targets": [13,14],
                 "className": "hide_column"
             },
             {
-                "targets": [6, 7, 9],
+                "targets": [6, 7],
                 "render": function (data) {
                     if (data < 0) {
                         data = '(' + data.toString().substring(1) + ')';
@@ -113,13 +113,20 @@ $(document).ready(function () {
             proposal.ProposeAdditional = row.find("TD").eq(11).find("INPUT").val();
             proposal.Remark = row.find("TD").eq(12).find("SELECT").val();
             proposal.BannerName = row.find("TD").eq(0).html();
-            proposal.PcMap = row.find("TD").eq(1).html();
+            proposal.PcMap = row.find("TD").eq(2).html();
+            proposal.PlantName = row.find("TD").eq(1).html();
+            proposal.Id = row.find("TD").eq(14).html();
+            proposal.NextWeekBucket = row.find("TD").eq(7).html();
             if (proposalInputs.length == 0) {
                 proposalInputs.push(proposal);
             }
             else {
                 if (!proposalInputs.some(element => element.WeeklyBucketId === proposal.WeeklyBucketId)) {
                     proposalInputs.push(proposal);
+                }
+                else {
+                    var index = proposalInputs.findIndex((obj => obj.WeeklyBucketId == proposal.WeeklyBucketId));
+                    proposalInputs[index] = proposal;
                 }
             }
         });
@@ -138,10 +145,58 @@ $(document).ready(function () {
             type: "POST",
             url: "Proposals/SaveProposal",
             data: { "proposals": proposals },
-            success: function () {
-                table.clear().draw();
+            success: function (data) {
+                var ul = document.getElementById('error-messages');
+                ul.innerHTML = '';
+                window.location.reload();
+            },
+            error: function (data) {
+                var errorMessages = data.responseJSON.value.errorMessages;
+                var ul = document.getElementById('error-messages');
+                ul.innerHTML = '';
+                for (var i = 0; i < errorMessages.length; i++) {
+                    var li = document.createElement('li');
+                    li.appendChild(document.createTextNode(errorMessages[i]));
+                    ul.appendChild(li);
+                }
+
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
+            
             }
         });
        
     })
+
+
+    var tableHistory = $("#dataTableProposalHistory").DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            url: "Proposals/GetProposalHistoryPagination",
+            type: "POST"
+        },
+        columns: [
+            { "data": "submitDate" }, //0
+            { "data": "bannerName" }, //1
+            { "data": "plantName" },  //2
+            { "data": "pcMap" },       //3
+            { "data": "descriptionMap" }, //4
+            { "data": "rephase" },      //5
+            { "data": "approvedRephase" },   //6
+            { "data": "proposeAdditional" },   //7
+            { "data": "approvedProposeAdditional" },   //8
+            { "data": "status" },   //9
+            { "data": "approvedBy" },   //10
+            { "data": "rejectionReason" },   //11
+        ],
+        "rowCallback": function (row, data, index) {
+            if (data.status == "Approved") {
+                $('td:eq(9)', row).css({ color: "green" });
+            }
+            else if (data.status == "Rejected") {
+                $('td:eq(9)', row).css({ color: "red" });
+            }
+        }
+    });
 })

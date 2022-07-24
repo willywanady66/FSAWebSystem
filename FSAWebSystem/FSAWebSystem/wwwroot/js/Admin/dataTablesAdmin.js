@@ -9,22 +9,22 @@
         },
         "columns": [
             { "data": "name" },  //0
-            { "data": "email" },       //1
-            { "data": "role" }, //2
-           
-            { "data": "bannerName" },      //3
-            { "data": "status" }, //4
-            { "data": "userId"}, //5
-            { "data": "id" }, //6
-            { "data": "userId" }, //7
+            { "data": "wlName"}, //1
+            { "data": "email" },       //2
+            { "data": "role" }, //3
+            { "data": "bannerName" },      //4
+            { "data": "status" }, //5
+            { "data": "userId"}, //6
+            { "data": "id" }, //7
+            { "data": "userId" }, //8
         ],
         columnDefs: [
             {
-                "targets": [6,7],
+                "targets": [7,8],
                 "className": "hide_column"
             },
             {
-                targets: 5,
+                targets: 6,
                 orderable : false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
@@ -35,7 +35,15 @@
 
                     
             }
-        ]
+        ],
+        "rowCallback": function (row, data, index) {
+            if (data.status == "Active") {
+                $('td:eq(5)', row).css({ color: "green" });
+            }
+            else {
+                $('td:eq(5)', row).css({ color: "red" });
+            }
+        }
     });
 
 
@@ -100,6 +108,30 @@
             { "data": "pcMap" },  //0
             { "data": "descriptionMap" },       //1
             { "data": "category" } //2
+        ]
+    });
+
+
+    $('#dataTableWorkLevels').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            url: "Admin/GetWorkLevelPagination",
+            type: "POST"
+        },
+        "columns": [
+            {"data" : "id"}, //0
+            { "data": "wl" }  //1
+        ],
+        columnDefs: [
+            {
+                targets: 0,
+                searchable: false,
+                orderable: false,
+                "render": function (data, type, full, meta) {
+                    return meta.row + 1 + meta.settings._iDisplayStart;
+                }
+            }
         ]
     });
 });

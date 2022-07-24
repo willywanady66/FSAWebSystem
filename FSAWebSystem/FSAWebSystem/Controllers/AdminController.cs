@@ -140,8 +140,24 @@ namespace FSAWebSystem.Controllers
             });
             return listData;
         }
+        
+        [HttpPost]
+        public async Task<IActionResult> GetWorkLevelPagination(DataTableParam param)
+        {
+            var data = await _userService.GetAllWorkLevelPagination(param);
+            var listData = Json(new
+            {
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.workLevels
+            });
 
-            [Authorize]
+            return listData;
+
+        }
+
+        [Authorize]
         public async Task<IActionResult> UploadDocument(IFormFile excelDocument, string document)
 		{
             return View();

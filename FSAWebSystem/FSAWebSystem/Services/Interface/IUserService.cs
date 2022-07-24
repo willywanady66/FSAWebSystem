@@ -17,5 +17,10 @@ namespace FSAWebSystem.Services.Interface
         public Task<List<Banner>> GetUserBanners (Guid id);
 
         public Task<UserUnilever> CreateUser(string name, string email, string password, string[] bannerIds, string roleId, string loggedUser, IUserStore<FSAWebSystemUser> userStore, IUserEmailStore<FSAWebSystemUser> _emailStore);
+        public IQueryable<WorkLevel> GetAllWorkLevel();
+
+        public void SaveWorkLevels(List<WorkLevel> workLevels);
+
+        public Task<WorkLevelPagingData> GetAllWorkLevelPagination(DataTableParam param);
     }
 }

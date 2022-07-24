@@ -28,7 +28,11 @@ namespace FSAWebSystem.Models.Bucket
         [NotMapped]
         public string PlantCode { get; set; }
         [NotMapped]
+        public string PlantName { get; set; }
+        [NotMapped]
         public string PCMap { get; set; }
+        [NotMapped]
+        public string DescriptionMap { get; set; }
 
     }
 }

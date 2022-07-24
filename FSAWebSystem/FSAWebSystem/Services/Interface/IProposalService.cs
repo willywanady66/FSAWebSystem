@@ -12,5 +12,8 @@ namespace FSAWebSystem.Services.Interface
         public Task SaveProposals(List<Proposal> listProposal);
 
         public Task<bool> IsProposalExist(FSACalendarDetail fsaDetail);
+        public IQueryable<Proposal> GetPendingProposals(FSACalendarDetail fsaDetail, Guid userId);
+
+        public ProposalHistoryPagingData GetProposalHistoryPagination(DataTableParam param, Guid userId);
     }
 }

@@ -18,13 +18,13 @@
 	<script src="~/lib/jquery/dist/jquery.min.js"></script>
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
-	
+
 </head>
 
 <style>
-.hide_column {
-    display : none;
-}</style>
+	.hide_column {
+		display : none;
+	}</style>
 
 
 <body id="page-top">
@@ -42,7 +42,7 @@
 				<hr class="sidebar-divider my-0" />
 
 				<!-- Nav Item - Dashboard -->
-			<li class="nav-item active ">
+				<li class="nav-item active ">
 					<a class="nav-link text-center" asp-area="" asp-controller="Home" asp-action="Index">
 						<h5 class="font-weight-bold">DASHBOARD</h5>
 					</a>
@@ -51,7 +51,7 @@
 
 				<!-- Heading -->
 				<!-- Nav Item - Dashboard -->
-			<li class="nav-item active ">
+				<li class="nav-item active ">
 					<a class="nav-link text-center" asp-area="" asp-controller="Home" asp-action="Privacy">
 						<h5 class="font-weight-bold">REPORT</h5>
 					</a>
@@ -59,50 +59,48 @@
 
 				<hr class="sidebar-divider"> </hr>
 
-				@if(User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
+				@if (User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
 				{
-					if(User.Claims.Single(x => x.Type == "Role").Value == "Administrator" || User.Claims.Single(x => x.Type == "Role").Value == "Requestor")
-					{
-				<li class="nav-item active">
-					<a class="nav-link text-center" asp-area="" asp-controller="Proposals" asp-action="Index">
-						<h5 class="font-weight-bold">PROPOSAL</h5>
-					</a>
-				</li>
-				
-				<hr class="sidebar-divider"> </hr>
-					}
-				}
-
-
-				@if(User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
-				{
-					if(User.Claims.Single(x => x.Type == "Role").Value == "Approver" || User.Claims.Single(x => x.Type == "Role").Value == "Administrator")
-					{
-				<li class="nav-item active">
-					<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
-						<h5 class="font-weight-bold">APPROVAL</h5>
-					</a>
-				</li>
-				<hr class="sidebar-divider"> </hr>
-					}}
-
-				
-
-				@if(User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
-				{
-					if(User.Claims.Single(x => x.Type == "Role").Value == "Administrator")
+					if (User.Claims.Single(x => x.Type == "Role").Value == "Administrator" || User.Claims.Single(x => x.Type == "Role").Value == "Requestor")
 					{
 						<li class="nav-item active">
-					<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
-						<h5 class="font-weight-bold">ADMIN</h5>
-					</a>
-				</li>
-				<hr class="sidebar-divider"> </hr>
+							<a class="nav-link text-center" asp-area="" asp-controller="Proposals" asp-action="Index">
+								<h5 class="font-weight-bold">PROPOSAL</h5>
+							</a>
+						</li>
+
+						<hr class="sidebar-divider"> </hr>
 					}
 				}
-					
-		
-				
+
+
+				@if (User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
+				{
+					if (User.Claims.Single(x => x.Type == "Role").Value == "Approver" || User.Claims.Single(x => x.Type == "Role").Value == "Administrator")
+					{
+						<li class="nav-item active">
+							<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
+								<h5 class="font-weight-bold">APPROVAL</h5>
+							</a>
+						</li>
+						<hr class="sidebar-divider"> </hr>
+					}
+				}
+
+
+
+				@if (User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
+				{
+					if (User.Claims.Single(x => x.Type == "Role").Value == "Administrator")
+					{
+						<li class="nav-item active">
+							<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
+								<h5 class="font-weight-bold">ADMIN</h5>
+							</a>
+						</li>
+						<hr class="sidebar-divider"> </hr>
+					}
+				}
 			</ul>
 		}
 
@@ -112,39 +110,39 @@
 
 			<!-- Main Content -->
 			<div id="content">
-					@if (User.Identity.IsAuthenticated)
-		{
-				<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-					<ul class="navbar-nav ml-auto">
-						<li class="nav-item dropdown">
-							<a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+				@if (User.Identity.IsAuthenticated)
+				{
+					<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+						<ul class="navbar-nav ml-auto">
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
 							   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<span class="mr-2 d-none d-lg-inline text-gray-600 small">@User.Identity.Name</span>
-							</a>
-							<!-- Dropdown - User Information -->
-							<div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+									<span class="mr-2 d-none d-lg-inline text-gray-600 small">@User.Identity.Name</span>
+								</a>
+								<!-- Dropdown - User Information -->
+								<div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
 								 aria-labelledby="userDropdown">
-								<a class="dropdown-item" href="#">
-									<i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-									Profile
-								</a>
-	@*							<a class="dropdown-item" href="#">
-									<i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-									Settings
+									<a class="dropdown-item" href="#">
+										<i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+										Profile
+									</a>
+									@*							<a class="dropdown-item" href="#">
+								<i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+								Settings
 								</a>*@
-@*								<a class="dropdown-item" href="#">
-									<i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-									Activity Log
+									@*								<a class="dropdown-item" href="#">
+								<i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+								Activity Log
 								</a>*@
-								<div class="dropdown-divider"></div>
-								<a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-									<i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-									Logout
-								</a>
-							</div>
-						</li>
-					</ul>
-				</nav>
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+										<i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+										Logout
+									</a>
+								</div>
+							</li>
+						</ul>
+					</nav>
 				}
 				<div class="container-fluid">
 					@RenderBody()
@@ -195,14 +193,7 @@
 	<script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
 	<!-- Page level custom scripts -->
-
-
-
-
-
-
 	<!-- Page level custom scripts -->
-	<script src="~/js/demo/datatables-demo.js"></script>
 	@await Component.InvokeAsync("Notyf")
 	@await RenderSectionAsync("Scripts", required: false)
 

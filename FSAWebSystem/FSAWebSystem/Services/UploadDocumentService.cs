@@ -136,7 +136,8 @@ namespace FSAWebSystem.Services
                 "Email",
                 "Password",
                 "Role",
-                "BannerName"
+                "Banner Name",
+                "Work Level"
             };
         }
     }

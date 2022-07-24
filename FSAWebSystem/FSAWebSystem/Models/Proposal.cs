@@ -13,7 +13,7 @@ namespace FSAWebSystem.Models
         public decimal ProposeAdditional { get; set; }
         public string? Remark { get; set; }
         public DateTime SubmittedAt { get; set; }
-        public string SubmittedBy { get; set; }
+        public Guid SubmittedBy { get; set; }
         public ApprovalStatus ApprovalStatus { get; set; }
         public string? ApprovedBy { get; set; }
         public string? RejectionReason { get; set; }
@@ -43,7 +43,7 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public decimal RemFSA { get; set; }
         [NotMapped]
-        public Guid UserId { get; set; }
+        public string UserName { get; set; }
     }
 
     public enum ApprovalStatus

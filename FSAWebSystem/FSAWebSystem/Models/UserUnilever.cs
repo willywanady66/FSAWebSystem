@@ -8,6 +8,7 @@ namespace FSAWebSystem.Models
 	public class UserUnilever
 	{
 		public Guid Id { get; set; }
+		public Guid WLId { get; set; }
 		public string Name { get; set; }
 		public string Email { get; set; }
 		public List<Banner>? Banners { get; set; }
@@ -16,7 +17,7 @@ namespace FSAWebSystem.Models
 		public string? CreatedBy { get; set; }
 		public DateTime? ModifiedAt { get; set; }
 		public string? ModifiedBy { get; set; }
-
+		
 		public bool IsActive { get; set; }
 		public Guid? FSADocumentId { get; set; }
 
@@ -33,5 +34,7 @@ namespace FSAWebSystem.Models
 		public string Status { get; set; }
 		[NotMapped]
         public IEnumerable<IdentityError> Message { get; set; }
+        [NotMapped]
+		public string WLName { get; set; }
 	}
 }

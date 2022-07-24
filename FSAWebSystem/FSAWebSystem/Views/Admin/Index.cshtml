@@ -7,7 +7,7 @@
 	@model AdminModel
 
 }
-<script src="~/js/Admin/dataTables.js"></script>
+<script src="~/js/Admin/dataTablesAdmin.js"></script>
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
 	<h1 class="h3 mb-0 text-gray-800">Admin</h1>
 </div>
@@ -31,6 +31,9 @@
 			<a class="nav-link active" id="users-tab" data-toggle="tab" href="#users" role="tab" aria-controls="users" aria-selected="true">Users</a>
 		</li>
 		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link" id="wl-tab" data-toggle="tab" href="#worklevels" role="tab" aria-control="worklevels" aria-selected="false">Work Level</a>
+		</li>
+		<li class="nav-item waves-effect waves-light">
 			<a class="nav-link" id="roles-tab" data-toggle="tab" href="#roles" role="tab" aria-controls="roles" aria-selected="false">Roles</a>
 		</li>
 		<li class="nav-item waves-effect waves-light">
@@ -50,6 +53,7 @@
 						<thead>
 							<tr>
 								<th>Name</th>
+								<th>WL</th>
 								<th>Email</th>
 								<th>User Roles</th>
 								<th>Banner</th>
@@ -59,26 +63,31 @@
 								<th class="hide_column">UserId</th>
 							</tr>
 						</thead>
-						
-					@*	<tbody>
-							@foreach (var user in Model.Users)
-							{
-								<tr>
-									<td>@Html.DisplayFor(Model => user.Name)</td>
-									<td>@Html.DisplayFor(Model => user.Email)</td>*@
-									@*<td>@Html.DisplayFor(Model => user.CreatedAt)</td>*@
-									@*<td>@Html.DisplayFor(Model => user.RoleUnilever.RoleName)</td>
-									<td>@Html.DisplayFor(Model => user.BannerName)</td>
-									<td>@(@user.IsActive ? "Active" : "Non-Active")</td>
-									<td class="text-center"><a asp-action="Edit" asp-controller="UserUnilevers" asp-route-id="@user.UserId"><i class="fas fa-pen"></i></a></td>
-								</tr>
-							}
-
-						</tbody>*@
 					</table>
 				</div>
 			</div>
 		</div>
+
+		<div class="tab-pane fade" id="worklevels" role="tabpanel" aria-labelledby="wl-tab">
+			<div class="card-header py-3">
+				<div class="inline"></div>
+				<h5 class="m-0 font-weight-bold text-primary d-inline">Work Level</h5>
+				@*<a asp-area="Identity" asp-page="/Account/Register"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Role</button></a>*@
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableWorkLevels" width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>No.</th>
+								<th>Work Level</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+
 
 		<div class="tab-pane fade" id="roles" role="tabpanel" aria-labelledby="roles-tab">
 			<div class="card-header py-3">
@@ -114,7 +123,7 @@
 			<div class="card-header py-3">
 				<div class="inline"></div>
 				<h5 class="m-0 font-weight-bold text-primary d-inline">Role Access</h5>
-				<a asp-area="Identity" asp-page="/Account/Register"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Role Access</button></a>
+				@*<a asp-area="Identity" asp-page="/Account/Register"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Role Access</button></a>*@
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">

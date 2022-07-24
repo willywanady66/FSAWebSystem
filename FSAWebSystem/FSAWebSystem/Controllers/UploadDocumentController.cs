@@ -298,9 +298,10 @@ namespace FSAWebSystem.Controllers
                 {
                     Email = row["Email"].ToString(),
                     Name = row["Name"].ToString(),
-                    BannerName = row["BannerName"].ToString(),
+                    BannerName = row["Banner Name"].ToString(),
                     Password = row["Password"].ToString(),
-                    Role = row["Role"].ToString()
+                    Role = row["Role"].ToString(),
+                    WLName = row["Work Level"].ToString()
                 };
                 listUser.Add(user);
             }
@@ -311,17 +312,36 @@ namespace FSAWebSystem.Controllers
             {
                 var usersToAdd = new List<UserUnilever>();
 
-                foreach(var user in listUser)
+                var savedWorkLevels = _userService.GetAllWorkLevel() as IEnumerable<WorkLevel>;
+                var worklevelFromExcel = listUser.Select(x => x.WLName).Distinct().ToList();
+                var worklevelToAdd = worklevelFromExcel.Where(x => !savedWorkLevels.Select(y => y.WL).ToList().Contains(x)).ToList();
+
+
+                IEnumerable<WorkLevel> listWorkLevel = (from worklevel in worklevelToAdd
+                                                             select worklevel).Select(x => new WorkLevel { Id = Guid.NewGuid(), WL = x, CreatedAt = DateTime.Now, CreatedBy = loggedUser, FSADocumentId = fSADocument.Id }).AsEnumerable();
+
+                listWorkLevel = !listWorkLevel.Any() ? savedWorkLevels : listWorkLevel;
+
+                if (worklevelToAdd.Any())
+                {
+                    _userService.SaveWorkLevels(listWorkLevel.ToList());
+                }
+                _db.SaveChanges();
+
+                savedWorkLevels = _userService.GetAllWorkLevel() as IEnumerable<WorkLevel>;
+
+                foreach (var user in listUser)
                 {
                     var savedUser = await _userService.GetUserByEmail(user.Email);
                     if(savedUser != null)
                     {
-                        if(savedUser.RoleUnilever.RoleName != user.Role)
+                        if(savedUser.RoleUnilever.RoleName != user.Role || savedUser.WLId != user.WLId)
                         {
                             savedUser.RoleUnilever = await _roleService.GetRoleByName(user.Role);
                             savedUser.ModifiedAt = DateTime.Now;
                             savedUser.ModifiedBy = loggedUser;
                             savedUser.FSADocumentId = fSADocument.Id;
+                            savedUser.WLId = savedWorkLevels.Single(x => x.WL == user.WLName).Id;
                         }
                         var savedUserLogin = await _userManager.FindByEmailAsync(savedUser.Email);
                         if(!string.IsNullOrEmpty(user.Password))
@@ -345,7 +365,8 @@ namespace FSAWebSystem.Controllers
                         user.RoleUnilever = await _roleService.GetRoleByName(user.Role);
                         user.CreatedAt = DateTime.Now;
                         user.CreatedBy = loggedUser;
-                        user.FSADocumentId = fSADocument.Id;
+                        user.FSADocumentId = fSADocument.Id;    
+                        user.WLId = savedWorkLevels.Single(x => x.WL == user.WLName).Id;
                         usersToAdd.Add(user);
                     }
                 }
@@ -430,7 +451,7 @@ namespace FSAWebSystem.Controllers
                             savedSKU.ModifiedBy = loggedUser;
                             savedSKU.ModifiedAt = DateTime.Now;
                             savedSKU.FSADocumentId = fsaDoc.Id;
-                            savedSKU.ProductCategory = listCategory.Single(x => x.CategoryProduct == sku.Category);
+                            savedSKU.ProductCategory = savedCategory.Single(x => x.CategoryProduct == sku.Category);
                         }
                     }
                     else
@@ -882,7 +903,7 @@ namespace FSAWebSystem.Controllers
                     //roles = _roleService.GetAllRoles().AsEnumerable();
                     columnToCheck.Add("Email");
                     columnToCheck.Add("Name");
-                    //columnToCheck.Add("Password");
+                    columnToCheck.Add("WLName");
                     columnToCheck.Add("Role");
                     break;
             }

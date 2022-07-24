@@ -20,29 +20,29 @@ namespace FSAWebSystem.Services
 
 
         public UserService(FSAWebSystemDbContext db, UserManager<FSAWebSystemUser> userManager, IBannerService bannerService, IRoleService roleService)
-		{
-			_db = db;
-			_userManager = userManager;
+        {
+            _db = db;
+            _userManager = userManager;
             _bannerService = bannerService;
             _roleService = roleService;
 
-		}
+        }
 
-		public async Task<List<UserUnilever>> GetAllUsers()
+        public async Task<List<UserUnilever>> GetAllUsers()
         {
             var users = await (from user in _userManager.Users
-                         join userUnilever in _db.UsersUnilever.Include(x => x.Banners) on user.UserUnileverId equals userUnilever.Id
-                         select new UserUnilever
-                         {
-                             UserId = user.Id,
-                             Id = userUnilever.Id,
-                             Banners = userUnilever.Banners,
-                             RoleUnilever = userUnilever.RoleUnilever,
-                             IsActive = userUnilever.IsActive,
-                             Status = userUnilever.IsActive ? "Active" : "Non-Active",
-                             Name = userUnilever.Name,
-                             Email = userUnilever.Email,
-                         }).ToListAsync();
+                               join userUnilever in _db.UsersUnilever.Include(x => x.Banners) on user.UserUnileverId equals userUnilever.Id
+                               select new UserUnilever
+                               {
+                                   UserId = user.Id,
+                                   Id = userUnilever.Id,
+                                   Banners = userUnilever.Banners,
+                                   RoleUnilever = userUnilever.RoleUnilever,
+                                   IsActive = userUnilever.IsActive,
+                                   Status = userUnilever.IsActive ? "Active" : "Non-Active",
+                                   Name = userUnilever.Name,
+                                   Email = userUnilever.Email,
+                               }).ToListAsync();
             return users;
         }
 
@@ -50,6 +50,8 @@ namespace FSAWebSystem.Services
         {
             var users = (from user in _userManager.Users
                          join userUnilever in _db.UsersUnilever.Include(x => x.Banners) on user.UserUnileverId equals userUnilever.Id
+                         join worklevel in _db.WorkLevels on userUnilever.WLId equals worklevel.Id into workLevelGroups
+                         from wl in workLevelGroups.DefaultIfEmpty()
                          select new UserUnilever
                          {
                              UserId = user.Id,
@@ -61,6 +63,7 @@ namespace FSAWebSystem.Services
                              Status = userUnilever.IsActive ? "Active" : "Non-Active",
                              Name = userUnilever.Name,
                              Email = userUnilever.Email,
+                             WLName = wl != null ? wl.WL : string.Empty
                          });
 
             if (!string.IsNullOrEmpty(param.search.value))
@@ -82,7 +85,7 @@ namespace FSAWebSystem.Services
         public async Task<UserUnilever> GetUser(Guid id)
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
-            var userUnilever = await _db.UsersUnilever.Include(x => x.Banners).SingleOrDefaultAsync(x => x.Id == user.UserUnileverId);
+            var userUnilever = await _db.UsersUnilever.Include(x => x.Banners).Include(x => x.RoleUnilever).SingleOrDefaultAsync(x => x.Id == user.UserUnileverId);
             return userUnilever;
         }
 
@@ -91,7 +94,7 @@ namespace FSAWebSystem.Services
             return await _db.UsersUnilever.Include(x => x.Banners).SingleOrDefaultAsync(x => x.Email == email);
         }
 
-        public async Task SaveUsers (List<UserUnilever> users)
+        public async Task SaveUsers(List<UserUnilever> users)
         {
             _db.UsersUnilever.AddRange(users);
         }
@@ -147,6 +150,47 @@ namespace FSAWebSystem.Services
                 userUnilever.Message = result.Errors;
             }
             return userUnilever;
+        }
+
+        public IQueryable<WorkLevel> GetAllWorkLevel()
+        {
+            return _db.WorkLevels.AsQueryable();
+        }
+
+        public void SaveWorkLevels(List<WorkLevel> workLevels)
+        {
+            _db.WorkLevels.AddRange(workLevels);
+        }
+
+        public async Task<WorkLevelPagingData> GetAllWorkLevelPagination(DataTableParam param)
+        {
+            var workLevels = _db.WorkLevels.Select(x => new WorkLevel { Id = x.Id, WL = x.WL, IsActive = x.IsActive }).AsQueryable();
+
+            if (!string.IsNullOrEmpty(param.search.value))
+            {
+                var search = param.search.value.ToLower();
+                workLevels = workLevels.Where(x => x.WL.ToLower().Contains(search));
+            }
+
+            if (param.order.Any())
+            {
+                var order = param.order[0];
+                switch (order.column)
+                {
+                    case 1:
+                        workLevels = order.dir == "desc" ? workLevels.OrderByDescending(x => x.WL) : workLevels.OrderBy(x => x.WL);
+                        break;
+                }
+            }
+
+
+            var totalCount = workLevels.Count();
+            var listWL = await workLevels.Skip(param.start).Take(param.length).ToListAsync();
+            return new WorkLevelPagingData
+            {
+                totalRecord = totalCount,
+                workLevels = listWL
+            };
         }
     }
 }

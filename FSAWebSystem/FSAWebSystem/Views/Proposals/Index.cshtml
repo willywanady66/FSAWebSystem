@@ -5,7 +5,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-	<script src="~/js/Proposal/dataTable.js"></script>
+	<script src="~/js/Proposal/dataTableProposal.js"></script>
 
 
 
@@ -13,19 +13,15 @@
 	<h1 class="h3 mb-0 text-gray-800">Propose FSA</h1>
 </div>
 <div class="text-danger">
-		@if (TempData["ErrorMessages"] != null)
-	{
-		<ul>
 
-			@foreach (var error in TempData["ErrorMessages"] as IEnumerable<string>)
-				{
-				<li>@Html.DisplayFor(Model => error)</li>
-				}
+		<ul id="error-messages">
+
 		</ul>
-
-	}
 </div>
 <div class="card shadow mb-4 pt-4 pl-2 pb-4">
+    <div class="card-header py-3">
+            <h5 class="m-0 font-weight-bold text-primary d-inline">Proposals</h5>
+        </div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-bordered" id="dataTableProposal" width="100%" cellspacing="0">
@@ -45,6 +41,7 @@
                         <th style="width:10%">Rephase</th>
                         <th style="width:10%">Propose Additional</th>
                         <th style="width:10%">Remark</th>
+                        <th class="hide_column">WeeklyId</th>
                         <th class="hide_column">Id</th>
                         
                     </tr>
@@ -59,6 +56,35 @@
     </div>
     </div>
 </div>
+
+
+<div class="card shadow mb-4 pt-4 pl-2 pb-4">
+    	<div class="card-header py-3">
+            <h5 class="m-0 font-weight-bold text-primary d-inline">Proposal History</h5>
+        </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTableProposalHistory" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Submit Date</th>
+                        <th>Banner Name</th>
+                        <th>Plant Name</th>
+                        <th>PC Map</th>
+                        <th>Description Map</th>
+                        <th>Rephase</th>
+                        <th>Approved Rephase</th>
+                        <th>Propose Additional</th>
+                        <th>Approved Propose Additional</th>
+                        <th>Approval Status</th>
+                        <th>Approved By</th>
+                        <th>Rejection Status</th>
+                    </tr>
+                </thead>
+            </table>
+            </div>
+            </div>
+            </div>
 
 
 

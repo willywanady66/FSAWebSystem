@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using FSAWebSystem.Areas.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using AspNetCoreHero.ToastNotification.Abstractions;
 
 namespace FSAWebSystem.Controllers
 {
@@ -24,14 +25,16 @@ namespace FSAWebSystem.Controllers
         private readonly IRoleService _roleService;
         private readonly IUserService _userService;
         private readonly UserManager<FSAWebSystemUser> _userManager;
+        private readonly INotyfService _notyfService;
 
-        public UserUnileversController(FSAWebSystemDbContext context, IBannerService bannerService, IRoleService roleService, IUserService userService, UserManager<FSAWebSystemUser> userManager)
+        public UserUnileversController(FSAWebSystemDbContext context, IBannerService bannerService, IRoleService roleService, IUserService userService, UserManager<FSAWebSystemUser> userManager, INotyfService notyfService)
         {
             _context = context;
             _bannerService = bannerService;
             _roleService = roleService;
             _userService = userService;
             _userManager = userManager;
+            _notyfService = notyfService;
         }
 
         // GET: UserUnilevers
@@ -106,6 +109,7 @@ namespace FSAWebSystem.Controllers
             ModelState.Remove("Password"); 
             ModelState.Remove("Role");
             ModelState.Remove("Message");
+            ModelState.Remove("Status");
             if (ModelState.IsValid)
             {
                 try
@@ -147,6 +151,7 @@ namespace FSAWebSystem.Controllers
                         throw;
                     }
                 }
+                _notyfService.Success("User Saved");
                 return RedirectToAction("Index", "Admin");
             }
             else

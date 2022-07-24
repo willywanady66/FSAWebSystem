@@ -51,7 +51,6 @@ namespace FSAWebSystem.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             var userUnilever = await _userService.GetUser(Guid.Parse(user.Id));
-            var bannersThisUser = userUnilever.Banners;
             List<Proposal> listProposal = new List<Proposal>();
             var listData = Json(new { });
             var data = new ProposalData();
@@ -61,10 +60,9 @@ namespace FSAWebSystem.Controllers
             {
                 if (fsaDetail != null)
                 {
-                    if (!await _proposalService.IsProposalExist(fsaDetail))
-                    {
+
                         data = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week, param, userUnilever.Id);
-                    }
+          
                 }
                 if (param.proposalInputs != null)
                 {
@@ -99,34 +97,77 @@ namespace FSAWebSystem.Controllers
 
         }
 
+        [HttpPost]
+        public async Task<IActionResult> GetProposalHistoryPagination(DataTableParam param)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var listData = Json(new { });
+            try
+            {
+                var listProposalHistory = _proposalService.GetProposalHistoryPagination(param, (Guid)user.UserUnileverId);
+                listData = Json(new
+                {
+                    draw = param.draw,
+                    recordsTotal = listProposalHistory.totalRecord,
+                    recordsFiltered = listProposalHistory.totalRecord,
+                    data = listProposalHistory.proposalsHistory
+                });
+            }
+            catch(Exception ex)
+            {
 
+            }
+            return listData;
+        }
         [HttpPost]
         public async Task<IActionResult> SaveProposal(List<ProposalInput> proposals)
         {
+            var currDate = DateTime.Now;
+            var user = await _userManager.GetUserAsync(User);
             List<string> errorMessages = new List<string>();
             var message = string.Empty;
             ValidateProposalInput(proposals, errorMessages);
             List<Proposal> listProposal = new List<Proposal>();
             if (!errorMessages.Any() && !proposals.Any(x => string.IsNullOrEmpty(x.weeklyBucketId)))
             {
-                var fsaDetail = await _calendarService.GetCalendarDetail(DateTime.Now.Date);
-                foreach (var proposalInput in proposals)
+                var fsaDetail = await _calendarService.GetCalendarDetail(currDate.Date);
+                var savedProposals = _proposalService.GetPendingProposals(fsaDetail, (Guid)user.UserUnileverId);
+                foreach (var proposalInput in proposals.Where(x => (!string.IsNullOrEmpty(x.remark) || x.proposeAdditional > 0 || x.rephase > 0)))
                 {
-                    var proposal = new Proposal
+                    if(Guid.Parse(proposalInput.id) == Guid.Empty)
                     {
-                        Id = Guid.NewGuid(),
-                        Week = fsaDetail.Week,
-                        Year = fsaDetail.Year,
-                        Month = fsaDetail.Month,
-                        WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
-                        Rephase = proposalInput.rephase,
-                        ProposeAdditional = proposalInput.proposeAdditional,
-                        SubmittedAt = DateTime.Now,
-                        SubmittedBy = User.Identity.Name,
-                        Remark = proposalInput.remark,
-                        ApprovalStatus = ApprovalStatus.Pending,
-                    };
-                    listProposal.Add(proposal);
+                        var proposal = new Proposal
+                        {
+                            Id = Guid.NewGuid(),
+                            Week = fsaDetail.Week,
+                            Year = fsaDetail.Year,
+                            Month = fsaDetail.Month,
+                            WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
+                            Rephase = proposalInput.rephase,
+                            ProposeAdditional = proposalInput.proposeAdditional,
+                            SubmittedAt = DateTime.Now,
+                            SubmittedBy = (Guid)user.UserUnileverId,
+                            Remark = proposalInput.remark,
+                            ApprovalStatus = ApprovalStatus.Pending,
+                        };
+                        listProposal.Add(proposal);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var savedProposal = savedProposals.Single(x => x.Id == Guid.Parse(proposalInput.id));
+                            savedProposal.Remark = proposalInput.remark;
+                            savedProposal.Rephase = proposalInput.rephase;
+                            savedProposal.ProposeAdditional = proposalInput.proposeAdditional;
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+                       
+                    }
+                   
                 }
                 await _proposalService.SaveProposals(listProposal);
                 try
@@ -136,7 +177,6 @@ namespace FSAWebSystem.Controllers
                     message = "Your Proposal has been saved!";
                     _notyfService.Success(message);
                     return Ok(proposals);
-                    
                 }
                 catch (Exception ex)
                 {
@@ -147,19 +187,21 @@ namespace FSAWebSystem.Controllers
             else
             {
                 message = "Submit Proposal Failed";
+                _notyfService.Warning(message);
             }
 
             TempData["ErrorMessages"] = errorMessages;
-            return BadRequest();
+            
+            return BadRequest(Json( new {proposals, errorMessages}));
         }
        
         public void ValidateProposalInput(List<ProposalInput> proposalInputs, List<string> errorMessages)
         {
-            foreach (var proposal in proposalInputs)
+            foreach (var proposal in proposalInputs.Where(x => (!string.IsNullOrEmpty(x.remark) || x.proposeAdditional > 0 || x.rephase > 0)))
             {
                 if (proposal.rephase > proposal.nextWeekBucket)
                 {
-                    errorMessages.Add(string.Format("Cannot request rephase more than next week bucket value on Bucket Name: {0} and PCMap: {1}", proposal.bannerName, proposal.pcMap));
+                    errorMessages.Add(string.Format("Cannot request rephase more than next week bucket value on Bucket Name: {0}, PlantName: {1} and PCMap: {2}", proposal.bannerName, proposal.plantName, proposal.pcMap));
                 }
             }
         }

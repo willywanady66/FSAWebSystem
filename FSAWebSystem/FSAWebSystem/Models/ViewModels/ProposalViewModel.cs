@@ -19,8 +19,10 @@
 
         public class ProposalInput
         {
+            public string id { get; set; }
             public string weeklyBucketId { get; set; }
             public string bannerName { get; set; }
+            public string plantName { get; set; }
             public string pcMap { get; set; }
             public decimal nextWeekBucket { get; set; }
             public decimal rephase { get; set; }

@@ -7,12 +7,17 @@ using FSAWebSystem.Services;
 using System.Globalization;
 using AspNetCoreHero.ToastNotification;
 using AspNetCoreHero.ToastNotification.Extensions;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using MailKit;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddOptions();
 var connectionString = builder.Configuration.GetConnectionString("FSAWebSystemDbContextConnection") ?? throw new InvalidOperationException("Connection string 'FSAWebSystemDbContextConnection' not found.");
-
 builder.Services.AddDbContext<FSAWebSystemDbContext>(options =>
     options.UseSqlServer(connectionString));
+
 
 
 builder.Services.AddDefaultIdentity<FSAWebSystemUser>(options => {
@@ -25,6 +30,9 @@ builder.Services.AddSession(options => {
     options.IdleTimeout = TimeSpan.FromMinutes(10);//You can set Time   
 });
 
+
+builder.Services.Configure<EmailContext>(builder.Configuration.GetSection("EmailContext"));
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IUploadDocumentService, UploadDocumentService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -38,11 +46,6 @@ builder.Services.AddNotyf(config => { config.DurationInSeconds = 5; config.IsDis
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-
-CultureInfo newCulture = (CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
-newCulture.DateTimeFormat.ShortDatePattern = "dd/MM/yyyy";
-newCulture.DateTimeFormat.DateSeparator = "/";
-Thread.CurrentThread.CurrentCulture = newCulture;
 
 
 builder.Services.AddAuthorization(options =>
