@@ -33,6 +33,7 @@ builder.Services.AddSession(options => {
 
 builder.Services.Configure<EmailContext>(builder.Configuration.GetSection("EmailContext"));
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IApprovalService, ApprovalService>();
 builder.Services.AddScoped<IUploadDocumentService, UploadDocumentService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IUserService, UserService>();

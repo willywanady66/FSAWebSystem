@@ -27,7 +27,8 @@
             { "data": "proposeAddional" }, //11
             { "data": "remark" },           //12
             { "data": "weeklyBucketId" } ,  //13
-            {"data": "id"} //14
+            {"data": "id"}, //14
+            {"data": "approvalId"} //15
         ],
         "order": [[0, 'asc']],
         "drawCallback": function (data) {
@@ -35,7 +36,7 @@
         },
         "columnDefs": [
             {
-                "targets": [13,14],
+                "targets": [13,14, 15],
                 "className": "hide_column"
             },
             {
@@ -177,7 +178,7 @@
             type: "POST"
         },
         columns: [
-            { "data": "submitDate" }, //0
+            { "data": "submittedAt" }, //0
             { "data": "bannerName" }, //1
             { "data": "plantName" },  //2
             { "data": "pcMap" },       //3

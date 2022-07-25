@@ -8,15 +8,13 @@ namespace FSAWebSystem.Models
         public int Week { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
-        public Guid WeeklyBucketId { get; set; }
+        public Guid WeeklyBucketId { get; set; }    
         public decimal Rephase { get; set; }
         public decimal ProposeAdditional { get; set; }
         public string? Remark { get; set; }
-        public DateTime SubmittedAt { get; set; }
-        public Guid SubmittedBy { get; set; }
-        public ApprovalStatus ApprovalStatus { get; set; }
-        public string? ApprovedBy { get; set; }
-        public string? RejectionReason { get; set; }
+
+        public Guid ApprovalId { get; set; }
+        public bool IsWaitingApproval { get; set; }
 
 
         [NotMapped]
@@ -44,6 +42,16 @@ namespace FSAWebSystem.Models
         public decimal RemFSA { get; set; }
         [NotMapped]
         public string UserName { get; set; }
+        [NotMapped]
+        public DateTime SubmittedAt { get; set; }
+        [NotMapped]
+        public Guid SubmittedBy { get; set; }
+        [NotMapped]
+        public ApprovalStatus ApprovalStatus { get; set; }
+        [NotMapped]
+        public string ApprovedBy { get; set; }
+        [NotMapped]
+        public string RejectionReason { get; set; }
     }
 
     public enum ApprovalStatus

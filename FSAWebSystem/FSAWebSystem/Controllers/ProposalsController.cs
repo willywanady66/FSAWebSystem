@@ -21,19 +21,23 @@ namespace FSAWebSystem.Controllers
     {
         private readonly FSAWebSystemDbContext _db;
         private readonly IProposalService _proposalService;
+        private readonly IBucketService _bucketService;
         private readonly ICalendarService _calendarService;
         private readonly IUserService _userService;
         private readonly INotyfService _notyfService;
+        private readonly IApprovalService _approvalService;
         private readonly UserManager<FSAWebSystemUser> _userManager;
 
-        public ProposalsController(FSAWebSystemDbContext db, IProposalService proposalService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager, IUserService userService, INotyfService notyfService)
+        public ProposalsController(FSAWebSystemDbContext db, IProposalService proposalService, IBucketService bucketService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager, IUserService userService, INotyfService notyfService, IApprovalService approvalService)
         {
             _db = db;
             _proposalService = proposalService;
+            _bucketService = bucketService;
             _calendarService = calendarService;
             _userManager = userManager;
             _userService = userService;
             _notyfService = notyfService;
+            _approvalService = approvalService;
         }
 
         // GET: Proposals
@@ -41,7 +45,7 @@ namespace FSAWebSystem.Controllers
 
         [Authorize(Policy = ("ReqOnly"))]
         public async Task<IActionResult> Index(string message)
-        {              
+        {
             return View();
         }
 
@@ -61,8 +65,8 @@ namespace FSAWebSystem.Controllers
                 if (fsaDetail != null)
                 {
 
-                        data = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week, param, userUnilever.Id);
-          
+                    data = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week, param, userUnilever.Id);
+
                 }
                 if (param.proposalInputs != null)
                 {
@@ -85,13 +89,13 @@ namespace FSAWebSystem.Controllers
                     data = data.proposals
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
-          
 
-            
+
+
 
             return listData;
 
@@ -113,7 +117,7 @@ namespace FSAWebSystem.Controllers
                     data = listProposalHistory.proposalsHistory
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
@@ -128,14 +132,24 @@ namespace FSAWebSystem.Controllers
             var message = string.Empty;
             ValidateProposalInput(proposals, errorMessages);
             List<Proposal> listProposal = new List<Proposal>();
+            List<Approval> listApproval = new List<Approval>();
             if (!errorMessages.Any() && !proposals.Any(x => string.IsNullOrEmpty(x.weeklyBucketId)))
             {
                 var fsaDetail = await _calendarService.GetCalendarDetail(currDate.Date);
                 var savedProposals = _proposalService.GetPendingProposals(fsaDetail, (Guid)user.UserUnileverId);
+                var savedApprovals = _approvalService.GetPendingApprovals();
                 foreach (var proposalInput in proposals.Where(x => (!string.IsNullOrEmpty(x.remark) || x.proposeAdditional > 0 || x.rephase > 0)))
                 {
-                    if(Guid.Parse(proposalInput.id) == Guid.Empty)
+
+                    if (Guid.Parse(proposalInput.id) == Guid.Empty)
                     {
+                        var approval = new Approval
+                        {
+                            Id = Guid.NewGuid(),
+                            ApprovalStatus = ApprovalStatus.Pending,
+                            SubmittedAt = DateTime.Now,
+                            SubmittedBy = (Guid)user.UserUnileverId
+                        };
                         var proposal = new Proposal
                         {
                             Id = Guid.NewGuid(),
@@ -145,17 +159,22 @@ namespace FSAWebSystem.Controllers
                             WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
                             Rephase = proposalInput.rephase,
                             ProposeAdditional = proposalInput.proposeAdditional,
-                            SubmittedAt = DateTime.Now,
-                            SubmittedBy = (Guid)user.UserUnileverId,
                             Remark = proposalInput.remark,
-                            ApprovalStatus = ApprovalStatus.Pending,
+                            IsWaitingApproval = true,
+                            ApprovalId = approval.Id
                         };
+
+                        approval.ProposalId = proposal.Id;
+                        listApproval.Add(approval);
                         listProposal.Add(proposal);
                     }
                     else
                     {
                         try
                         {
+                            var savedApproval = savedApprovals.Single(x => x.Id == Guid.Parse(proposalInput.approvalId));
+                            savedApproval.SubmittedAt = DateTime.Now;
+
                             var savedProposal = savedProposals.Single(x => x.Id == Guid.Parse(proposalInput.id));
                             savedProposal.Remark = proposalInput.remark;
                             savedProposal.Rephase = proposalInput.rephase;
@@ -165,15 +184,16 @@ namespace FSAWebSystem.Controllers
                         {
 
                         }
-                       
+
                     }
-                   
+
                 }
                 await _proposalService.SaveProposals(listProposal);
+                await _approvalService.SaveApprovals(listApproval);
                 try
                 {
                     await _db.SaveChangesAsync();
-                    
+
                     message = "Your Proposal has been saved!";
                     _notyfService.Success(message);
                     return Ok(proposals);
@@ -189,12 +209,9 @@ namespace FSAWebSystem.Controllers
                 message = "Submit Proposal Failed";
                 _notyfService.Warning(message);
             }
-
-            TempData["ErrorMessages"] = errorMessages;
-            
-            return BadRequest(Json( new {proposals, errorMessages}));
+            return BadRequest(Json(new { proposals, errorMessages }));
         }
-       
+
         public void ValidateProposalInput(List<ProposalInput> proposalInputs, List<string> errorMessages)
         {
             foreach (var proposal in proposalInputs.Where(x => (!string.IsNullOrEmpty(x.remark) || x.proposeAdditional > 0 || x.rephase > 0)))

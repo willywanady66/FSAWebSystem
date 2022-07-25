@@ -55,81 +55,101 @@ namespace FSAWebSystem.Services
 
         public async Task<ProposalData> GetProposalForView(int month, int year, int week, DataTableParamProposal param, Guid userId)
         {
-
+            var zz = (from prop in _db.Proposals
+                      join approval in _db.Approvals on prop.Id equals approval.ProposalId
+                      select new Proposal
+                      {
+                          Id = prop.Id,
+                          WeeklyBucketId = prop.WeeklyBucketId,
+                          RejectionReason = approval.RejectionReason,
+                          ApprovalStatus = approval.ApprovalStatus
+                      }).ToList();
             var proposals = (from weeklyBucket in _db.WeeklyBuckets
                              join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
                              join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
-                             join proposal in _db.Proposals.Where(x => x.SubmittedBy == userId) on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
+                             join approval in (from prop in _db.Proposals
+                                               join approval in _db.Approvals on prop.Id equals approval.ProposalId
+                                               select new Approval
+                                               {
+                                                   Id = prop.Id,
+                                                   WeeklyBucketId = prop.WeeklyBucketId,
+                                                   ApprovalStatus = approval.ApprovalStatus
+                                               }) on weeklyBucket.Id equals approval.WeeklyBucketId into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
                              where weeklyBucket.Month == month && weeklyBucket.Year == year
                              select new Proposal
-                             {
-                                 Id = p != null ? p.Id : Guid.Empty,
+                             {  
                                  WeeklyBucketId = weeklyBucket.Id,
-                                 BannerName = banner.BannerName,
-                                 Month = month,
-                                 Week = week,
-                                 Year = year,
-                                 PlantCode = banner.PlantCode,
-                                 PlantName = banner.PlantName,
-                                 PCMap = sku.PCMap,
-                                 DescriptionMap = sku.DescriptionMap,
-                                 RatingRate = weeklyBucket.RatingRate,
-                                 MonthlyBucket = weeklyBucket.MonthlyBucket,
-                                 ValidBJ = weeklyBucket.ValidBJ,
-                                 RemFSA = weeklyBucket.MonthlyBucket - weeklyBucket.ValidBJ,
-                                 CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + week.ToString()).GetValue(weeklyBucket, null)),
-                                 NextBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null)),
-                                 Remark = p != null ? p.Remark : string.Empty,
-                                 Rephase = p != null ? p.Rephase : decimal.Zero,
-                                 RejectionReason = p != null ? p.RejectionReason : string.Empty,
-                                 ProposeAdditional = p != null ? p.ProposeAdditional : decimal.Zero,
-                                 ApprovalStatus = p != null ? p.ApprovalStatus : ApprovalStatus.Pending
-                             });
+                                 ApprovalStatus = p != null ? p.ApprovalStatus : ApprovalStatus.Cancelled
+                             }).ToList();
 
-            proposals = proposals.Where(x => x.ApprovalStatus == ApprovalStatus.Pending);
-            if (!string.IsNullOrEmpty(param.search.value))
-            {
-                var search = param.search.value.ToLower();
-                proposals = proposals.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search));
-            }
-            if (param.order.Any())
-            {
-                var order = param.order[0];
-                switch (order.column)
-                {
-                    case 0:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.BannerName) : proposals.OrderBy(x => x.BannerName);
-                        break;
-                    case 1:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PlantName) : proposals.OrderBy(x => x.PlantName);
-                        break;
-                    case 2:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PCMap) : proposals.OrderBy(x => x.PCMap);
-                        break;
-                    case 3:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.DescriptionMap) : proposals.OrderBy(x => x.DescriptionMap);
-                        break;
-                    case 4:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RatingRate) : proposals.OrderBy(x => x.RatingRate);
-                        break;
-                    case 5:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.MonthlyBucket) : proposals.OrderBy(x => x.MonthlyBucket);
-                        break;
-                    case 6:
-                        proposals = (order.dir == "desc" ? proposals.AsEnumerable().OrderByDescending(x => x.CurrentBucket).AsQueryable() : proposals.AsEnumerable().OrderBy(x => x.CurrentBucket).AsQueryable());
-                        break;
-                    case 7:
-                        proposals = (order.dir == "desc" ? proposals.AsEnumerable().OrderByDescending(x => x.NextBucket).AsQueryable() : proposals.AsEnumerable().OrderBy(x => x.NextBucket).AsQueryable());
-                        break;
-                    case 8:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.ValidBJ) : proposals.OrderBy(x => x.ValidBJ);
-                        break;
-                    case 9:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RemFSA) : proposals.OrderBy(x => x.RemFSA);
-                        break;
-                }
-            }
+            //Id = p != null ? p.Id : Guid.Empty,
+            //
+            //BannerName = banner.BannerName,
+            //Month = month,
+            //Week = week,
+            //Year = year,
+            //PlantCode = banner.PlantCode,
+            //PlantName = banner.PlantName,
+            //PCMap = sku.PCMap,
+            //DescriptionMap = sku.DescriptionMap,
+            //RatingRate = weeklyBucket.RatingRate,
+            //MonthlyBucket = weeklyBucket.MonthlyBucket,
+            //ValidBJ = weeklyBucket.ValidBJ,
+            //RemFSA = weeklyBucket.MonthlyBucket - weeklyBucket.ValidBJ,
+            //CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + week.ToString()).GetValue(weeklyBucket, null)),
+            //NextBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null)),
+            ////Remark = p != null ? p.Remark : string.Empty,
+            ////Rephase = p != null ? p.Rephase : decimal.Zero,
+            ////IsWaitingApproval = p != null ? p.IsWaitingApproval : false,
+            ////RejectionReason = p != null ? p.RejectionReason : string.Empty,
+            ////ProposeAdditional = p != null ? p.ProposeAdditional : decimal.Zero,
+            //ApprovalStatus = p != null ? p.ApprovalStatus : ApprovalStatus.Pending,
+            //ApprovalId = p != null ? p.ApprovalId : Guid.Empty
+
+            //proposals = proposals.Where(x =>  x.ApprovalStatus == ApprovalStatus.Pending);
+            //if (!string.IsNullOrEmpty(param.search.value))
+            //{
+            //    var search = param.search.value.ToLower();
+            //    proposals = proposals.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search));
+            //}
+            //if (param.order.Any())
+            //{
+            //    var order = param.order[0];
+            //    switch (order.column)
+            //    {
+            //        case 0:
+            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.BannerName) : proposals.OrderBy(x => x.BannerName);
+            //            break;
+            //        case 1:
+            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PlantName) : proposals.OrderBy(x => x.PlantName);
+            //            break;
+            //        case 2:
+            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PCMap) : proposals.OrderBy(x => x.PCMap);
+            //            break;
+            //        case 3:
+            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.DescriptionMap) : proposals.OrderBy(x => x.DescriptionMap);
+            //            break;
+            //        case 4:
+            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RatingRate) : proposals.OrderBy(x => x.RatingRate);
+            //            break;
+            //        case 5:
+            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.MonthlyBucket) : proposals.OrderBy(x => x.MonthlyBucket);
+            //            break;
+            //        case 6:
+            //            proposals = (order.dir == "desc" ? proposals.AsEnumerable().OrderByDescending(x => x.CurrentBucket).AsQueryable() : proposals.AsEnumerable().OrderBy(x => x.CurrentBucket).AsQueryable());
+            //            break;
+            //        case 7:
+            //            proposals = (order.dir == "desc" ? proposals.AsEnumerable().OrderByDescending(x => x.NextBucket).AsQueryable() : proposals.AsEnumerable().OrderBy(x => x.NextBucket).AsQueryable());
+            //            break;
+            //        case 8:
+            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.ValidBJ) : proposals.OrderBy(x => x.ValidBJ);
+            //            break;
+            //        case 9:
+            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RemFSA) : proposals.OrderBy(x => x.RemFSA);
+            //            break;
+            //    }
+            //}
 
 
             var totalCount = proposals.Count();
@@ -156,11 +176,12 @@ namespace FSAWebSystem.Services
                                                               PCMap = sku.PCMap,
                                                               DescriptionMap = sku.DescriptionMap
                                                           }) on proposal.WeeklyBucketId equals weeklyBucket.Id
-                                    where proposal.ApprovalStatus != ApprovalStatus.Pending
-                                    && proposal.SubmittedBy == userId
+                                                          join approval in _db.Approvals on proposal.Id equals approval.ProposalId
+                                    where !proposal.IsWaitingApproval 
+                                    && approval.SubmittedBy == userId
                                     select new ProposalHistory
                                     {
-                                        SubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                                        SubmittedAt = approval.SubmittedAt.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
                                         BannerName = weeklyBucket.BannerName,
                                         PlantName = weeklyBucket.PlantName,
                                         PCMap = weeklyBucket.PCMap,
@@ -169,10 +190,11 @@ namespace FSAWebSystem.Services
                                         ApprovedRephase = 0,
                                         ProposeAdditional = proposal.ProposeAdditional,
                                         ApprovedProposeAdditional = 0,
-                                        //Remark = proposal.Remark,
-                                        Status = proposal.ApprovalStatus.ToString(),
-                                        ApprovedBy = proposal.ApprovedBy,
-                                        RejectionReason = proposal.RejectionReason
+                                        Remark = proposal.Remark,
+                                        Status = approval.ApprovalStatus.ToString(),
+                                        ApprovedBy = approval.ApprovedBy,
+                                        RejectionReason = approval.RejectionReason,
+
                                     });
 
             if (!string.IsNullOrEmpty(param.search.value))
