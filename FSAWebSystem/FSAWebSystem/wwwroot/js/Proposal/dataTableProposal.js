@@ -187,16 +187,17 @@
             { "data": "approvedRephase" },   //6
             { "data": "proposeAdditional" },   //7
             { "data": "approvedProposeAdditional" },   //8
-            { "data": "status" },   //9
-            { "data": "approvedBy" },   //10
-            { "data": "rejectionReason" },   //11
+            { "data": "remark" },   //9
+            { "data": "status" },   //10
+            { "data": "approvedBy" },   //11
+            { "data": "rejectionReason" },   //12
         ],
         "rowCallback": function (row, data, index) {
             if (data.status == "Approved") {
-                $('td:eq(9)', row).css({ color: "green" });
+                $('td:eq(10)', row).css({ color: "green" });
             }
             else if (data.status == "Rejected") {
-                $('td:eq(9)', row).css({ color: "red" });
+                $('td:eq(10)', row).css({ color: "red" });
             }
         }
     });

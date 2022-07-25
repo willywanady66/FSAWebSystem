@@ -42,7 +42,6 @@ namespace FSAWebSystem.Models.Context
         public DbSet<SKU> SKUs { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<RoleUnilever> RoleUnilevers { get; set; }
-        public DbSet<RoleAccess> RoleAccesses { get; set; }
         public DbSet<FSACalendarHeader> FSACalendarHeader { get; set; }
         public DbSet<FSACalendarDetail> FSACalendarDetail { get; set; }
         public DbSet<FSADocument> FSADocuments{ get; set; }
@@ -51,5 +50,6 @@ namespace FSAWebSystem.Models.Context
         public DbSet<WorkLevel> WorkLevels{ get; set; }
         public DbSet<Proposal> Proposals { get; set; }
         public DbSet<Approval> Approvals { get; set; }
+        public DbSet<Menu> Menus { get; set; }
     }
 }

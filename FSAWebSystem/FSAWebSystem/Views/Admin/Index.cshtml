@@ -72,7 +72,6 @@
 			<div class="card-header py-3">
 				<div class="inline"></div>
 				<h5 class="m-0 font-weight-bold text-primary d-inline">Work Level</h5>
-				@*<a asp-area="Identity" asp-page="/Account/Register"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Role</button></a>*@
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">
@@ -93,7 +92,7 @@
 			<div class="card-header py-3">
 				<div class="inline"></div>
 				<h5 class="m-0 font-weight-bold text-primary d-inline">Roles</h5>
-				@*<a asp-area="Identity" asp-page="/Account/Register"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Role</button></a>*@
+				<a asp-controller="RoleUnilevers" asp-action="Create"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Role</button></a>
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">
@@ -102,15 +101,17 @@
 							<tr>
 								<th>No.</th>
 								<th>Role</th>
+								<th>Action</th>
 							</tr>
 						</thead>
 						<tbody>
-							@foreach (var item in Model.Roles.Select((role, index) => new { role.RoleName, Index = index + 1 }))
+							@foreach (var item in Model.Roles.Select((role, index) => new { role.RoleName, Index = index + 1, Id = role.RoleUnileverId }))
 							{
 
 								<tr>
 									<td>@Html.DisplayFor(roles => item.Index)</td>
 									<td>@Html.DisplayFor(roles => item.RoleName)</td>
+									<td class="text-center align-middle"><a asp-action="Edit" asp-controller="RoleUnilevers" asp-route-id="@item.Id"><i class="fas fa-pen"></i></a></td>
 								</tr>
 							}
 						</tbody>
@@ -123,17 +124,15 @@
 			<div class="card-header py-3">
 				<div class="inline"></div>
 				<h5 class="m-0 font-weight-bold text-primary d-inline">Role Access</h5>
-				@*<a asp-area="Identity" asp-page="/Account/Register"><button class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add Role Access</button></a>*@
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">
 					<table class="table table-bordered" id="dataTableRoleAccess" width="100%" cellspacing="0">
 						<thead>
 							<tr>
-								<th>Group Role</th>
+								<th>No</th>
+								<th>Role</th>
 								<th>Menu</th>
-								<th>Sub Menu</th>
-								<th>Access Activity</th>
 								<th class="text-center">Action</th>
 							</tr>
 						</thead>

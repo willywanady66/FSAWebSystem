@@ -87,7 +87,7 @@ namespace FSAWebSystem.Controllers
                     recordsTotal = data.totalRecord,
                     recordsFiltered = data.totalRecord,
                     data = data.proposals
-                });
+                }); 
             }
             catch (Exception ex)
             {

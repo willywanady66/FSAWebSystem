@@ -1,4 +1,5 @@
 ﻿using FSAWebSystem.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace FSAWebSystem.Services.Interface
@@ -12,5 +13,8 @@ namespace FSAWebSystem.Services.Interface
         public Task<RoleUnilever> GetRoleByName (string roleName);
 
         public Task FillRoleDropdown(ViewDataDictionary viewData);
+        public List<SelectListItem> GetMenuDropdown();
+        public IQueryable<Menu> GetAllMenu();
+        public Task<RoleUnilever> Update(RoleUnilever role);
     }
 }

@@ -74,6 +74,40 @@ namespace FSAWebSystem.Models.Context
                 }
                
             }
+
+            if(!_db.Menus.Any())
+            {
+                var listMenus = new List<Menu>
+                {
+                    new Menu
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Dashboard"
+                    },
+                    new Menu
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Report"
+                    },
+                    new Menu
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Proposal"
+                    },
+                    new Menu
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Approval"
+                    },
+                    new Menu
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Admin"
+                    }   
+                };
+                _db.AddRange(listMenus);
+                _db.SaveChanges();
+            }
         }
 
         

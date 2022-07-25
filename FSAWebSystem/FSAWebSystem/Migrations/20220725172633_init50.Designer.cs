@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20220725172633_init50")]
+    partial class init50
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -394,7 +396,12 @@ namespace FSAWebSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("RoleAccessId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("RoleAccessId");
 
                     b.ToTable("Menus");
                 });
@@ -467,30 +474,36 @@ namespace FSAWebSystem.Migrations
                     b.ToTable("Proposals");
                 });
 
+            modelBuilder.Entity("FSAWebSystem.Models.RoleAccess", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RoleAccesses");
+                });
+
             modelBuilder.Entity("FSAWebSystem.Models.RoleUnilever", b =>
                 {
                     b.Property<Guid>("RoleUnileverId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("RoleAccessId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("RoleUnileverId");
+
+                    b.HasIndex("RoleAccessId");
 
                     b.ToTable("RoleUnilevers");
                 });
@@ -614,21 +627,6 @@ namespace FSAWebSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("WorkLevels");
-                });
-
-            modelBuilder.Entity("MenuRoleUnilever", b =>
-                {
-                    b.Property<Guid>("MenusId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("RoleUnileversRoleUnileverId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("MenusId", "RoleUnileversRoleUnileverId");
-
-                    b.HasIndex("RoleUnileversRoleUnileverId");
-
-                    b.ToTable("MenuRoleUnilever");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -801,6 +799,24 @@ namespace FSAWebSystem.Migrations
                         .HasForeignKey("FSACalendarHeaderId");
                 });
 
+            modelBuilder.Entity("FSAWebSystem.Models.Menu", b =>
+                {
+                    b.HasOne("FSAWebSystem.Models.RoleAccess", null)
+                        .WithMany("Menus")
+                        .HasForeignKey("RoleAccessId");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.RoleUnilever", b =>
+                {
+                    b.HasOne("FSAWebSystem.Models.RoleAccess", "RoleAccess")
+                        .WithMany()
+                        .HasForeignKey("RoleAccessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RoleAccess");
+                });
+
             modelBuilder.Entity("FSAWebSystem.Models.SKU", b =>
                 {
                     b.HasOne("FSAWebSystem.Models.ProductCategory", "ProductCategory")
@@ -821,21 +837,6 @@ namespace FSAWebSystem.Migrations
                         .IsRequired();
 
                     b.Navigation("RoleUnilever");
-                });
-
-            modelBuilder.Entity("MenuRoleUnilever", b =>
-                {
-                    b.HasOne("FSAWebSystem.Models.Menu", null)
-                        .WithMany()
-                        .HasForeignKey("MenusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FSAWebSystem.Models.RoleUnilever", null)
-                        .WithMany()
-                        .HasForeignKey("RoleUnileversRoleUnileverId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -892,6 +893,11 @@ namespace FSAWebSystem.Migrations
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarHeader", b =>
                 {
                     b.Navigation("FSACalendarDetails");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.RoleAccess", b =>
+                {
+                    b.Navigation("Menus");
                 });
 #pragma warning restore 612, 618
         }

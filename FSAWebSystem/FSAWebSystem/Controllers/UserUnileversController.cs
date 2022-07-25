@@ -110,6 +110,7 @@ namespace FSAWebSystem.Controllers
             ModelState.Remove("Role");
             ModelState.Remove("Message");
             ModelState.Remove("Status");
+            ModelState.Remove("WLName");
             if (ModelState.IsValid)
             {
                 try
@@ -120,8 +121,8 @@ namespace FSAWebSystem.Controllers
                     var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerId.Contains(x.Id)).ToList();
                     var user = await _userManager.FindByIdAsync(userUnilever.UserId);
 
-                    user.UserName = userUnilever.Email; 
-                    user.NormalizedUserName = userUnilever.Email; ;
+                    user.UserName = userUnilever.Email;
+                    user.NormalizedUserName = userUnilever.Email;
                     user.Email = userUnilever.Email;
                     user.NormalizedEmail = userUnilever.Email;
                     await _userManager.UpdateAsync(user);

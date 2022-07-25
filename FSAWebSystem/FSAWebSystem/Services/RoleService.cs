@@ -11,7 +11,7 @@ namespace FSAWebSystem.Services
     public class RoleService : IRoleService
     {
         private readonly FSAWebSystemDbContext _db;
-     
+
         public RoleService(FSAWebSystemDbContext db)
         {
             _db = db;
@@ -31,13 +31,32 @@ namespace FSAWebSystem.Services
 
         public async Task<RoleUnilever> GetRole(Guid id)
         {
-            var role = await _db.RoleUnilevers.FindAsync(id);
+            var role = await _db.RoleUnilevers.Include(x => x.Menus).SingleOrDefaultAsync(x => x.RoleUnileverId == id);
             return role;
         }
 
         public async Task<RoleUnilever> GetRoleByName(string roleName)
         {
-            return await _db.RoleUnilevers.SingleOrDefaultAsync(x => x.RoleName.ToUpper() == roleName.ToUpper());
+            return await _db.RoleUnilevers.Include(x => x.Menus).SingleOrDefaultAsync(x => x.RoleName.ToUpper() == roleName.ToUpper());
+        }
+
+        public List<SelectListItem> GetMenuDropdown()
+        {
+            var menus = _db.Menus.ToList();
+            List<SelectListItem> listMenus = menus.Select(x => new SelectListItem { Text = x.Name, Value = x.Id.ToString() }).ToList();
+            return listMenus;
+        }
+
+        public IQueryable<Menu> GetAllMenu()
+        {
+            return _db.Menus;
+       
+        }
+        public async Task<RoleUnilever> Update(RoleUnilever role)
+        {
+            _db.RoleUnilevers.Update(role);
+            await _db.SaveChangesAsync();
+            return role;
         }
     }
 }
