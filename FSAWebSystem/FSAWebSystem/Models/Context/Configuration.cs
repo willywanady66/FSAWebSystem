@@ -44,6 +44,7 @@ namespace FSAWebSystem.Models.Context
             user.Email = "admin@gmail.com";
             user.UserName = user.Email;
             user.UserUnileverId = Guid.NewGuid();
+            user.Role = "Administrator";
             var res = await userManager.CreateAsync(user, "Administrator1*");
             if(res.Succeeded)
             {
@@ -79,11 +80,11 @@ namespace FSAWebSystem.Models.Context
             {
                 var listMenus = new List<Menu>
                 {
-                    new Menu
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Dashboard"
-                    },
+                    //new Menu
+                    //{
+                    //    Id = Guid.NewGuid(),
+                    //    Name = "Dashboard"
+                    //},
                     new Menu
                     {
                         Id = Guid.NewGuid(),

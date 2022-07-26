@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FSAWebSystem.Models
 {
@@ -18,5 +19,8 @@ namespace FSAWebSystem.Models
 
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedAt { get; set; }
+
+        [NotMapped]
+        public string Menu { get; set; }
     }
 }

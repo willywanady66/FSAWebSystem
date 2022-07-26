@@ -26,7 +26,7 @@ namespace FSAWebSystem.Services
 
         public IQueryable<RoleUnilever> GetAllRoles()
         {
-            return _db.RoleUnilevers;
+            return _db.RoleUnilevers.Include(x => x.Menus);
         }
 
         public async Task<RoleUnilever> GetRole(Guid id)

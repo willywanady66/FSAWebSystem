@@ -332,6 +332,11 @@ namespace FSAWebSystem.Controllers
 
                 foreach (var user in listUser)
                 {
+                    var userBannersName = user.BannerName.Split(',').ToList();
+                    var savedBanners = _bannerService.GetAllActiveBanner();
+
+                    var userBanners = savedBanners.Where(x => userBannersName.Contains(x.BannerName));
+
                     var savedUser = await _userService.GetUserByEmail(user.Email);
                     if(savedUser != null)
                     {
@@ -355,6 +360,16 @@ namespace FSAWebSystem.Controllers
                                     {
                                         errorMessage.Add(error.Description);
                                     }
+                                }
+                                else
+                                {
+                                    savedUserLogin.UserName = user.Email;
+                                    savedUserLogin.NormalizedUserName = user.Email;
+                                    savedUserLogin.Email = user.Email;
+                                    savedUserLogin.Role = user.Role;
+                                    await _userManager.RemovePasswordAsync(savedUserLogin);
+                                    await _userManager.AddPasswordAsync(savedUserLogin, user.Password);
+                                    await _userManager.UpdateAsync(savedUserLogin);
                                 }
                             }
                         }
@@ -880,6 +895,54 @@ namespace FSAWebSystem.Controllers
                     errorMessages.Add("There is duplicate record of Banner Name: " + bannerGrp.Key.BannerName + " and Plant Code : " + bannerGrp.Key.PlantCode + ". Please remove one record.");
                 }
             }
+        }
+
+
+        private void ValidateUserExcel(List<UserUnilever> listUser, List<string> errorMessages)
+        {
+            List<string> columnToCheck = new List<string>();
+            var savedBanners = _bannerService.GetAllActiveBanner();
+            columnToCheck.Add("Name");
+            columnToCheck.Add("WLName");
+            columnToCheck.Add("Role");
+
+            var groups = listUser.GroupBy(x => x.Email).ToList();
+            foreach (var grp in groups)
+            {
+                if (grp.Count() > 1)
+                {
+                    errorMessages.Add("There is duplicate record of email: " + grp.Key + ". Please remove one record.");
+                }
+            }
+
+            foreach (var col in columnToCheck)
+            {
+                var emptyColumnValues = listUser.Where(x => string.IsNullOrEmpty(GetColStringValue(x, col))).Select(x => x.Email).ToList();
+                if (emptyColumnValues.Any())
+                {
+                    Parallel.ForEach(emptyColumnValues, x =>
+                    {
+                        errorMessages.Add(col + " cannot by empty on email: " + x);
+                    });
+                }
+            }
+
+            if (listUser.Any(x => string.IsNullOrEmpty(x.Email)))
+            {
+                errorMessages.Add("Please fill all email column");
+            }
+
+            //foreach(var user in listUser)
+            //{
+            //    var bannerNames = user.BannerName.Split(',').ToList();
+            //    foreach(var bannerName in bannerNames)
+            //    {
+            //        if (!savedBanners.Any(x => x.BannerName.ToUpper() == bannerName.ToUpper() ))
+            //        {
+            //            errorMessages.Add("Banner")
+            //        }
+            //    }
+            //}
         }
 
         private static void ValidateExcel<T>(List<T> list, List<string> errorMessages)

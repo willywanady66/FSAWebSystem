@@ -4,6 +4,8 @@ using FSAWebSystem.Models.Context;
 using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -139,7 +141,13 @@ namespace FSAWebSystem.Services
             await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
 
             var result = await _userManager.CreateAsync(user, password);
-            await _userManager.AddClaimAsync(user, new Claim("Role", userUnilever.RoleUnilever.RoleName));
+
+            foreach (var menu in userUnilever.RoleUnilever.Menus)
+            {
+                await _userManager.AddClaimAsync(user, new Claim("Menu", menu.Name));
+            }
+
+          
             if (result.Succeeded)
             {
                 _db.UsersUnilever.Add(userUnilever);
@@ -191,6 +199,21 @@ namespace FSAWebSystem.Services
                 totalRecord = totalCount,
                 workLevels = listWL
             };
+        }
+
+
+        public async Task FillWorkLevelDropdown(ViewDataDictionary viewData)
+        {
+            var workLevels = GetAllWorkLevel().ToList();
+            List<SelectListItem> listWorkLevel = new List<SelectListItem>();
+            listWorkLevel = workLevels.Select(x => new SelectListItem { Text = x.WL, Value = x.Id.ToString() }).ToList();
+            viewData["ListWorkLevel"] = listWorkLevel;
+        }
+
+        public async Task<List<UserUnilever>> GetUserByRole(Guid roleId)
+        {
+            var users = await _db.UsersUnilever.Include(x => x.RoleUnilever).Where(x => x.RoleUnilever.RoleUnileverId == roleId).ToListAsync();
+            return users;
         }
     }
 }

@@ -51,9 +51,10 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireClaim("Role", "Administrator"));
-    options.AddPolicy("ApproverOnly", policy => policy.RequireClaim("Role", "Approver", "Administrator"));
-    options.AddPolicy("ReqOnly", policy => policy.RequireClaim("Role", "Requestor", "Administrator"));
+    options.AddPolicy("AdminPage", policy => policy.RequireClaim("Menu", "Admin"));
+    options.AddPolicy("ReportPage", policy => policy.RequireClaim("Menu", "Report"));
+    options.AddPolicy("ProposalPage", policy => policy.RequireClaim("Menu", "Proposal"));
+    options.AddPolicy("ApprovalPage", policy => policy.RequireClaim("Menu", "Approval"));
     //options.AddPolicy("AdminOnly", policy => policy.RequireClaim("Role", "Administrator"));
 });
 

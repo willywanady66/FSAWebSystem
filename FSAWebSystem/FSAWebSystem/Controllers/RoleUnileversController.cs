@@ -9,6 +9,9 @@ using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Services.Interface;
 using AspNetCoreHero.ToastNotification.Abstractions;
+using Microsoft.AspNetCore.Identity;
+using FSAWebSystem.Areas.Identity.Data;
+using System.Security.Claims;
 
 namespace FSAWebSystem.Controllers
 {
@@ -16,12 +19,16 @@ namespace FSAWebSystem.Controllers
     {
         private readonly FSAWebSystemDbContext _context;
         private readonly IRoleService _roleService;
+        private readonly IUserService _userService;
+        private readonly UserManager<FSAWebSystemUser> _userManager;
         INotyfService _notyfService;
-        public RoleUnileversController(FSAWebSystemDbContext context, IRoleService roleSerivce, INotyfService notyfService)
+        public RoleUnileversController(FSAWebSystemDbContext context, IRoleService roleSerivce, INotyfService notyfService, IUserService userService, UserManager<FSAWebSystemUser> userManager)
         {
             _context = context;
             _roleService = roleSerivce;
             _notyfService = notyfService;
+            _userService = userService;
+            _userManager = userManager;
         }
 
         // GET: RoleUnilevers
@@ -82,6 +89,7 @@ namespace FSAWebSystem.Controllers
                     var savedMenu = savedMenus.Single(x => x.Id == Guid.Parse(menuId));
                     roleUnilever.Menus.Add(savedMenu);
                 }
+
                 roleUnilever.RoleUnileverId = Guid.NewGuid();
                 roleUnilever.CreatedAt = DateTime.Now;
                 roleUnilever.CreatedBy = User.Identity.Name;
@@ -131,6 +139,7 @@ namespace FSAWebSystem.Controllers
             ModelState.Remove("ModifiedBy");
             ModelState.Remove("CreatedAt");
             ModelState.Remove("CreatedBy");
+            ModelState.Remove("Menu");
             if (id != roleUnilever.RoleUnileverId)
             {
                 return NotFound();
@@ -152,6 +161,9 @@ namespace FSAWebSystem.Controllers
                     List<Guid> selectedMenuId = (from menuId in menuIds select Guid.Parse(menuId)).ToList();
                     var selectedMenu = (_roleService.GetAllMenu().ToList()).Where(x => selectedMenuId.Contains(x.Id)).ToList();
 
+             
+
+
                     savedRole.RoleName = roleUnilever.RoleName;
                     savedRole.Menus = selectedMenu;
                     savedRole.ModifiedAt = DateTime.Now;
@@ -159,6 +171,18 @@ namespace FSAWebSystem.Controllers
 
                     await _roleService.Update(savedRole);
                     await _context.SaveChangesAsync();
+
+                    var usersThisRole = await _userService.GetUserByRole(roleUnilever.RoleUnileverId);
+                    foreach (var user in usersThisRole)
+                    {
+                        var netUser = await _userManager.FindByEmailAsync(user.Email);
+                        var claims = await _userManager.GetClaimsAsync(netUser);
+                        await _userManager.RemoveClaimsAsync(netUser, claims);
+                        foreach (var menu in selectedMenu)
+                        {
+                            await _userManager.AddClaimAsync(netUser, new Claim("Menu", menu.Name));
+                        }
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -171,9 +195,13 @@ namespace FSAWebSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                _notyfService.Success("Role " + roleUnilever.RoleName + " successfully saved");
             }
-            _notyfService.Success("Role " + roleUnilever.RoleName + " successfully saved");
+            else
+            {
+                return View(roleUnilever);
+            }
+            
             return RedirectToAction("Index", "Admin");
         }
 

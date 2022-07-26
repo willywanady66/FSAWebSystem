@@ -51,17 +51,21 @@
 
 				<!-- Heading -->
 				<!-- Nav Item - Dashboard -->
-				<li class="nav-item active ">
-					<a class="nav-link text-center" asp-area="" asp-controller="Home" asp-action="Privacy">
+		
+					@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Report"))
+					{
+						<li class="nav-item active ">
+							<a class="nav-link text-center" asp-area="" asp-controller="Home" asp-action="Privacy">
 						<h5 class="font-weight-bold">REPORT</h5>
 					</a>
 				</li>
-
 				<hr class="sidebar-divider"> </hr>
+					}
 
-				@if (User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
-				{
-					if (User.Claims.Single(x => x.Type == "Role").Value == "Administrator" || User.Claims.Single(x => x.Type == "Role").Value == "Requestor")
+
+				
+
+					@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Proposal"))
 					{
 						<li class="nav-item active">
 							<a class="nav-link text-center" asp-area="" asp-controller="Proposals" asp-action="Index">
@@ -71,12 +75,10 @@
 
 						<hr class="sidebar-divider"> </hr>
 					}
-				}
+				
 
 
-				@if (User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
-				{
-					if (User.Claims.Single(x => x.Type == "Role").Value == "Approver" || User.Claims.Single(x => x.Type == "Role").Value == "Administrator")
+					@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Approval"))
 					{
 						<li class="nav-item active">
 							<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
@@ -85,13 +87,12 @@
 						</li>
 						<hr class="sidebar-divider"> </hr>
 					}
-				}
+				
 
 
 
-				@if (User.Claims.SingleOrDefault(x => x.Type == "Role") != null)
-				{
-					if (User.Claims.Single(x => x.Type == "Role").Value == "Administrator")
+		
+					@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Admin"))
 					{
 						<li class="nav-item active">
 							<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
@@ -100,7 +101,7 @@
 						</li>
 						<hr class="sidebar-divider"> </hr>
 					}
-				}
+				
 			</ul>
 		}
 

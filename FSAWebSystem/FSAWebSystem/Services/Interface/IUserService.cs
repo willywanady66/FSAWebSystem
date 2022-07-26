@@ -2,6 +2,7 @@
 using FSAWebSystem.Models;
 using FSAWebSystem.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace FSAWebSystem.Services.Interface
 {
@@ -22,5 +23,7 @@ namespace FSAWebSystem.Services.Interface
         public void SaveWorkLevels(List<WorkLevel> workLevels);
 
         public Task<WorkLevelPagingData> GetAllWorkLevelPagination(DataTableParam param);
+        public Task FillWorkLevelDropdown(ViewDataDictionary viewData);
+        public Task<List<UserUnilever>> GetUserByRole(Guid roleId);
     }
 }

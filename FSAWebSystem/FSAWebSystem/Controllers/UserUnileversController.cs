@@ -37,14 +37,6 @@ namespace FSAWebSystem.Controllers
             _notyfService = notyfService;
         }
 
-        // GET: UserUnilevers
-        public async Task<IActionResult> Index()
-        {
-              return _context.UsersUnilever != null ? 
-                          View(await _context.UsersUnilever.ToListAsync()) :
-                          Problem("Entity set 'FSAWebSystemDbContext.UsersUnilever' is null.");
-        }
-
         // GET: UserUnilevers/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {
@@ -77,10 +69,15 @@ namespace FSAWebSystem.Controllers
             await FillDropdowns(ViewData);
             var listBanner = (List<SelectListItem>)ViewData["ListBanner"];
             var listRole = (List<SelectListItem>)ViewData["ListRole"];
+            var listWorkLevel = (List<SelectListItem>)ViewData["ListWorkLevel"];
             var userBanner = userUnilever.Banners.Select(x => x.Id).ToList();
 
             var selectedBanner = listBanner.Where(x => userBanner.Contains(Guid.Parse(x.Value))).ToList();
-
+            var selectedWorkLevel = listWorkLevel.SingleOrDefault(x => userUnilever.WLId == Guid.Parse(x.Value));
+            if(selectedWorkLevel != null)
+            {
+                selectedWorkLevel.Selected = true;
+            }
             foreach (var item in selectedBanner)
             {
                 item.Selected = true;
@@ -97,7 +94,7 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind ("Id,Name,Email,IsActive,UserId,CreatedAt,CreatedBy")] UserUnilever userUnilever, string[] bannerIds, string roleUnileverId)
+        public async Task<IActionResult> Edit(Guid id, [Bind ("Id,Name,Email,IsActive,UserId,CreatedAt,CreatedBy")] UserUnilever userUnilever, string[] bannerIds, string roleUnileverId, string workLevelId)
         {
             if (id != userUnilever.Id)
             {
@@ -111,6 +108,8 @@ namespace FSAWebSystem.Controllers
             ModelState.Remove("Message");
             ModelState.Remove("Status");
             ModelState.Remove("WLName");
+            ModelState.Remove("WLId");
+            //ModelState.Remove("WorkLevelId");
             if (ModelState.IsValid)
             {
                 try
@@ -119,6 +118,7 @@ namespace FSAWebSystem.Controllers
 
 					List<Guid> selectedBannerId = (from bannerId in bannerIds select Guid.Parse(bannerId)).ToList();
                     var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerId.Contains(x.Id)).ToList();
+                    var selectedWorkLevel = _userService.GetAllWorkLevel().Single(x => x.Id == Guid.Parse(workLevelId)).Id;
                     var user = await _userManager.FindByIdAsync(userUnilever.UserId);
 
                     user.UserName = userUnilever.Email;
@@ -129,15 +129,23 @@ namespace FSAWebSystem.Controllers
 
                     var claims = await _userManager.GetClaimsAsync(user);
 
-                    await _userManager.RemoveClaimAsync(user, claims.FirstOrDefault(x => x.Type == "Role"));
+                    foreach(var claim in claims)
+                    {
+                        await _userManager.RemoveClaimAsync(user, claim);
+                    }
 
-                
                     savedUser.Banners = selectedBanners;
                     savedUser.Name = userUnilever.Name;
                     savedUser.Email = userUnilever.Email;
                     savedUser.RoleUnilever = await _roleService.GetRole(Guid.Parse(roleUnileverId));
+                    savedUser.WLId = selectedWorkLevel;
                     savedUser.IsActive = userUnilever.IsActive;
-                    await _userManager.AddClaimAsync(user, new Claim("Role", savedUser.RoleUnilever.RoleName));
+
+                    foreach(var menu in savedUser.RoleUnilever.Menus)
+                    {
+                        await _userManager.AddClaimAsync(user, new Claim("Menu", menu.Name));
+                    }
+                  
                     await _userService.Update(savedUser, User.Identity.Name);
                     await _context.SaveChangesAsync();
                 }
@@ -174,6 +182,7 @@ namespace FSAWebSystem.Controllers
         {
             await _bannerService.FillBannerDropdown(viewData);
             await _roleService.FillRoleDropdown(viewData);
+            await _userService.FillWorkLevelDropdown(viewData);
         }
     }
 }

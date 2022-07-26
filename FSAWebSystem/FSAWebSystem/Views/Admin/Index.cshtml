@@ -36,9 +36,6 @@
 		<li class="nav-item waves-effect waves-light">
 			<a class="nav-link" id="roles-tab" data-toggle="tab" href="#roles" role="tab" aria-controls="roles" aria-selected="false">Roles</a>
 		</li>
-		<li class="nav-item waves-effect waves-light">
-			<a class="nav-link" id="role-access-tab" data-toggle="tab" href="#roleaccess" role="tab" aria-control="roleaccess" aria-selected="false">Role Access</a>
-		</li>
 	</ul>
 
 	<div class="tab-content" id="myTabContent2">
@@ -101,42 +98,21 @@
 							<tr>
 								<th>No.</th>
 								<th>Role</th>
+								<th>Menus</th>
 								<th>Action</th>
 							</tr>
 						</thead>
 						<tbody>
-							@foreach (var item in Model.Roles.Select((role, index) => new { role.RoleName, Index = index + 1, Id = role.RoleUnileverId }))
+							@foreach (var item in Model.Roles.Select((role, index) => new { role.RoleName, Index = index + 1, Id = role.RoleUnileverId, Menu = role.Menu }))
 							{
 
 								<tr>
 									<td>@Html.DisplayFor(roles => item.Index)</td>
 									<td>@Html.DisplayFor(roles => item.RoleName)</td>
+									<td>@Html.DisplayFor(roles => item.Menu)</td>
 									<td class="text-center align-middle"><a asp-action="Edit" asp-controller="RoleUnilevers" asp-route-id="@item.Id"><i class="fas fa-pen"></i></a></td>
 								</tr>
 							}
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-
-		<div class="tab-pane fade" id="roleaccess" role="tabpanel" aria-labelledby="roleaccess-tab">
-			<div class="card-header py-3">
-				<div class="inline"></div>
-				<h5 class="m-0 font-weight-bold text-primary d-inline">Role Access</h5>
-			</div>
-			<div class="card-body">
-				<div class="table-responsive">
-					<table class="table table-bordered" id="dataTableRoleAccess" width="100%" cellspacing="0">
-						<thead>
-							<tr>
-								<th>No</th>
-								<th>Role</th>
-								<th>Menu</th>
-								<th class="text-center">Action</th>
-							</tr>
-						</thead>
-						<tbody>
 						</tbody>
 					</table>
 				</div>

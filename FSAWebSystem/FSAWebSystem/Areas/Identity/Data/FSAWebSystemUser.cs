@@ -16,6 +16,8 @@ namespace FSAWebSystem.Areas.Identity.Data
 
         [NotMapped]
         public List<string> BannerName { get; set; }
+
+        
     }
 }
 

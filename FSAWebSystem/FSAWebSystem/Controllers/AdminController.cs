@@ -31,7 +31,7 @@ namespace FSAWebSystem.Controllers
             _calendarService = calendarService;
         }
 
-        [Authorize(Policy ="AdminOnly")]
+        [Authorize(Policy ="AdminPage")]
 		
         public async Task<IActionResult> Index()
         {
@@ -39,20 +39,35 @@ namespace FSAWebSystem.Controllers
             //List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
             var listDocumentUpload = Enum.GetValues(typeof(DocumentUpload)).Cast<DocumentUpload>().Select(x => new SelectListItem { Text = UploadDocumentService.GetEnumDesc(x), Value = ((int) x).ToString() }).ToList();
             //List<UserUnilever> listUsers = await _userService.GetAllUsers();
-    //         foreach(var user in listUsers)
-    //        {
-    //            if(user.Banners.Count == listBanners.Where(x => x.IsActive).Count())
-				//{
-    //                user.BannerName = "All Banners";
-				//}
-				//else
-    //            {
-    //                user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
-    //            }
-               
-    //        }
-            
+            //         foreach(var user in listUsers)
+            //        {
+            //            if(user.Banners.Count == listBanners.Where(x => x.IsActive).Count())
+            //{
+            //                user.BannerName = "All Banners";
+            //}
+            //else
+            //            {
+            //                user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
+            //            }
+
+            //        }
+
             List<RoleUnilever> listRoles = await _roleServices.GetAllRoles().ToListAsync();
+            var savedMenus = await _roleServices.GetAllMenu().ToListAsync();
+            foreach(var role in listRoles)
+            {
+                if(role.Menus.Count == savedMenus.Count)
+                {
+                    role.Menu = "All Menu";
+                }
+                else
+                {
+                    foreach (var menu in role.Menus)
+                    {
+                        role.Menu += menu.Name + "; ";
+                    }
+                }
+            }
             //List<ProductCategory> listCategory = await _skuService.GetAllProductCategories().ToListAsync();
             //List<SKU> listSKU = await _skuService.GetAllProducts().ToListAsync();
             FSACalendarHeader fsaCalendar = await _calendarService.GetFSACalendarHeader(currentDate.Month, currentDate.Year);

@@ -43,7 +43,7 @@ namespace FSAWebSystem.Controllers
         // GET: Proposals
 
 
-        [Authorize(Policy = ("ReqOnly"))]
+        [Authorize(Policy = ("ProposalPage"))]
         public async Task<IActionResult> Index(string message)
         {
             return View();

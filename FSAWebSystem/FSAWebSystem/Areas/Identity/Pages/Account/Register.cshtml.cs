@@ -145,12 +145,16 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var userUnilever = await _userService.CreateUser(Input.Name, Input.Email, Input.Password, bannerIds, roleId, User.Identity.Name, _userStore, _emailStore);
-                foreach (var error in userUnilever.Message)
+                if(userUnilever.Message != null)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                    await FillDropdowns(ViewData);
-                    return Page();
+                    foreach (var error in userUnilever.Message)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                        await FillDropdowns(ViewData);
+                        return Page();
+                    }
                 }
+           
                 _notyfService.Success("User " + userUnilever.Name + " successfully added");
                 return RedirectToAction("Index", "Admin");
             }
