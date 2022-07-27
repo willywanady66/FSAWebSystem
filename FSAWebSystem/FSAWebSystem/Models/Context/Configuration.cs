@@ -16,22 +16,30 @@ namespace FSAWebSystem.Models.Context
                     new RoleUnilever
                     {
                         RoleUnileverId = Guid.NewGuid(),
-                        RoleName = "Administrator"
+                        RoleName = "Administrator",
+                        CreatedAt = DateTime.Now,
+                        CreatedBy = "System"
                     },
                     new RoleUnilever
                     {
                         RoleUnileverId = Guid.NewGuid(),
-                        RoleName = "Approver"
+                        RoleName = "Approver",
+                        CreatedAt = DateTime.Now,
+                        CreatedBy = "System"
                     },
                     new RoleUnilever
                     {
                         RoleUnileverId = Guid.NewGuid(),
                         RoleName = "Requestor",
+                        CreatedAt = DateTime.Now,
+                        CreatedBy = "System"
                     },
                     new RoleUnilever
                     {
                         RoleUnileverId = Guid.NewGuid(),
-                        RoleName = "Support"
+                        RoleName = "Support",
+                        CreatedAt = DateTime.Now,
+                        CreatedBy = "System"
                     }
                 };
                 _db.RoleUnilevers.AddRange(listRole);

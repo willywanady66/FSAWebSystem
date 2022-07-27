@@ -93,7 +93,7 @@ namespace FSAWebSystem.Services
 
         public async Task<UserUnilever> GetUserByEmail(string email)
         {
-            return await _db.UsersUnilever.Include(x => x.Banners).SingleOrDefaultAsync(x => x.Email == email);
+            return await _db.UsersUnilever.Include(x => x.Banners).Include(x => x.RoleUnilever.Menus).SingleOrDefaultAsync(x => x.Email == email);
         }
 
         public async Task SaveUsers(List<UserUnilever> users)

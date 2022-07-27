@@ -81,7 +81,7 @@
 					@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Approval"))
 					{
 						<li class="nav-item active">
-							<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
+							<a class="nav-link text-center" asp-area="" asp-controller="Approvals" asp-action="Index">
 								<h5 class="font-weight-bold">APPROVAL</h5>
 							</a>
 						</li>

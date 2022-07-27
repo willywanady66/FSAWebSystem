@@ -26,6 +26,8 @@ namespace FSAWebSystem.Models
 		[NotMapped]
 		public string BannerName { get; set; }
         [NotMapped]
+		public string PlantCode { get; set; }
+        [NotMapped]
 		public string Password { get; set; }
         [NotMapped]
 		public string Role { get; set; }

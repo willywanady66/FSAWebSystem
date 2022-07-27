@@ -109,6 +109,7 @@ namespace FSAWebSystem.Controllers
             ModelState.Remove("Status");
             ModelState.Remove("WLName");
             ModelState.Remove("WLId");
+            ModelState.Remove("PlantCode");
             //ModelState.Remove("WorkLevelId");
             if (ModelState.IsValid)
             {

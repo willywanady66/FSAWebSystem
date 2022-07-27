@@ -137,6 +137,7 @@ namespace FSAWebSystem.Services
                 "Password",
                 "Role",
                 "Banner Name",
+                "Plant Code",
                 "Work Level"
             };
         }
