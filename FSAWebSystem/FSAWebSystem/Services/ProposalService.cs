@@ -115,75 +115,7 @@ namespace FSAWebSystem.Services
                                  ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending
                              });
             proposal2 = proposal2.Where(x => x.ApprovalStatus == ApprovalStatus.Pending || x.ApprovalStatus == ApprovalStatus.Rejected);
-            //Id = p != null ? p.Id : Guid.Empty,
-            //
-            //BannerName = banner.BannerName,
-            //Month = month,
-            //Week = week,
-            //Year = year,
-            //PlantCode = banner.PlantCode,
-            //PlantName = banner.PlantName,
-            //PCMap = sku.PCMap,
-            //DescriptionMap = sku.DescriptionMap,
-            //RatingRate = weeklyBucket.RatingRate,
-            //MonthlyBucket = weeklyBucket.MonthlyBucket,
-            //ValidBJ = weeklyBucket.ValidBJ,
-            //RemFSA = weeklyBucket.MonthlyBucket - weeklyBucket.ValidBJ,
-            //CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + week.ToString()).GetValue(weeklyBucket, null)),
-            //NextBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null)),
-            ////Remark = p != null ? p.Remark : string.Empty,
-            ////Rephase = p != null ? p.Rephase : decimal.Zero,
-            ////IsWaitingApproval = p != null ? p.IsWaitingApproval : false,
-            ////RejectionReason = p != null ? p.RejectionReason : string.Empty,
-            ////ProposeAdditional = p != null ? p.ProposeAdditional : decimal.Zero,
-            //ApprovalStatus = p != null ? p.ApprovalStatus : ApprovalStatus.Pending,
-            //ApprovalId = p != null ? p.ApprovalId : Guid.Empty
-
-            //proposals = proposals.Where(x =>  x.ApprovalStatus == ApprovalStatus.Pending);
-            //if (!string.IsNullOrEmpty(param.search.value))
-            //{
-            //    var search = param.search.value.ToLower();
-            //    proposals = proposals.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search));
-            //}
-            //if (param.order.Any())
-            //{
-            //    var order = param.order[0];
-            //    switch (order.column)
-            //    {
-            //        case 0:
-            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.BannerName) : proposals.OrderBy(x => x.BannerName);
-            //            break;
-            //        case 1:
-            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PlantName) : proposals.OrderBy(x => x.PlantName);
-            //            break;
-            //        case 2:
-            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PCMap) : proposals.OrderBy(x => x.PCMap);
-            //            break;
-            //        case 3:
-            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.DescriptionMap) : proposals.OrderBy(x => x.DescriptionMap);
-            //            break;
-            //        case 4:
-            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RatingRate) : proposals.OrderBy(x => x.RatingRate);
-            //            break;
-            //        case 5:
-            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.MonthlyBucket) : proposals.OrderBy(x => x.MonthlyBucket);
-            //            break;
-            //        case 6:
-            //            proposals = (order.dir == "desc" ? proposals.AsEnumerable().OrderByDescending(x => x.CurrentBucket).AsQueryable() : proposals.AsEnumerable().OrderBy(x => x.CurrentBucket).AsQueryable());
-            //            break;
-            //        case 7:
-            //            proposals = (order.dir == "desc" ? proposals.AsEnumerable().OrderByDescending(x => x.NextBucket).AsQueryable() : proposals.AsEnumerable().OrderBy(x => x.NextBucket).AsQueryable());
-            //            break;
-            //        case 8:
-            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.ValidBJ) : proposals.OrderBy(x => x.ValidBJ);
-            //            break;
-            //        case 9:
-            //            proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RemFSA) : proposals.OrderBy(x => x.RemFSA);
-            //            break;
-            //    }
-            //}
-
-
+           
             var totalCount = proposal2.Count();
             var listProposal = proposal2.Skip(param.start).Take(param.length).ToList();
             _db.ChangeTracker.AutoDetectChangesEnabled = true;

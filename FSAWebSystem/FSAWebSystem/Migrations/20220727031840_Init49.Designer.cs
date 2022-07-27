@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    [Migration("20220725175201_init53")]
-    partial class init53
+    [Migration("20220727031840_Init49")]
+    partial class Init49
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -474,6 +474,19 @@ namespace FSAWebSystem.Migrations
                     b.Property<Guid>("RoleUnileverId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoleName")
                         .IsRequired()

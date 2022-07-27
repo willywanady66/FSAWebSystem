@@ -59,7 +59,10 @@ namespace FSAWebSystem.Models.Context
                     RoleUnilever = await _roleService.GetRoleByName("Administrator")
                 };
 
-                await userManager.AddClaimAsync(user, new Claim("Role", userUnilever.RoleUnilever.RoleName));
+                await userManager.AddClaimAsync(user, new Claim("Menu", "Admin"));
+                await userManager.AddClaimAsync(user, new Claim("Menu", "Approval"));
+                await userManager.AddClaimAsync(user, new Claim("Menu", "Proposal"));
+                await userManager.AddClaimAsync(user, new Claim("Menu", "Report"));
                 if (!_db.UsersUnilever.Any())
                 {
                     _db.UsersUnilever.Add(userUnilever);
@@ -74,6 +77,14 @@ namespace FSAWebSystem.Models.Context
                     Console.WriteLine(ex.Message);
                 }
                
+            }
+            else
+            {
+                var savedUser = await userManager.FindByEmailAsync(user.Email);
+                await userManager.AddClaimAsync(savedUser, new Claim("Menu", "Admin"));
+                await userManager.AddClaimAsync(savedUser, new Claim("Menu", "Approval"));
+                await userManager.AddClaimAsync(savedUser, new Claim("Menu", "Proposal"));
+                await userManager.AddClaimAsync(savedUser, new Claim("Menu", "Report"));
             }
 
             if(!_db.Menus.Any())
