@@ -128,6 +128,11 @@ namespace FSAWebSystem.Services
             await _db.WeeklyBuckets.AddRangeAsync(weeklyBuckets);
 		}
 
+        public async Task SaveWeeklyBucketHistories(List<WeeklyBucketHistory> weeklyBucketHistories)
+        {
+            await _db.WeeklyBucketHistories.AddRangeAsync(weeklyBucketHistories);
+        }
+
         public List<string> GetUserColumns()
         {
             return new List<string>

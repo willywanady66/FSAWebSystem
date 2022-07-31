@@ -9,13 +9,37 @@ namespace FSAWebSystem.Models
         public Guid SubmittedBy { get; set; }
         public DateTime SubmittedAt { get; set; }
         public ApprovalStatus ApprovalStatus { get; set; }
-        
+
+        //public decimal ApprovedRephase { get; set; }
+        //public decimal ApprovedProposeAdditional { get; set; }
+
         public string? RejectionReason { get; set; }
         public string? ApprovedBy { get; set; }
         public DateTime? ApprovedAt { get; set; }
 
-
+        [NotMapped]
+        public int Week { get; set; }
         [NotMapped]
         public Guid WeeklyBucketId { get; set; }
+
+        [NotMapped]
+        public decimal Rephase { get; set; }
+        [NotMapped]
+        public decimal ProposeAdditional { get; set; }
+
+        [NotMapped]
+        public string Remark { get; set; }
+
+        [NotMapped]
+        public string BannerName { get; set; }
+        [NotMapped]
+        public string PlantName { get; set; }
+        [NotMapped]
+        public string PCMap { get; set; }
+        [NotMapped]
+        public string DescriptionMap { get; set; }
+        [NotMapped]
+        public string SubmitDate { get; set; }
+
     }
 }

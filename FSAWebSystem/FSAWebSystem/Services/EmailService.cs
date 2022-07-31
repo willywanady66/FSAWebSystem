@@ -30,7 +30,7 @@ namespace FSAWebSystem.Services
 
             using (var client = new SmtpClient())
             {
-                client.Connect("smtp.gmail.com", 465, SecureSocketOptions.SslOnConnect);
+                client.Connect(_emailContext.Host, _emailContext.Port, SecureSocketOptions.SslOnConnect);
                 client.Authenticate(_emailContext.Email, _emailContext.Password);
                 client.Send(emailMessage);
                 client.Disconnect(true);

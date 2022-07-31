@@ -1,7 +1,16 @@
 ﻿$(document).ready(function () {
+
+
+    var month = $('#dropDownMonth option:selected').val();
+    var year = $('#dropDownYear option:selected').val();
     let proposalInputs = new Array();
     let remarks = ["", "Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year"];
     //var proposals = getUserInput(proposalInputs);
+
+    var currDate = new Date();
+    var day = currDate.getDay();
+    var hour = currDate.getHours();
+    console.log(day + " " + hour);
     var tableProposals = $("#dataTableProposal").DataTable({
         "processing": true,
         "serverSide": true,
@@ -9,7 +18,7 @@
             url: "Proposals/GetProposalPagination",
             type: "POST",
             data: function (d) {
-                return $.extend(d, { "proposalInputs": getUserInput(proposalInputs) });
+                return $.extend(d, { "proposalInputs": getUserInput(proposalInputs), "month": month, "year": year });
             }
         },
         "columns": [
@@ -24,11 +33,11 @@
             { "data": "validBJ" },         //8
             { "data": "remFSA" },         //9
             { "data": "rephase" },         //10
-            { "data": "proposeAddional" }, //11
+            { "data": "proposeAdditional" }, //11
             { "data": "remark" },           //12
-            { "data": "weeklyBucketId" } ,  //13
-            {"data": "id"}, //14
-            {"data": "approvalId"} //15
+            { "data": "weeklyBucketId" },  //13
+            { "data": "id" }, //14
+            { "data": "approvalId" } //15
         ],
         "order": [[0, 'asc']],
         "drawCallback": function (data) {
@@ -36,7 +45,7 @@
         },
         "columnDefs": [
             {
-                "targets": [13,14, 15],
+                "targets": [13, 14, 15],
                 "className": "hide_column"
             },
             {
@@ -52,11 +61,11 @@
                 "targets": 10,
                 "render": function (data, type, full, meta) {
                     let input = "";
-                    if (full.week != 1) {
-                        input = `<input type="number" class="form-control" id="row-${meta.row}-rephase" name="row-${meta.row}-rephase" min=0 value=${full.rephase} />`;
+                    if (day >= 4 && hour > 12) {
+                        input = `<input type="number" class="form-control" id="row-${meta.row}-rephase" name="row-${meta.row}-rephase" disabled min=0 value=${full.rephase} />`;
                     }
                     else {
-                        input = `<input type="number" class="form-control" id="row-${meta.row}-rephase" name="row-${meta.row}-rephase" disabled min=0 value=${full.rephase} />`
+                        input = `<input type="number" class="form-control" id="row-${meta.row}-rephase" name="row-${meta.row}-rephase"  min=0 value=${full.rephase} />`
                     }
                     return input;
                 },
@@ -65,7 +74,13 @@
             {
                 "targets": 11,
                 "render": function (data, type, full, meta) {
-                    return `<input type="number" class="form-control" id="row-${meta.row}-additional" name="row-${meta.row}-additional" min=0 value=${full.proposeAdditional} />`;
+                    if (full.week != 1) {
+                        input = `<input type="number" class="form-control" id="row-${meta.row}-additional" name="row-${meta.row}-additional" min=0 value=${full.proposeAdditional} />`;
+                    }
+                    else {
+                        input = `<input type="number" class="form-control" id="row-${meta.row}-additional" name="row-${meta.row}-additional" disabled min=0 value=${full.proposeAdditional} />`;
+                    }
+                    return input;
                 },
                 "orderable": false
             },
@@ -104,6 +119,7 @@
         }
 
     });
+
 
     function getUserInput(proposalInputs) {
         $("#dataTableProposal TBODY TR").each(function () {
@@ -163,10 +179,10 @@
 
                 document.body.scrollTop = 0;
                 document.documentElement.scrollTop = 0;
-            
+
             }
         });
-       
+
     })
 
 
@@ -175,30 +191,119 @@
         "serverSide": true,
         "ajax": {
             url: "Proposals/GetProposalHistoryPagination",
-            type: "POST"
+            type: "POST",
+            data: function (d) {
+                return $.extend(d, { "month": month, "year": year });
+            }
         },
         columns: [
             { "data": "submittedAt" }, //0
-            { "data": "bannerName" }, //1
-            { "data": "plantName" },  //2
-            { "data": "pcMap" },       //3
-            { "data": "descriptionMap" }, //4
-            { "data": "rephase" },      //5
-            { "data": "approvedRephase" },   //6
-            { "data": "proposeAdditional" },   //7
-            { "data": "approvedProposeAdditional" },   //8
-            { "data": "remark" },   //9
-            { "data": "status" },   //10
-            { "data": "approvedBy" },   //11
-            { "data": "rejectionReason" },   //12
+            { "data": "week" }, //1
+            { "data": "bannerName" }, //2
+            { "data": "plantName" },  //3
+            { "data": "pcMap" },       //4
+            { "data": "descriptionMap" }, //5
+            { "data": "rephase" },      //6
+            { "data": "approvedRephase" },   //7
+            { "data": "proposeAdditional" },   //8
+            { "data": "approvedProposeAdditional" },   //9
+            { "data": "remark" },   //10
+            { "data": "status" },   //11
+            { "data": "approvedBy" },   //12
+            { "data": "rejectionReason" },   //13
         ],
         "rowCallback": function (row, data, index) {
             if (data.status == "Approved") {
-                $('td:eq(10)', row).css({ color: "green" });
+                $('td:eq(11)', row).css({ color: "green" });
             }
             else if (data.status == "Rejected") {
-                $('td:eq(10)', row).css({ color: "red" });
+                $('td:eq(11)', row).css({ color: "red" });
             }
         }
+    });
+
+
+    var tableMonthlyBucketHistory = $('#dataTableMonthlyBucketHistory').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            url: "Proposals/GetMonthlyBucketHistoryPagination",
+            type: "POST",
+            data: function (d) {
+                return $.extend(d, {
+                    "month": month, "year": year
+                });
+            }
+        },
+        columns: [
+            { "data": "uploadedDate" }, //0
+            { "data": "year" }, //1
+            { "data": "month" }, //2
+            { "data": "bannerName" },//3
+            { "data": "plantName" }, //4
+            { "data": "pcMap" }, //5
+            { "data": "descriptionMap" }, //6
+            { "data": "price" }, //7
+            { "data": "plantContribution" }, //8
+            { "data": "ratingRate" }, //9
+            { "data": "tct" }, //10
+            { "data": "monthlyTarget" }, //11
+        ],
+        columnDefs: [
+            {
+                targets: 7,
+                render: $.fn.dataTable.render.number(',', '.', 0, '')
+            },
+            {
+                targets: [8, 10, 11],
+                render: function (data, type, row) {
+                    return data + ' %';
+                }
+            }
+        ],
+            
+    });
+
+
+    var tableWeeklyBucketHistory = $('#dataTableWeeklyBucketHistory').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            url: "Proposals/GetWeeklyBucketHistoryPagination",
+            type: "POST",
+            data: function (d) {
+                return $.extend(d, {
+                    "month": month, "year": year
+                });
+            }
+        },
+        columns: [
+            { "data": "uploadedDate" },
+            { "data": "year" },
+            { "data": "month" },
+            { "data": "week" },
+            { "data": "bannerName" },
+            { "data": "plantName" },
+            { "data": "pcMap" },
+            { "data": "descriptionMap" },
+            { "data": "dispatchConsume" },
+        ]
+    });
+
+    $('#dropDownMonth').change(function () {
+        month = $('#dropDownMonth option:selected').val();
+        tableProposals.draw();
+        tableHistory.draw();
+        tableMonthlyBucketHistory.draw();
+        tableWeeklyBucketHistory.draw();
+    });
+
+
+    $('#dropDownYear').change(function () {
+        year = $('#dropDownYear option:selected').val();
+        tableProposals.draw();
+        tableHistory.draw();
+        tableMonthlyBucketHistory.draw();
+        tableWeeklyBucketHistory.draw();
     });
 })

@@ -31,32 +31,21 @@ namespace FSAWebSystem.Controllers
             _calendarService = calendarService;
         }
 
-        [Authorize(Policy ="AdminPage")]
-		
+        [Authorize(Policy = "AdminPage")]
+
         public async Task<IActionResult> Index()
         {
+            ViewData["ListMonth"] = _calendarService.GetListMonth();
+            ViewData["ListYear"] = _calendarService.GetListYear();
             var currentDate = DateTime.Now;
-            //List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
-            var listDocumentUpload = Enum.GetValues(typeof(DocumentUpload)).Cast<DocumentUpload>().Select(x => new SelectListItem { Text = UploadDocumentService.GetEnumDesc(x), Value = ((int) x).ToString() }).ToList();
-            //List<UserUnilever> listUsers = await _userService.GetAllUsers();
-            //         foreach(var user in listUsers)
-            //        {
-            //            if(user.Banners.Count == listBanners.Where(x => x.IsActive).Count())
-            //{
-            //                user.BannerName = "All Banners";
-            //}
-            //else
-            //            {
-            //                user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
-            //            }
+            var listDocumentUpload = Enum.GetValues(typeof(DocumentUpload)).Cast<DocumentUpload>().Select(x => new SelectListItem { Text = UploadDocumentService.GetEnumDesc(x), Value = ((int)x).ToString() }).ToList();
 
-            //        }
 
             List<RoleUnilever> listRoles = await _roleServices.GetAllRoles().ToListAsync();
             var savedMenus = await _roleServices.GetAllMenu().ToListAsync();
-            foreach(var role in listRoles)
+            foreach (var role in listRoles)
             {
-                if(role.Menus.Count == savedMenus.Count)
+                if (role.Menus.Count == savedMenus.Count)
                 {
                     role.Menu = "All Menu";
                 }
@@ -68,21 +57,49 @@ namespace FSAWebSystem.Controllers
                     }
                 }
             }
-            //List<ProductCategory> listCategory = await _skuService.GetAllProductCategories().ToListAsync();
-            //List<SKU> listSKU = await _skuService.GetAllProducts().ToListAsync();
-            FSACalendarHeader fsaCalendar = await _calendarService.GetFSACalendarHeader(currentDate.Month, currentDate.Year);
+         
             AdminModel model = new AdminModel
             {
-                //Users = listUsers,
-                //Banners = listBanners,
+    
                 Roles = listRoles,
-                //SKUs = listSKU,
-                //Categories = listCategory,
                 DocumentUploads = listDocumentUpload,
                 LoggedUser = User.Identity.Name,
-                FSACalendar = fsaCalendar
             };
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetFSACalendar(string month, string year)
+        {
+            FSACalendarHeader fsaCalendar = await _calendarService.GetFSACalendarHeader(Convert.ToInt32(month), Convert.ToInt32(year));
+            if (fsaCalendar != null)
+            {
+                var fsaDetails = (from calendar in fsaCalendar.FSACalendarDetails.Where(x => x.StartDate.HasValue && x.EndDate.HasValue)
+                                  select new
+                                  {
+                                      StartDate = calendar.StartDate.Value.ToString("dd/MM/yyyy"),
+                                      EndDate = calendar.EndDate.Value.ToString("dd/MM/yyyy"),
+                                      Week = calendar.Week,
+                                      Year = calendar.Year,
+                                      Month = calendar.Month,
+                                      Id = fsaCalendar.Id
+                                  }).ToList();
+
+                return Json(new
+                {
+                    data = fsaDetails
+                });
+            }
+            else
+            {
+                var listData = new List<FSACalendarDetail>();
+                return Json(new
+                {
+                    data = listData
+                }) ;
+            }
+
+
         }
 
         [HttpPost]
@@ -91,7 +108,7 @@ namespace FSAWebSystem.Controllers
             List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
             var data = await _userService.GetAllUsersPagination(param);
 
-            foreach(var user in data.userUnilevers)
+            foreach (var user in data.userUnilevers)
             {
                 if (user.Banners.Count == listBanners.Where(x => x.IsActive).Count())
                 {
@@ -102,7 +119,7 @@ namespace FSAWebSystem.Controllers
                     user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
                 }
             }
-            var listData = Json(new 
+            var listData = Json(new
             {
                 draw = param.draw,
                 recordsTotal = data.totalRecord,
@@ -116,7 +133,7 @@ namespace FSAWebSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> GetBannerPagination(DataTableParam param)
         {
-      
+
             var data = await _bannerService.GetBannerPagination(param);
             var listData = Json(new
             {
@@ -125,7 +142,7 @@ namespace FSAWebSystem.Controllers
                 recordsFiltered = data.totalRecord,
                 data = data.banners
             });
-            return listData;   
+            return listData;
         }
 
         [HttpPost]
@@ -155,7 +172,7 @@ namespace FSAWebSystem.Controllers
             });
             return listData;
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> GetWorkLevelPagination(DataTableParam param)
         {
@@ -174,9 +191,9 @@ namespace FSAWebSystem.Controllers
 
         [Authorize]
         public async Task<IActionResult> UploadDocument(IFormFile excelDocument, string document)
-		{
+        {
             return View();
-		}
+        }
 
         public class AdminModel
         {
@@ -184,16 +201,16 @@ namespace FSAWebSystem.Controllers
             public List<Banner> Banners { get; set; }
             public List<SKU> SKUs { get; set; }
             public List<RoleUnilever> Roles { get; set; }
-            public List<ProductCategory> Categories{ get; set; }
+            public List<ProductCategory> Categories { get; set; }
 
             public List<SelectListItem> DocumentUploads { get; set; }
             public FSACalendarHeader FSACalendar { get; set; }
             public string LoggedUser { get; set; }
         }
 
-        
+
     }
 
 
-   
+
 }

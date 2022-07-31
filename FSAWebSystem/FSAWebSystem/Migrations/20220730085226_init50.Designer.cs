@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20220730085226_init50")]
+    partial class init50
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -196,13 +198,6 @@ namespace FSAWebSystem.Migrations
                     b.Property<Guid>("BannerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<Guid>("FSADocumentId")
                         .HasColumnType("uniqueidentifier");
 
@@ -303,41 +298,6 @@ namespace FSAWebSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("WeeklyBuckets");
-                });
-
-            modelBuilder.Entity("FSAWebSystem.Models.Bucket.WeeklyBucketHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BannerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("DispatchConsume")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Month")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("SKUId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Week")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WeeklyBucketHistories");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarDetail", b =>

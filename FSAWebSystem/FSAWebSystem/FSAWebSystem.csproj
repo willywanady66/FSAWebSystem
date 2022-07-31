@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\Proposal\**" />
+    <Compile Remove="Views\Users\**" />
+    <Content Remove="Views\Proposal\**" />
+    <Content Remove="Views\Users\**" />
+    <EmbeddedResource Remove="Views\Proposal\**" />
+    <EmbeddedResource Remove="Views\Users\**" />
+    <None Remove="Views\Proposal\**" />
+    <None Remove="Views\Users\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Areas\Identity\Data\FSAWebSystemContext.cs" />
   </ItemGroup>
 
@@ -38,8 +49,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Proposal\" />
-    <Folder Include="Views\Users\" />
     <Folder Include="wwwroot\assets\" />
     <Folder Include="wwwroot\vendor\" />
   </ItemGroup>

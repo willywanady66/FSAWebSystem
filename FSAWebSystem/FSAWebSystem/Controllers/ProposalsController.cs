@@ -46,6 +46,8 @@ namespace FSAWebSystem.Controllers
         [Authorize(Policy = ("ProposalPage"))]
         public async Task<IActionResult> Index(string message)
         {
+            ViewData["ListMonth"] = _calendarService.GetListMonth();
+            ViewData["ListYear"] = _calendarService.GetListYear();
             return View();
         }
 
@@ -58,14 +60,19 @@ namespace FSAWebSystem.Controllers
             List<Proposal> listProposal = new List<Proposal>();
             var listData = Json(new { });
             var data = new ProposalData();
-            var fsaDetail = await _calendarService.GetCalendarDetail(DateTime.Now.Date);
-
+            var currentDate = DateTime.Now;
+          
             try
             {
+                var fsaDetail = await _calendarService.GetCalendarDetail(currentDate.Date);
+                var week = fsaDetail.Week;
                 if (fsaDetail != null)
                 {
-
-                    data = await _proposalService.GetProposalForView(fsaDetail.Month, fsaDetail.Year, fsaDetail.Week, param, userUnilever.Id);
+                    if(Convert.ToInt32(param.month) != currentDate.Month || Convert.ToInt32(param.year) != currentDate.Year)
+					{
+                        week = 1;
+					}
+                    data = await _proposalService.GetProposalForView(Convert.ToInt32(param.month), Convert.ToInt32(param.year), week, param, userUnilever.Id);
 
                 }
                 if (param.proposalInputs != null)
@@ -108,7 +115,7 @@ namespace FSAWebSystem.Controllers
             var listData = Json(new { });
             try
             {
-                var listProposalHistory = _proposalService.GetProposalHistoryPagination(param, (Guid)user.UserUnileverId);
+                var listProposalHistory = _proposalService.GetProposalHistoryPagination(param, (Guid)user.UserUnileverId, Convert.ToInt32(param.month), Convert.ToInt32(param.year));
                 listData = Json(new
                 {
                     draw = param.draw,
@@ -123,6 +130,53 @@ namespace FSAWebSystem.Controllers
             }
             return listData;
         }
+
+        [HttpPost]
+        public async Task<IActionResult> GetMonthlyBucketHistoryPagination(DataTableParam param)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var listData = Json(new { });
+            try
+            {
+                var listMonthlyBucketHistory = await _bucketService.GetMonthlyBucketHistoryPagination(param, (Guid)user.UserUnileverId);
+                listData = Json(new
+                {
+                    draw = param.draw,
+                    recordsTotal = listMonthlyBucketHistory.totalRecord,
+                    recordsFiltered = listMonthlyBucketHistory.totalRecord,
+                    data = listMonthlyBucketHistory.monthlyBuckets
+                });
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return listData;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetWeeklyBucketHistoryPagination(DataTableParam param)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var listData = Json(new { });
+            try
+            {
+                var listWeeklyBucketHistory = await _bucketService.GetWeeklyBucketHistoryPagination(param, (Guid)user.UserUnileverId);
+                listData = Json(new
+                {
+                    draw = param.draw,
+                    recordsTotal = listWeeklyBucketHistory.totalRecord,
+                    recordsFiltered = listWeeklyBucketHistory.totalRecord,
+                    data = listWeeklyBucketHistory.weeklyBucketHistories
+                });
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return listData;
+        }
+
         [HttpPost]
         public async Task<IActionResult> SaveProposal(List<ProposalInput> proposals)
         {

@@ -7,16 +7,18 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
+using AspNetCoreHero.ToastNotification.Abstractions;
 
 namespace FSAWebSystem.Controllers
 {
     public class SKUsController : Controller
     {
         private readonly FSAWebSystemDbContext _context;
-
-        public SKUsController(FSAWebSystemDbContext context)
+        private readonly INotyfService _notyfService;
+        public SKUsController(FSAWebSystemDbContext context, INotyfService notyfService)
         {
             _context = context;
+            _notyfService = notyfService;
         }
 
         // GET: SKUs
@@ -91,6 +93,14 @@ namespace FSAWebSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind("Id,PCMap,DescriptionMap,IsActive,CreatedAt,CreatedBy,ModifiedAt,ModifiedBy")] SKU sKU)
         {
+            //ModelState.Remove("IsActive");
+            ModelState.Remove("CreatedBy");
+            ModelState.Remove("CreatedAt");
+            ModelState.Remove("ModifiedAt");
+            ModelState.Remove("ModifiedBy");
+            ModelState.Remove("Status");
+            ModelState.Remove("ProductCategory");
+            ModelState.Remove("Category");
             if (id != sKU.Id)
             {
                 return NotFound();
@@ -102,6 +112,7 @@ namespace FSAWebSystem.Controllers
                 {
                     _context.Update(sKU);
                     await _context.SaveChangesAsync();
+                    _notyfService.Success("SKU Updated!");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -114,7 +125,7 @@ namespace FSAWebSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Admin");
             }
             return View(sKU);
         }

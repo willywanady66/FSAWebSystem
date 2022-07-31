@@ -32,14 +32,16 @@ namespace FSAWebSystem.Services
             var skus = (from sku in _db.SKUs.Include(x => x.ProductCategory)
                         select new SKU
                         {
+                            Id= sku.Id,
                             PCMap = sku.PCMap,
                             DescriptionMap = sku.DescriptionMap,
-                            Category = sku.ProductCategory.CategoryProduct
+                            Category = sku.ProductCategory.CategoryProduct,
+                            Status = sku.IsActive ? "Active" : "Non-Active"
                         });
 			if (!string.IsNullOrEmpty(param.search.value))
 			{
 				var search = param.search.value.ToLower();
-				skus = skus.Where(x => x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search) || x.Category.ToLower().Contains(search));
+				skus = skus.Where(x => x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search) || x.Category.ToLower().Contains(search) || x.Status.ToLower().Contains(search));
 			}
 
             if (param.order.Any())
@@ -48,13 +50,16 @@ namespace FSAWebSystem.Services
                 switch (order.column)
                 {
                     case 0:
-                        skus = order.dir == "desc" ? skus.OrderByDescending(x => x.PCMap) : skus.OrderBy(x => x.PCMap);
+                        skus = order.dir == "desc" ? skus.OrderBy(x => x.Status).ThenBy(x => x.PCMap) : skus.OrderBy(x => x.Status).ThenByDescending(x => x.PCMap);
                         break;
                     case 1:
                         skus = order.dir == "desc" ? skus.OrderByDescending(x => x.DescriptionMap) : skus.OrderBy(x => x.DescriptionMap);
                         break;
                     case 2:
                         skus = order.dir == "desc" ? skus.OrderByDescending(x => x.Category) : skus.OrderBy(x => x.Category);
+                        break;
+                    case 3:
+                        skus = order.dir == "desc" ? skus.OrderByDescending(x => x.Status) : skus.OrderBy(x => x.Status);
                         break;
                 }
             }

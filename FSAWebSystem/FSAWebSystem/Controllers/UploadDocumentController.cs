@@ -414,77 +414,13 @@ namespace FSAWebSystem.Controllers
                     }
                 }
 
-
-                //foreach (var user in listUser)
-                //{
-                //    var userBannersName = user.BannerName.Split(',').ToList();
-
-
-                //    var userBanners = savedBanners.Where(x => userBannersName.Contains(x.BannerName));
-
-                //    var savedUser = await _userService.GetUserByEmail(user.Email);
-                //    if (savedUser != null)
-                //    {
-
-                //        if (!string.IsNullOrEmpty(user.Password))
-                //        {
-                //            foreach (var validator in _userManager.PasswordValidators)
-                //            {
-                //                var result = await validator.ValidateAsync(_userManager, savedUserLogin, user.Password);
-                //                if (!result.Succeeded)
-                //                {
-                //                    foreach (var error in result.Errors)
-                //                    {
-                //                        errorMessage.Add(error.Description);
-                //                    }
-                //                }
-                //                else
-                //                {
-                //                    savedUserLogin.UserName = user.Email;
-                //                    savedUserLogin.NormalizedUserName = user.Email;
-                //                    savedUserLogin.Email = user.Email;
-                //                    savedUserLogin.Role = user.Role;
-                //                    await _userManager.RemovePasswordAsync(savedUserLogin);
-                //                    await _userManager.AddPasswordAsync(savedUserLogin, user.Password);
-                //                    await _userManager.UpdateAsync(savedUserLogin);
-                //                }
-                //            }
-                //        }
-
-
-                //        if (savedUser.RoleUnilever.RoleName != user.Role || savedUser.WLId != user.WLId)
-                //        {
-                //            savedUser.RoleUnilever = await _roleService.GetRoleByName(user.Role);
-                //            savedUser.ModifiedAt = DateTime.Now;
-                //            savedUser.ModifiedBy = loggedUser;
-                //            savedUser.FSADocumentId = fSADocument.Id;
-                //            savedUser.WLId = savedWorkLevels.Single(x => x.WL == user.WLName).Id;
-                //        }
-                //        var savedUserLogin = await _userManager.FindByEmailAsync(savedUser.Email);
-
-                //    }
-                //    else
-                //    {
-                //        user.Id = Guid.NewGuid();
-                //        user.RoleUnilever = await _roleService.GetRoleByName(user.Role);
-                //        user.CreatedAt = DateTime.Now;
-                //        user.CreatedBy = loggedUser;
-                //        user.FSADocumentId = fSADocument.Id;
-                //        user.WLId = savedWorkLevels.Single(x => x.WL == user.WLName).Id;
-                //        usersToAdd.Add(user);
-                //    }
-                //}
-
                 if (errorMessage.Any())
                 {
                     return;
                 }
 
-                
-
                 await _uploadDocService.SaveDocument(fSADocument);
                 await _userService.SaveUsers(usersToAdd);
-
             }
 
         }
@@ -578,6 +514,8 @@ namespace FSAWebSystem.Controllers
             //List<ProductCategory> categories = _skuService.GetAllProductCategories().ToList();
 
             FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
+            var currentDate = DateTime.Now;
+            var fsaDetail = await _calendarService.GetCalendarDetail(currentDate.Date);
             var row = 0;
             try
             {
@@ -586,8 +524,7 @@ namespace FSAWebSystem.Controllers
                     row += 1;
                     //var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
                     //var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
-                    var currentDate = DateTime.Now;
-
+                   
                     var monthlyBucket = new MonthlyBucket
                     {
                         Id = Guid.NewGuid(),
@@ -599,8 +536,10 @@ namespace FSAWebSystem.Controllers
                         RatingRate = Decimal.Parse(ConvertNumber(dr["Rating Rate"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
                         TCT = Decimal.Parse(ConvertNumber(dr["TCT"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }) * 100,
                         MonthlyTarget = Decimal.Parse(ConvertNumber(dr["Monthly Target"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }) * 100,
-                        Month = currentDate.Month,
-                        Year = currentDate.Year,
+                        Month = fsaDetail.Month,
+                        Year = fsaDetail.Year,
+                        CreatedAt = DateTime.Now,
+                        CreatedBy = loggedUser,
                         FSADocument = fsaDoc
                     };
 
@@ -612,8 +551,8 @@ namespace FSAWebSystem.Controllers
                 errorMessages.Add(ex.Message);
             }
 
-
-            ValidateMonthlyBucketExcel(listMonthlyBucket, errorMessages);
+            var savedMonthlyBucket = _bucketService.GetMonthlyBuckets().Where(x => x.Month == fsaDetail.Month && x.Year == fsaDetail.Year);
+            ValidateMonthlyBucketExcel(listMonthlyBucket, savedMonthlyBucket, errorMessages);
             if (!errorMessages.Any())
             {
                 foreach (var monthlyBucket in listMonthlyBucket)
@@ -698,11 +637,6 @@ namespace FSAWebSystem.Controllers
             var currentDate = DateTime.Now;
             foreach (DataRow dr in dt.Rows)
             {
-
-                //var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
-                //var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
-
-
                 var weeklyBucket = new WeeklyBucket
                 {
                     BannerName = dr["Banner Name"].ToString(),
@@ -715,21 +649,36 @@ namespace FSAWebSystem.Controllers
 
                 weeklyBuckets.Add(weeklyBucket);
             }
-
-            ValidateWeeklyBucketExcel(weeklyBuckets, errorMessages, currentDate);
+           
+            ValidateWeeklyBucketExcel(weeklyBuckets, errorMessages);
 
             if (!errorMessages.Any())
             {
                 var calendarDetail = await _calendarService.GetCalendarDetail(currentDate);
-                var skus = _skuService.GetAllProducts();
+                var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
                 var banners = _bannerService.GetAllActiveBanner();
-                var savedWeeklyBuckets = _bucketService.GetWeeklyBucket();
-
+                var savedWeeklyBuckets = _bucketService.GetWeeklyBucket().Where(x => x.Year == currentDate.Year && x.Month == currentDate.Month);
+                List<WeeklyBucketHistory> weeklyBucketHistories = new List<WeeklyBucketHistory>();
                 foreach (var weeklyBucket in weeklyBuckets)
                 {
                     var bannerId = banners.Single(x => x.BannerName == weeklyBucket.BannerName && x.PlantCode == weeklyBucket.PlantCode).Id;
                     var skuId = skus.Single(x => x.PCMap == weeklyBucket.PCMap).Id;
-                    var savedWeeklyBucket = savedWeeklyBuckets.Single(x => x.BannerId == bannerId && x.SKUId == skuId && x.Year == weeklyBucket.Year && x.Month == weeklyBucket.Month);
+                    var weeklyBucketHistory = new WeeklyBucketHistory();
+
+                    weeklyBucketHistory.Id = Guid.NewGuid();
+                    weeklyBucketHistory.Month = weeklyBucket.Month;
+                    weeklyBucketHistory.Year = weeklyBucket.Year;
+                    weeklyBucketHistory.BannerId = bannerId;
+                    weeklyBucketHistory.SKUId = skuId;
+                    weeklyBucketHistory.DispatchConsume = weeklyBucket.DispatchConsume;
+                    weeklyBucketHistory.CreatedAt = DateTime.Now;
+                    weeklyBucketHistory.CreatedBy = loggedUser;
+                    weeklyBucketHistory.Week = calendarDetail.Week;
+
+                    weeklyBucketHistories.Add(weeklyBucketHistory);
+
+                
+                    var savedWeeklyBucket = savedWeeklyBuckets.Single(x => x.BannerId == bannerId && x.SKUId == skuId);
                     var currentWeekBucket = decimal.Zero;
                     var remainingBucket = decimal.Zero;
                     var totalDispatch = decimal.Zero;
@@ -751,9 +700,13 @@ namespace FSAWebSystem.Controllers
                         return;
                     }
                     totalDispatch = weeklyBucket.DispatchConsume * (savedWeeklyBucket.PlantContribution / 100);
+
                     currentWeekBucket = remainingBucket - totalDispatch;
                     savedWeeklyBucket.GetType().GetProperty("BucketWeek" + (calendarDetail.Week + 2).ToString()).SetValue(savedWeeklyBucket, currentWeekBucket);
+                    savedWeeklyBucket.DispatchConsume += weeklyBucket.DispatchConsume;
                 }
+
+                await _uploadDocService.SaveWeeklyBucketHistories(weeklyBucketHistories);
             }
         }
 
@@ -816,14 +769,18 @@ namespace FSAWebSystem.Controllers
                 weeklyBucket.MonthlyBucket = mBucket;
                 weeklyBucket.BucketWeek1 = mBucket * ((decimal)50 / (decimal)100);
                 weeklyBucket.BucketWeek2 = mBucket * ((decimal)50 / (decimal)100);
-
                 weeklyBuckets.Add(weeklyBucket);
+
+   
+
+                
             }
 
             await _uploadDocService.SaveWeeklyBuckets(weeklyBuckets);
+ 
         }
 
-        private void ValidateMonthlyBucketExcel(List<MonthlyBucket> listMonthlyBucket, List<string> errorMessages)
+        private void ValidateMonthlyBucketExcel(List<MonthlyBucket> listMonthlyBucket, IQueryable<MonthlyBucket> savedMonthlyBuckets, List<string> errorMessages)
         {
             var banners = _bannerService.GetAllActiveBanner();
             var skus = _skuService.GetAllProducts();
@@ -832,14 +789,7 @@ namespace FSAWebSystem.Controllers
                 errorMessages.Add("Please fill all PCMap and BannerName column");
             }
 
-            var skuGroups = listMonthlyBucket.GroupBy(x => new { x.BannerName, x.PCMap, x.PlantCode }).ToList();
-            foreach (var skuGrp in skuGroups)
-            {
-                if (skuGrp.Count() > 1)
-                {
-                    errorMessages.Add("Unable to add duplicate record on Banner Name: " + skuGrp.Key.BannerName + ", PCMap: " + skuGrp.Key.PCMap + " and Plant Code : " + skuGrp.Key.PlantCode + ". Please remove one record.");
-                }
-            }
+            
 
             var bannerPlantCodesFromExcel = listMonthlyBucket.Select(x => new { x.BannerName, x.PlantCode }).Distinct().ToList();
 
@@ -859,19 +809,35 @@ namespace FSAWebSystem.Controllers
             {
                 errorMessages.Add("PCMap: " + pcMapNotInDb + " doesn't exist in database");
             }
+
+            var skuGroups = listMonthlyBucket.GroupBy(x => new { x.BannerName, x.PCMap, x.PlantCode }).ToList();
+            foreach (var skuGrp in skuGroups)
+            {
+                if (skuGrp.Count() > 1)
+                {
+                    errorMessages.Add("Unable to add duplicate record on Banner Name: " + skuGrp.Key.BannerName + ", PCMap: " + skuGrp.Key.PCMap + " and Plant Code : " + skuGrp.Key.PlantCode + ". Please remove one record.");
+                }
+
+                var sku = skus.Single(x => x.PCMap == skuGrp.Key.PCMap);
+                var banner = banners.Single(x => x.BannerName == skuGrp.Key.BannerName && x.PlantCode == skuGrp.Key.PlantCode);
+                if (savedMonthlyBuckets.Any(x => x.SKUId == sku.Id && x.BannerId == banner.Id))
+                {
+                    errorMessages.Add("Monthly Bucket for Banner: " + skuGrp.Key.BannerName + ", PCMap: " + skuGrp.Key.PCMap + " and Plant Code : " + skuGrp.Key.PlantCode + " already exist in database");
+                }
+            }
         }
 
-        private void ValidateWeeklyBucketExcel(List<WeeklyBucket> listWeeklyBucket, List<string> errorMessages, DateTime currentDate)
+        private void ValidateWeeklyBucketExcel(List<WeeklyBucket> listWeeklyBucket,  List<string> errorMessages)
         {
             if (listWeeklyBucket.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
             {
                 errorMessages.Add("Please fill all PCMap and BannerName column");
             }
-            var z = _bucketService.GetMonthlyBucket().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId }).ToList();
+            var z = _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId }).ToList();
 
             var bannersNotExist = (from weeklyBucket in listWeeklyBucket
                                    where !(
-                                   from monthlyBucket in _bucketService.GetMonthlyBucket().AsEnumerable().DistinctBy(x => x.BannerId)
+                                   from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => x.BannerId)
                                    join banner in _bannerService.GetAllActiveBanner().AsEnumerable() on monthlyBucket.BannerId equals banner.Id
                                    select new
                                    {
@@ -891,8 +857,8 @@ namespace FSAWebSystem.Controllers
 
             var skusNotExist = (from weeklyBucket in listWeeklyBucket
                                 where !(
-                                from monthlyBucket in _bucketService.GetMonthlyBucket().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId })
-                                join sku in _skuService.GetAllProducts().AsEnumerable() on monthlyBucket.SKUId equals sku.Id
+                                from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId })
+                                join sku in _skuService.GetAllProducts().Where(x => x.IsActive).AsEnumerable() on monthlyBucket.SKUId equals sku.Id
                                 select new
                                 {
                                     sku.PCMap

@@ -9,6 +9,7 @@ using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
 using System.Globalization;
 using FSAWebSystem.Services.Interface;
+using AspNetCoreHero.ToastNotification.Abstractions;
 
 namespace FSAWebSystem.Controllers
 {
@@ -16,11 +17,13 @@ namespace FSAWebSystem.Controllers
     {
         private ICalendarService _calendarService;
         private readonly FSAWebSystemDbContext _db;
+          private readonly INotyfService _notyfService;
 
-        public FSACalendarHeadersController(FSAWebSystemDbContext context, ICalendarService calendarService)
+        public FSACalendarHeadersController(FSAWebSystemDbContext context, ICalendarService calendarService, INotyfService notyfService)
         {
             _db = context;
             _calendarService = calendarService;
+            _notyfService = notyfService;
         }
 
         // GET: FSACalendarHeaders
@@ -74,10 +77,20 @@ namespace FSAWebSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Month,Year, FSACalendarDetails")] FSACalendarHeader fSACalendarHeader, string month, string year)
         {
-            ModelState.Remove("Month");
-
             ViewData["ListMonth"] = _calendarService.GetListMonth();
             ViewData["ListYear"] = _calendarService.GetListYear();
+            ModelState.Remove("Month");
+
+            var savedCalendarThisMonth = _calendarService.GetFSACalendarHeader(Convert.ToInt32(month), Convert.ToInt32(year));
+            if(savedCalendarThisMonth != null)
+            {
+                ModelState.AddModelError("", "Calendar for Month: " + month +" and Year: "+ year + " already exist");
+
+                _notyfService.Error("Crate calendar failed");
+                return View(fSACalendarHeader);
+            }
+
+          
             if (ModelState.IsValid)
             {
 
@@ -97,7 +110,7 @@ namespace FSAWebSystem.Controllers
                     return View(fSACalendarHeader);
                 }
 
-                foreach (var detail in fSACalendarHeader.FSACalendarDetails.Where(x => x.StartDate.HasValue && x.EndDate.HasValue))
+                foreach (var detail in fSACalendarHeader.FSACalendarDetails)
                 {
 
                     detail.Month = Convert.ToInt32(month);
@@ -112,11 +125,12 @@ namespace FSAWebSystem.Controllers
                 fSACalendarHeader.Id = Guid.NewGuid();
                 _calendarService.AddCalendar(fSACalendarHeader);
                 await _db.SaveChangesAsync();
+                _notyfService.Success("Calendar Saved");
                 return RedirectToAction("Index", "Admin");
             }
 
 
-            return RedirectToAction("Index", "Admin");
+            return View(fSACalendarHeader);
         }
 
         // GET: FSACalendarHeaders/Edit/5
@@ -131,12 +145,7 @@ namespace FSAWebSystem.Controllers
 
             var months = (List<SelectListItem>)ViewData["ListMonth"];
             var years = (List<SelectListItem>)ViewData["ListYear"];
-            var currentDate = DateTime.Now;
-            months.Single(x => x.Value == currentDate.Month.ToString()).Selected = true;
-            years.Single(x => x.Value == currentDate.Year.ToString()).Selected = true;
-    
-
-            var fSACalendarHeader = await _calendarService.GetFSACalendarHeader(currentDate.Month, currentDate.Year);
+            var fSACalendarHeader = await _calendarService.GetFSACalendarById((Guid)id);
             if (fSACalendarHeader == null)
             {
                 return NotFound();

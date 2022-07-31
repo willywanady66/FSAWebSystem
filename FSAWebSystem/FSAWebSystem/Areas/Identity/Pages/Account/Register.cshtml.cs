@@ -138,13 +138,13 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             await FillDropdowns(ViewData);
         }
 
-        public async Task<IActionResult> OnPostAsync(string[] bannerIds, string roleId, string returnUrl = null)
+        public async Task<IActionResult> OnPostAsync(string[] bannerIds, string roleId, string worklevelId, string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
 
             if (ModelState.IsValid)
             {
-                var userUnilever = await _userService.CreateUser(Input.Name, Input.Email, Input.Password, bannerIds, roleId, User.Identity.Name, _userStore, _emailStore);
+                var userUnilever = await _userService.CreateUser(Input.Name, Input.Email, Input.Password, bannerIds, roleId, worklevelId, User.Identity.Name, _userStore, _emailStore);
                 if(userUnilever.Message != null)
                 {
                     foreach (var error in userUnilever.Message)
@@ -179,6 +179,7 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
         {
             await _bannerService.FillBannerDropdown(viewData);
             await _roleService.FillRoleDropdown(viewData);
+            await _userService.FillWorkLevelDropdown(viewData);
         }
     }
 }

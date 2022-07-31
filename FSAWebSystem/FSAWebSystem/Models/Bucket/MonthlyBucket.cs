@@ -16,13 +16,21 @@ namespace FSAWebSystem.Models.Bucket
         public decimal MonthlyTarget { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
         public FSADocument FSADocument { get; set; }
 
         [NotMapped]
         public string BannerName { get; set; }
         [NotMapped]
+        public string DescriptionMap { get; set; }
+        [NotMapped]
         public string PCMap { get; set; }
         [NotMapped]
         public string PlantCode { get; set; }
+        [NotMapped]
+        public string PlantName { get; set; }
+        [NotMapped]
+        public string UploadedDate { get; set; }
     }
 }

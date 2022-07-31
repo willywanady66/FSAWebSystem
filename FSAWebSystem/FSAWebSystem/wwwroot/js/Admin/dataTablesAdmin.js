@@ -9,31 +9,35 @@
         },
         "columns": [
             { "data": "name" },  //0
-            { "data": "wlName"}, //1
+            { "data": "wlName" }, //1
             { "data": "email" },       //2
             { "data": "role" }, //3
             { "data": "bannerName" },      //4
             { "data": "status" }, //5
-            { "data": "userId"}, //6
+            { "data": "userId" }, //6
             { "data": "id" }, //7
             { "data": "userId" }, //8
         ],
         columnDefs: [
             {
-                "targets": [7,8],
+                "targets": [7, 8],
                 "className": "hide_column"
             },
             {
                 targets: 6,
-                orderable : false,
+                orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    return `<a href="/UserUnilevers/Edit/${full.userId}">
+                    if (full.email != "admin@gmail.com") {
+                        return `<a href="/UserUnilevers/Edit/${full.userId}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
+                    }
+                    return null;
+                    
                 }
 
-                    
+
             }
         ],
         "rowCallback": function (row, data, index) {
@@ -88,7 +92,7 @@
         columnDefs: [
             {
                 targets: 0,
-                searchable : false,
+                searchable: false,
                 orderable: false,
                 "render": function (data, type, full, meta) {
                     return meta.row + 1 + meta.settings._iDisplayStart;
@@ -107,8 +111,28 @@
         "columns": [
             { "data": "pcMap" },  //0
             { "data": "descriptionMap" },       //1
-            { "data": "category" } //2
-        ]
+            { "data": "category" },  //2
+            { "data": "status"}, //3
+            { "data": "id" } //4
+        ],
+        columnDefs:[{
+            targets: 4,
+            orderable: false,
+            className: 'text-center',
+            "render": function (data, type, full, meta) {
+                return `<a href="/SKUs/Edit/${full.id}">
+                                <i class="fas fa-pen"></i>
+                            <a/>`
+            }  
+        }],
+        "rowCallback": function (row, data, index) {
+            if (data.status == "Active") {
+                $('td:eq(3)', row).css({ color: "green" });
+            }
+            else {
+                $('td:eq(3)', row).css({ color: "red" });
+            }
+        }
     });
 
 
@@ -120,8 +144,11 @@
             type: "POST"
         },
         "columns": [
-            {"data" : "id"}, //0
-            { "data": "wl" }  //1
+            { "data": "id" }, //0
+            { "data": "wl" },  //1
+            { "data": "status" },  //2
+            { "data": "id" }  //3
+          
         ],
         columnDefs: [
             {
@@ -131,7 +158,82 @@
                 "render": function (data, type, full, meta) {
                     return meta.row + 1 + meta.settings._iDisplayStart;
                 }
+            },
+            {
+                targets: 3,
+                orderable: false,
+                className: 'text-center',
+                "render": function (data, type, full, meta) {
+                    return `<a href="/WorkLevels/Edit/${full.id}">
+                                <i class="fas fa-pen"></i>
+                            <a/>`
+                }
             }
-        ]
+        ],
+        "rowCallback": function (row, data, index) {
+            if (data.status == "Active") {
+                $('td:eq(2)', row).css({ color: "green" });
+            }
+            else {
+                $('td:eq(2)', row).css({ color: "red" });
+            }
+        }
+    });
+
+    var month = $('#dropDownMonth option:selected').val();
+    var year = $('#dropDownYear option:selected').val();
+
+    var dtCalendar = $('#dataTableCalendar').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            url: "Admin/GetFSACalendar",
+            type: "GET",
+            data: function (d) {
+                return $.extend(d, { "month": month, "year": year });
+            }
+        },
+        "columns": [
+            { "data": "week" },
+            { "data": "startDate" },
+            { "data": "endDate" },
+            { "data": "year" },
+            { "data": "month" },
+            { "data": "id" }
+        ],
+        columnDefs: [
+            {
+                targets: 5,
+                orderable: false,
+                className: 'text-center',
+                "render": function (data, type, full, meta) {
+                    return `<a href="/FSACalendarHeaders/Edit/${full.id}">
+                                <i class="fas fa-pen"></i>
+                            <a/>`
+                }
+            },
+            {
+                targets: 'all',
+                defaultContent: ""}
+            ],
+        rowsGroup: [5],
+        "rowCallback": function (row, data, index) {
+            $('td:eq(5)', row).addClass('align-middle');
+        },
+        "paging": false,
+        "info": false,
+        searching: false
+    });
+
+
+    $('#dropDownMonth').change(function () {
+        month = $('#dropDownMonth option:selected').val();
+        dtCalendar.draw();
+    });
+
+
+    $('#dropDownYear').change(function () {
+        year = $('#dropDownYear option:selected').val();
+        dtCalendar.draw();
     });
 });

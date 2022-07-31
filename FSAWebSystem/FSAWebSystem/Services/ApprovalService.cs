@@ -1,6 +1,9 @@
 ﻿using FSAWebSystem.Models;
+using FSAWebSystem.Models.Bucket;
 using FSAWebSystem.Models.Context;
+using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace FSAWebSystem.Services
 {
@@ -20,6 +23,63 @@ namespace FSAWebSystem.Services
         public IQueryable<Approval> GetPendingApprovals()
         {
             return _db.Approvals.Where(x => x.ApprovalStatus == ApprovalStatus.Pending);
+        }
+
+        public async Task<ApprovalPagingData> GetApprovalPagination(DataTableParam param, int month, int year)
+        {
+            var approvals = (from approval in _db.Approvals
+                             join proposal in (from proposal in _db.Proposals
+                                               join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
+                                                                     //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
+                                                                     join banner in _db.Banners on weeklyBucket.BannerId equals banner.Id
+                                                                     join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
+                                                                     select new WeeklyBucket
+                                                                     {
+                                                                         Id = weeklyBucket.Id,
+                                                                         BannerName = banner.BannerName,
+                                                                         PlantName = banner.PlantName,
+                                                                         PCMap = sku.PCMap,
+                                                                         DescriptionMap = sku.DescriptionMap,
+                                                                     }) on proposal.WeeklyBucketId equals weeklyBucket.Id
+                                               select new Proposal
+                                               {
+                                                   Id = proposal.Id,
+                                                   BannerName = weeklyBucket.BannerName,
+                                                   PlantName = weeklyBucket.PlantName,
+                                                   PCMap = weeklyBucket.PCMap,
+                                                   DescriptionMap = weeklyBucket.DescriptionMap,
+                                                   ProposeAdditional = proposal.ProposeAdditional,
+                                                   Rephase = proposal.Rephase,
+                                                   //Year = proposal.Year,
+                                                   //Month = proposal.Month,
+                                                   Week = proposal.Week
+                                               }) on approval.ProposalId equals proposal.Id
+                             select new Approval
+                             {
+                                 SubmitDate = approval.SubmittedAt.ToString("dd/MM/yyyy"),
+                                 BannerName = proposal.BannerName,
+                                 PCMap = proposal.PCMap,
+                                 DescriptionMap = proposal.DescriptionMap,
+                                 ProposeAdditional = proposal.ProposeAdditional,
+                                 Rephase = proposal.Rephase,
+                                 Remark = proposal.Remark,
+                                 Week = proposal.Week
+                             });
+
+
+            if (!string.IsNullOrEmpty(param.search.value))
+            {
+                var search = param.search.value.ToLower();
+                approvals = approvals.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search));
+            }
+            var totalCount = approvals.Count();
+            var listApproval = approvals.Skip(param.start).Take(param.length).ToList();
+            return new ApprovalPagingData
+            {
+                totalRecord = totalCount,
+                approvals = listApproval
+            };
+
         }
     }
 }

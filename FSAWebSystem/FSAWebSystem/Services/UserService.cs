@@ -118,10 +118,11 @@ namespace FSAWebSystem.Services
         }
 
 
-        public async Task<UserUnilever> CreateUser(string name, string email, string password, string[] bannerIds, string roleId, string loggedUser, IUserStore<FSAWebSystemUser> _userStore, IUserEmailStore<FSAWebSystemUser> _emailStore)
+        public async Task<UserUnilever> CreateUser(string name, string email, string password, string[] bannerIds, string roleId, string worklevelId, string loggedUser, IUserStore<FSAWebSystemUser> _userStore, IUserEmailStore<FSAWebSystemUser> _emailStore)
         {
             var selectedBannerIds = bannerIds.Select(x => Guid.Parse(x)).ToList();
             var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerIds.Contains(x.Id)).ToList();
+            var selectedWl = _db.WorkLevels.Single(x => x.Id == Guid.Parse(worklevelId));
             var userUnilever = new UserUnilever
             {
                 Name = name,
@@ -131,7 +132,8 @@ namespace FSAWebSystem.Services
                 CreatedAt = DateTime.Now,
                 CreatedBy = loggedUser,
                 RoleUnilever = await _roleService.GetRole(Guid.Parse(roleId)),
-                Banners = selectedBanners
+                Banners = selectedBanners,
+                WLId = selectedWl.Id
             };
 
             var user = Activator.CreateInstance<FSAWebSystemUser>();
@@ -172,12 +174,12 @@ namespace FSAWebSystem.Services
 
         public async Task<WorkLevelPagingData> GetAllWorkLevelPagination(DataTableParam param)
         {
-            var workLevels = _db.WorkLevels.Select(x => new WorkLevel { Id = x.Id, WL = x.WL, IsActive = x.IsActive }).AsQueryable();
+            var workLevels = _db.WorkLevels.Select(x => new WorkLevel { Id = x.Id, WL = x.WL, IsActive = x.IsActive, Status = x.IsActive ? "Active" : "Non-Active" }).AsQueryable();
 
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
-                workLevels = workLevels.Where(x => x.WL.ToLower().Contains(search));
+                workLevels = workLevels.Where(x => x.WL.ToLower().Contains(search) || x.Status.ToLower().Contains(search));
             }
 
             if (param.order.Any())
@@ -186,7 +188,7 @@ namespace FSAWebSystem.Services
                 switch (order.column)
                 {
                     case 1:
-                        workLevels = order.dir == "desc" ? workLevels.OrderByDescending(x => x.WL) : workLevels.OrderBy(x => x.WL);
+                        workLevels = order.dir == "desc" ? workLevels.OrderBy(x => x.Status).ThenByDescending(x => x.WL) : workLevels.OrderBy(x => x.Status).ThenBy(x => x.WL);
                         break;
                 }
             }
@@ -201,10 +203,9 @@ namespace FSAWebSystem.Services
             };
         }
 
-
         public async Task FillWorkLevelDropdown(ViewDataDictionary viewData)
         {
-            var workLevels = GetAllWorkLevel().ToList();
+            var workLevels = GetAllWorkLevel().Where(x => x.IsActive).ToList();
             List<SelectListItem> listWorkLevel = new List<SelectListItem>();
             listWorkLevel = workLevels.Select(x => new SelectListItem { Text = x.WL, Value = x.Id.ToString() }).ToList();
             viewData["ListWorkLevel"] = listWorkLevel;

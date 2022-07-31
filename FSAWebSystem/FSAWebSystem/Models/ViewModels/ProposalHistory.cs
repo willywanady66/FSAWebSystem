@@ -5,6 +5,7 @@ namespace FSAWebSystem.Models.ViewModels
     public class ProposalHistory
     {
         public Guid Id { get; set; }
+        public int Week { get; set; }
         public string SubmittedBy { get; set; }
         public string SubmittedAt { get; set; }
         public string ApprovedBy { get; set; }
@@ -12,8 +13,8 @@ namespace FSAWebSystem.Models.ViewModels
 
         public decimal ApprovedRephase { get; set; }
         public decimal ApprovedProposeAdditional { get; set; }
-
         public string Status { get; set; }
+
 
         [NotMapped]
         public decimal Rephase { get; set; }

@@ -8,6 +8,7 @@
         //public List<Column> columns { get; set; }
         public Search search { get; set; }
         public List<Order> order { get; set; }
-        public string test { get; set; }
+        public string month{ get; set; }
+        public string year{ get; set; }
     }
 }

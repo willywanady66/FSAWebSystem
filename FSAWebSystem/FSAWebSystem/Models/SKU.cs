@@ -33,5 +33,7 @@ namespace FSAWebSystem.Models
         //[NotMapped] public ProductCategory ProductCategory { get; set; }
         [NotMapped]
         public string Category { get; set; }
+        [NotMapped]
+        public string Status { get; set; }
     }
 }

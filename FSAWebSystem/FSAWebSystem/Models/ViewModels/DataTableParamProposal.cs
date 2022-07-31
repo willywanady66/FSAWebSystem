@@ -10,6 +10,8 @@
         public List<Order> order { get; set; }
         public List<ProposalViewModel.ProposalInput> proposalInputs { get; set; }
         public string test { get; set; }
+        public string month { get; set; }
+        public string year { get; set; }
     }
 
     public class Search
