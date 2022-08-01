@@ -27,6 +27,8 @@
         },
         "columns": [
             { "data": "submitDate" },  //0
+            { "data": "level1" }, //1
+            { "data": "level2" }, //1
             { "data": "bannerName" }, //1
             { "data": "pcMap" },       //2
             { "data": "descriptionMap" }, //3

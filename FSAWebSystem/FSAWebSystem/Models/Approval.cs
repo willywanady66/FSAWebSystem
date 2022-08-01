@@ -12,7 +12,10 @@ namespace FSAWebSystem.Models
 
         //public decimal ApprovedRephase { get; set; }
         //public decimal ApprovedProposeAdditional { get; set; }
-
+        [NotMapped]
+        public string Level1 { get; set; }
+        [NotMapped ]
+        public string Level2 { get; set; }
         public string? RejectionReason { get; set; }
         public string? ApprovedBy { get; set; }
         public DateTime? ApprovedAt { get; set; }

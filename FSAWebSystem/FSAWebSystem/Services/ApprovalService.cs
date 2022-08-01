@@ -63,7 +63,9 @@ namespace FSAWebSystem.Services
                                  ProposeAdditional = proposal.ProposeAdditional,
                                  Rephase = proposal.Rephase,
                                  Remark = proposal.Remark,
-                                 Week = proposal.Week
+                                 Week = proposal.Week,
+                                 Level1 = "",
+                                 Level2 = ""
                              });
 
 
