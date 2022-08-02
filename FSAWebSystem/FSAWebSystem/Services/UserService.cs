@@ -122,7 +122,12 @@ namespace FSAWebSystem.Services
         {
             var selectedBannerIds = bannerIds.Select(x => Guid.Parse(x)).ToList();
             var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerIds.Contains(x.Id)).ToList();
-            var selectedWl = _db.WorkLevels.Single(x => x.Id == Guid.Parse(worklevelId));
+            var selectedWl = new WorkLevel();
+            if (!string.IsNullOrEmpty(worklevelId))
+            {
+                selectedWl = _db.WorkLevels.Single(x => x.Id == Guid.Parse(worklevelId));
+            }
+
             var userUnilever = new UserUnilever
             {
                 Name = name,
@@ -133,7 +138,7 @@ namespace FSAWebSystem.Services
                 CreatedBy = loggedUser,
                 RoleUnilever = await _roleService.GetRole(Guid.Parse(roleId)),
                 Banners = selectedBanners,
-                WLId = selectedWl.Id
+                WLId = selectedWl.Id != Guid.Empty ? selectedWl.Id : null,
             };
 
             var user = Activator.CreateInstance<FSAWebSystemUser>();

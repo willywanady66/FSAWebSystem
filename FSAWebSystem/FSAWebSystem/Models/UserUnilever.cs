@@ -9,7 +9,7 @@ namespace FSAWebSystem.Models
 	{
 
 		public Guid Id { get; set; }
-		public Guid WLId { get; set; }
+		public Guid? WLId { get; set; }
 		public string Name { get; set; }
 		public string Email { get; set; }
 		public List<Banner>? Banners { get; set; }
