@@ -81,7 +81,7 @@ namespace FSAWebSystem.Controllers
             ViewData["ListYear"] = _calendarService.GetListYear();
             ModelState.Remove("Month");
 
-            var savedCalendarThisMonth = _calendarService.GetFSACalendarHeader(Convert.ToInt32(month), Convert.ToInt32(year));
+            var savedCalendarThisMonth = await _calendarService.GetFSACalendarHeader(Convert.ToInt32(month), Convert.ToInt32(year));
             if(savedCalendarThisMonth != null)
             {
                 ModelState.AddModelError("", "Calendar for Month: " + month +" and Year: "+ year + " already exist");
