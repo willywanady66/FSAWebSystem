@@ -22,13 +22,6 @@ namespace FSAWebSystem.Controllers
             _bannerService = bannerService;
          }
 
-        // GET: Banners
-        public async Task<IActionResult> Index()
-        {
-              return _context.Banners != null ? 
-                          View(await _context.Banners.ToListAsync()) :
-                          Problem("Entity set 'FSAWebSystemDbContext.Banners'  is null.");
-        }
 
         // GET: Banners/Details/5
         public async Task<IActionResult> Details(Guid? id)

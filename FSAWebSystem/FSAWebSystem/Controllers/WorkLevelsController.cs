@@ -57,6 +57,7 @@ namespace FSAWebSystem.Controllers
         public async Task<IActionResult> Create([Bind("WL, IsActive")] WorkLevel workLevel)
         {
             ModelState.Remove("CreatedBy");
+            ModelState.Remove("Status");
             List<WorkLevel> workLevels = new List<WorkLevel>();
             if (ModelState.IsValid)
             {

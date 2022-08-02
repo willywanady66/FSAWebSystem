@@ -110,7 +110,7 @@ namespace FSAWebSystem.Controllers
 
             foreach (var user in data.userUnilevers)
             {
-                if (user.Banners.Count == listBanners.Where(x => x.IsActive).Count())
+                if (user.Banners.Count == listBanners.Where(x => x.IsActive).Count() && user.Banners.Count>1)
                 {
                     user.BannerName = "All Banners";
                 }

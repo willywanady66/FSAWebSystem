@@ -29,7 +29,7 @@
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
                     if (full.email != "admin@gmail.com") {
-                        return `<a href="/UserUnilevers/Edit/${full.userId}">
+                        return `<a href="./UserUnilevers/Edit/${full.userId}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
                     }
@@ -71,7 +71,7 @@
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    return `<a href="/Banners/Edit/${full.id}">
+                    return `<a href="./Banners/Edit/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
                 }
@@ -120,7 +120,7 @@
             orderable: false,
             className: 'text-center',
             "render": function (data, type, full, meta) {
-                return `<a href="/SKUs/Edit/${full.id}">
+                return `<a href="./SKUs/Edit/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
             }  
@@ -164,7 +164,7 @@
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    return `<a href="/WorkLevels/Edit/${full.id}">
+                    return `<a href="./WorkLevels/Edit/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
                 }
@@ -207,7 +207,7 @@
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    return `<a href="/FSACalendarHeaders/Edit/${full.id}">
+                    return `<a href="./FSACalendarHeaders/Edit/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
                 }
