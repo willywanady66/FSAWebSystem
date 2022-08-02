@@ -31,32 +31,6 @@ namespace FSAWebSystem.Controllers
             _userManager = userManager;
         }
 
-        // GET: RoleUnilevers
-        public async Task<IActionResult> Index()
-        {
-              return _context.RoleUnilevers != null ? 
-                          View(await _context.RoleUnilevers.ToListAsync()) :
-                          Problem("Entity set 'FSAWebSystemDbContext.RoleUnilevers'  is null.");
-        }
-
-        // GET: RoleUnilevers/Details/5
-        public async Task<IActionResult> Details(Guid? id)
-        {
-            if (id == null || _context.RoleUnilevers == null)
-            {
-                return NotFound();
-            }
-
-            var roleUnilever = await _context.RoleUnilevers
-                .FirstOrDefaultAsync(m => m.RoleUnileverId == id);
-            if (roleUnilever == null)
-            {
-                return NotFound();
-            }
-
-            return View(roleUnilever);
-        }
-
         // GET: RoleUnilevers/Create
         public IActionResult Create()
         {
@@ -76,6 +50,7 @@ namespace FSAWebSystem.Controllers
             ModelState.Remove("ModifiedBy");
             ModelState.Remove("CreatedAt");
             ModelState.Remove("CreatedBy");
+            ModelState.Remove("Menu");
             if (ModelState.IsValid)
             {
                 var savedRole = _roleService.GetRoleByName(roleUnilever.RoleName);

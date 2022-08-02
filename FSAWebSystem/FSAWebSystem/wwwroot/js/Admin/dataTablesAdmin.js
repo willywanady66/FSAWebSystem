@@ -28,11 +28,11 @@
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    if (full.email != "admin@gmail.com") {
+                   
                         return `<a href="./UserUnilevers/Edit/${full.userId}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
-                    }
+                    
                     return null;
                     
                 }
