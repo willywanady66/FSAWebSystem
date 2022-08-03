@@ -107,7 +107,7 @@ namespace FSAWebSystem.Controllers
                     if (await _bannerService.IsBannerUsed(banner.BannerName))
                     {
                         ModelState.AddModelError("", "Cannot Edit, Banner is selected on User");
-                        return View(savedBanner);
+                        return View(banner);
                     }
                     
                     savedBanner.Trade = banner.Trade;
@@ -128,7 +128,11 @@ namespace FSAWebSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", ex.Message);
+                    return View(banner);
+                }
             }
             return View(banner);
         }

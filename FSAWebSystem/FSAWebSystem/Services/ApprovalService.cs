@@ -56,6 +56,7 @@ namespace FSAWebSystem.Services
                                                }) on approval.ProposalId equals proposal.Id
                              select new Approval
                              {
+                                 Id= approval.Id,
                                  SubmitDate = approval.SubmittedAt.ToString("dd/MM/yyyy"),
                                  BannerName = proposal.BannerName,
                                  PCMap = proposal.PCMap,

@@ -35,6 +35,12 @@ namespace FSAWebSystem.Services
             return role;
         }
 
+        public async Task AddRole(RoleUnilever role)
+        {
+            await _db.AddAsync(role);
+            await _db.SaveChangesAsync();
+        }
+
         public async Task<RoleUnilever> GetRoleByName(string roleName)
         {
             return await _db.RoleUnilevers.Include(x => x.Menus).SingleOrDefaultAsync(x => x.RoleName.ToUpper() == roleName.ToUpper());

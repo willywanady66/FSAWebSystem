@@ -16,5 +16,7 @@ namespace FSAWebSystem.Services.Interface
         public List<SelectListItem> GetMenuDropdown();
         public IQueryable<Menu> GetAllMenu();
         public Task<RoleUnilever> Update(RoleUnilever role);
+
+        public Task AddRole(RoleUnilever role);
     }
 }

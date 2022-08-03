@@ -68,8 +68,15 @@ namespace FSAWebSystem.Controllers
                 roleUnilever.RoleUnileverId = Guid.NewGuid();
                 roleUnilever.CreatedAt = DateTime.Now;
                 roleUnilever.CreatedBy = User.Identity.Name;
-                _context.Add(roleUnilever);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    await _roleService.AddRole(roleUnilever);
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
+
                 _notyfService.Success("Role " + roleUnilever.RoleName + " successfully added");
                 return RedirectToAction("Index", "Admin");
             }

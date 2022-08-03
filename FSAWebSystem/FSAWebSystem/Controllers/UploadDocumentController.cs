@@ -798,7 +798,7 @@ namespace FSAWebSystem.Controllers
                                       select monthlyBucket).ToList();
             foreach (var bannerNotInDb in bannersNameNotInDb)
             {
-                errorMessages.Add("Banner Name: " + bannerNotInDb.BannerName + " and Plant Code: " + bannerNotInDb.PlantCode + "doesn't exist in Monthly Bucket");
+                errorMessages.Add("Banner Name: " + bannerNotInDb.BannerName + " and Plant Code: " + bannerNotInDb.PlantCode + " doesn't exist in database");
             }
 
             var pcMapsNotInDb = (from monthlyBucket in listMonthlyBucket.DistinctBy(x => x.PCMap)
@@ -819,11 +819,15 @@ namespace FSAWebSystem.Controllers
                 }
 
                 var sku = skus.Single(x => x.PCMap == skuGrp.Key.PCMap);
-                var banner = banners.Single(x => x.BannerName == skuGrp.Key.BannerName && x.PlantCode == skuGrp.Key.PlantCode);
-                if (savedMonthlyBuckets.Any(x => x.SKUId == sku.Id && x.BannerId == banner.Id))
+                var banner = banners.SingleOrDefault(x => x.BannerName == skuGrp.Key.BannerName && x.PlantCode == skuGrp.Key.PlantCode);
+                if (banner != null)
                 {
-                    errorMessages.Add("Monthly Bucket for Banner: " + skuGrp.Key.BannerName + ", PCMap: " + skuGrp.Key.PCMap + " and Plant Code : " + skuGrp.Key.PlantCode + " already exist in database");
+                    if (savedMonthlyBuckets.Any(x => x.SKUId == sku.Id && x.BannerId == banner.Id))
+                    {
+                        errorMessages.Add("Monthly Bucket for Banner: " + skuGrp.Key.BannerName + ", PCMap: " + skuGrp.Key.PCMap + " and Plant Code : " + skuGrp.Key.PlantCode + " already exist in database");
+                    }
                 }
+   
             }
         }
 
@@ -970,7 +974,7 @@ namespace FSAWebSystem.Controllers
                 var groupName = grp.GroupBy(x => x.Name);
                 if (groupName.Any(x => string.IsNullOrEmpty(x.Key)))
                 {
-                    errorMessages.Add("Name cannot empty on EmailL " + grp.Key);
+                    errorMessages.Add("Name cannot empty on Email: " + grp.Key);
                 }
                 if(groupName.Count() > 1)
                 {
@@ -980,7 +984,7 @@ namespace FSAWebSystem.Controllers
                 var groupWl = grp.GroupBy(x => x.WLName);
                 if(groupWl.Any(x => string.IsNullOrEmpty(x.Key)))
                 {
-                    errorMessages.Add("WL Name cannot empty on EmailL " + grp.Key);
+                    errorMessages.Add("WL Name cannot empty on Email: " + grp.Key);
                 }
                 if (groupWl.Count() > 1)
                 {
@@ -999,7 +1003,7 @@ namespace FSAWebSystem.Controllers
                 }
                 if(!savedRoles.Any(x => x.RoleName == groupRole.First().Key))
                 {
-                    errorMessages.Add("Role " + groupRole.First().Key + " on Email: " + grp.Key + " doesnt exist in database!");
+                    errorMessages.Add("Role: " + groupRole.First().Key + " on Email: " + grp.Key + " doesnt exist in database!");
                 }
 
                 foreach (var user in grp)
@@ -1007,7 +1011,7 @@ namespace FSAWebSystem.Controllers
                     var bannerExist = savedBanners.Any(x => x.BannerName == user.BannerName && x.PlantCode == user.PlantCode);
                     if (!bannerExist)
                     {
-                        errorMessages.Add("Banner Name: " + user.BannerName + ", Plant Code: " + user.PlantCode + "on Email " + grp.Key  + " doesn't exist in database!");
+                        errorMessages.Add("Banner Name: " + user.BannerName + ", Plant Code: " + user.PlantCode + "on Email: " + grp.Key  + " doesn't exist in database!");
                     }
                 }
 
