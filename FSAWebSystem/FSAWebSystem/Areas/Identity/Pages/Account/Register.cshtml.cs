@@ -142,27 +142,36 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
 
+            await FillDropdowns(ViewData);
             if (ModelState.IsValid)
             {
-                var userUnilever = await _userService.CreateUser(Input.Name, Input.Email, Input.Password, bannerIds, roleId, worklevelId, User.Identity.Name, _userStore, _emailStore);
-                if(userUnilever.Message != null)
+                var savedUser = await _userService.GetUserByEmail(Input.Email);
+                var savedUserLogin = await _userManager.FindByEmailAsync(Input.Email);
+
+                if(savedUser != null && savedUserLogin != null)
                 {
-                    foreach (var error in userUnilever.Message)
+                    var userUnilever = await _userService.CreateUser(Input.Name, Input.Email, Input.Password, bannerIds, roleId, worklevelId, User.Identity.Name, _userStore, _emailStore);
+                    if (userUnilever.Message != null)
                     {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                        await FillDropdowns(ViewData);
-                        return Page();
+                        foreach (var error in userUnilever.Message)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                            await FillDropdowns(ViewData);
+                            return Page();
+                        }
                     }
+
+                    _notyfService.Success("User " + userUnilever.Name + " successfully added");
+                    return RedirectToAction("Index", "Admin");
                 }
-           
-                _notyfService.Success("User " + userUnilever.Name + " successfully added");
-                return RedirectToAction("Index", "Admin");
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "User Already exist!");
+                }
+               
             }
-            else
-            {
-                await FillDropdowns(ViewData);
+
                 return Page();
-            }
         }
 
         private IUserEmailStore<FSAWebSystemUser> GetEmailStore()

@@ -1,24 +1,10 @@
 ﻿$(document).ready(function () {
-    //var tableApproval = $("#dataTableApproval").DataTable({
-    //    "processing": true,
-    //    "serverSide": true,
-    //    "ajax": {
-    //        url: "Approvals/GetApprovalPagination",
-    //        type: "POST"
-    //    },
-    //    "columns": [
-    //        { "data": "submitDate" },  //0
-    //        { "data": "bannerName" }, //1
-    //        { "data": "pcMap" },       //2
-    //        { "data": "descriptionMap" }, //3
-    //        { "data": "proposeAdditional" },      //4
-    //        //{ "data": "rephase" }, //5
-    //        //{ "data": "remark" }, //6
-    //    ]
-    //});
 
+    //function approve(id) {
+    //    console.log();
+    //}
 
-    $('#dataTableApproval').DataTable({
+   var approvalTable = $('#dataTableApproval').DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
@@ -36,15 +22,20 @@
             { "data": "rephase" }, //7
             { "data": "id" }, //8
             { "data": "id" }, //9
+            { "data": "proposalId" }, //10
             //{ "data": "remark" }, //6
         ],
-        columnDefs: [
+       columnDefs: [
+           {
+               "targets": [10],
+               "className": "hide_column"
+           },
             {
                 targets: 8,
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    return `<button class="btn btn-primary">Approve</button>`
+                    return `<button id="approveBtn" class="btn btn-primary">Approve</button>`
                 }
             },
             {
@@ -57,6 +48,22 @@
             }
         ],
     });
+
+
+    $("#dataTableApproval tbody").on('click', '#approveBtn', function () {
+        var data = approvalTable.row($(this).parents('tr')).data();
+        var proposalId = data.proposalId;
+        var approvalId = data.id;
+        $.ajax({
+            type: "POST",
+            url: "Approvals/ApproveProposal",
+            data: { "proposalId": proposalId, "approvalId": approvalId },
+            success: function (data) {
+                var ul = document.getElementById('error-messages');
+                ul.innerHTML = '';
+            }
+        })
+    })
 }); 
 
 

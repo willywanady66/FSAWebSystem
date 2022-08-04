@@ -657,7 +657,7 @@ namespace FSAWebSystem.Controllers
                 var calendarDetail = await _calendarService.GetCalendarDetail(currentDate);
                 var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
                 var banners = _bannerService.GetAllActiveBanner();
-                var savedWeeklyBuckets = _bucketService.GetWeeklyBucket().Where(x => x.Year == currentDate.Year && x.Month == currentDate.Month);
+                var savedWeeklyBuckets = _bucketService.GetWeeklyBuckets().Where(x => x.Year == currentDate.Year && x.Month == currentDate.Month);
                 List<WeeklyBucketHistory> weeklyBucketHistories = new List<WeeklyBucketHistory>();
                 foreach (var weeklyBucket in weeklyBuckets)
                 {
@@ -739,7 +739,7 @@ namespace FSAWebSystem.Controllers
             if (!errorMessages.Any())
             {
                 var banners = _bannerService.GetAllActiveBanner();
-                var weeklyBuckets = _bucketService.GetWeeklyBucket();
+                var weeklyBuckets = _bucketService.GetWeeklyBuckets();
                 var skus = _skuService.GetAllProducts();
                 foreach (var dailyOrder in dailyOrders)
                 {
@@ -887,7 +887,7 @@ namespace FSAWebSystem.Controllers
 
             var bannersNotExist = (from dailyOrder in listDailyOrder
                                    where !(
-                                   from weeklyBucket in _bucketService.GetWeeklyBucket().AsEnumerable().DistinctBy(x => x.BannerId)
+                                   from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => x.BannerId)
                                    join banner in _bannerService.GetAllActiveBanner().AsEnumerable() on weeklyBucket.BannerId equals banner.Id
                                    where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
                                    select new
@@ -908,7 +908,7 @@ namespace FSAWebSystem.Controllers
 
             var skusNotExist = (from dailyOrder in listDailyOrder
                                 where !(
-                                from weeklyBucket in _bucketService.GetWeeklyBucket().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId })
+                                from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId })
                                 join sku in _skuService.GetAllProducts().AsEnumerable() on weeklyBucket.SKUId equals sku.Id
                                 where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
                                 select new

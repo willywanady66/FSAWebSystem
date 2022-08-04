@@ -104,7 +104,7 @@ namespace FSAWebSystem.Controllers
                 try
                 {
                     var savedBanner = await _bannerService.GetBanner(banner.Id);
-                    if (await _bannerService.IsBannerUsed(banner.BannerName))
+                    if (await _bannerService.IsBannerUsed(banner.BannerName, banner.PlantCode))
                     {
                         ModelState.AddModelError("", "Cannot Edit, Banner is selected on User");
                         return View(banner);

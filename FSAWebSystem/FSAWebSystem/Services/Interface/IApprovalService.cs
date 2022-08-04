@@ -9,5 +9,6 @@ namespace FSAWebSystem.Services.Interface
 
         public IQueryable<Approval> GetPendingApprovals();
         public Task<ApprovalPagingData> GetApprovalPagination(DataTableParam param, int month, int year);
+        public Task<Approval> GetApprovalById(Guid approvalId);
     }
 }

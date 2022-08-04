@@ -15,5 +15,7 @@ namespace FSAWebSystem.Services.Interface
         public IQueryable<Proposal> GetPendingProposals(FSACalendarDetail fsaDetail, Guid userId);
 
         public ProposalHistoryPagingData GetProposalHistoryPagination(DataTableParam param, Guid userId, int month, int year);
+
+        public Task<Proposal> GetProposalById(Guid proposalId);
     }
 }

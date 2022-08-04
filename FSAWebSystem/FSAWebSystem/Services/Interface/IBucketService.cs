@@ -9,6 +9,8 @@ namespace FSAWebSystem.Services.Interface
         public Task<MonthlyBucketHistoryPagingData> GetMonthlyBucketHistoryPagination(DataTableParam param, Guid userId);
         public Task<WeeklyBucketHistoryPagingData> GetWeeklyBucketHistoryPagination(DataTableParam param, Guid userId);
         public IQueryable<MonthlyBucket> GetMonthlyBuckets();
-        public IQueryable<WeeklyBucket> GetWeeklyBucket();
+        public IQueryable<WeeklyBucket> GetWeeklyBuckets();
+
+        public Task<WeeklyBucket> GetWeeklyBucket(Guid id);
     }
 }

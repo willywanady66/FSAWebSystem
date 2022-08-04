@@ -49,6 +49,7 @@ namespace FSAWebSystem.Services
                                  NextBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null)),
                                  Remark = p != null ? p.Remark : string.Empty,
                                  Rephase = p != null ? p.Rephase : decimal.Zero,
+                                 IsWaitingApproval = p != null ? p.IsWaitingApproval : false
                                  //RejectionReason = p != null ? p.RejectionReason : string.Empty,
                                  //ProposeAdditional = p != null ? p.ProposeAdditional : decimal.Zero,
                                  //ApprovalStatus = p != null ? p.ApprovalStatus : ApprovalStatus.Pending
@@ -78,10 +79,11 @@ namespace FSAWebSystem.Services
                                  Remark = proposal.Remark,
                                  Rephase =  proposal.Rephase,
                                  ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending,
-                                 ProposeAdditional = proposal.ProposeAdditional
+                                 ProposeAdditional = proposal.ProposeAdditional,
+                                 IsWaitingApproval = proposal.IsWaitingApproval
                              });
 
-            proposal2 = proposal2.Where(x => x.ApprovalStatus == ApprovalStatus.Pending || x.ApprovalStatus == ApprovalStatus.Rejected);
+            proposal2 = proposal2.Where(x => !x.IsWaitingApproval);
            
             var totalCount = proposal2.Count();
             var listProposal = proposal2.Skip(param.start).Take(param.length).ToList();
@@ -172,6 +174,12 @@ namespace FSAWebSystem.Services
         {
             var listProposals = _db.Proposals.Where(x => x.Week == fsaDetail.Week && x.Month == fsaDetail.Month && x.Year == fsaDetail.Year && x.SubmittedBy == userId && x.ApprovalStatus == ApprovalStatus.Pending);
             return listProposals;
+        }
+
+        public async Task<Proposal> GetProposalById(Guid proposalId)
+        {
+            var proposal = await _db.Proposals.SingleOrDefaultAsync(x => x.Id == proposalId);
+            return proposal;
         }
     }
 }

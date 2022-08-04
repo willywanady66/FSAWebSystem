@@ -54,8 +54,10 @@ namespace FSAWebSystem.Services
                                                    //Month = proposal.Month,
                                                    Week = proposal.Week
                                                }) on approval.ProposalId equals proposal.Id
+                                               where approval.ApprovalStatus == ApprovalStatus.Pending
                              select new Approval
                              {
+                                 ProposalId = approval.ProposalId,
                                  Id= approval.Id,
                                  SubmitDate = approval.SubmittedAt.ToString("dd/MM/yyyy"),
                                  BannerName = proposal.BannerName,
@@ -83,6 +85,12 @@ namespace FSAWebSystem.Services
                 approvals = listApproval
             };
 
+        }
+
+        public async Task<Approval> GetApprovalById(Guid approvalId)
+        {
+            var approval = await _db.Approvals.SingleOrDefaultAsync(x => x.Id == approvalId);
+            return approval;
         }
     }
 }

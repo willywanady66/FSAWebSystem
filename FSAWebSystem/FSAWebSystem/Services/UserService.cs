@@ -149,14 +149,16 @@ namespace FSAWebSystem.Services
 
             var result = await _userManager.CreateAsync(user, password);
 
-            foreach (var menu in userUnilever.RoleUnilever.Menus)
-            {
-                await _userManager.AddClaimAsync(user, new Claim("Menu", menu.Name));
-            }
-
+           
           
             if (result.Succeeded)
             {
+                foreach (var menu in userUnilever.RoleUnilever.Menus)
+                {
+                    await _userManager.AddClaimAsync(user, new Claim("Menu", menu.Name));
+                }
+
+
                 _db.UsersUnilever.Add(userUnilever);
                 await _db.SaveChangesAsync();
             }

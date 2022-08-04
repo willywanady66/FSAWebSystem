@@ -57,7 +57,7 @@ namespace FSAWebSystem.Services
         }
 
 
-        public IQueryable<WeeklyBucket> GetWeeklyBucket()
+        public IQueryable<WeeklyBucket> GetWeeklyBuckets()
         {
             return _db.WeeklyBuckets;
         }
@@ -94,6 +94,12 @@ namespace FSAWebSystem.Services
                 totalRecord = totalCount,
                 weeklyBucketHistories = listWeeklyBucketHistory
             };
+        }
+
+        public async Task<WeeklyBucket> GetWeeklyBucket(Guid id)
+        {
+            var weeklyBucket = await _db.WeeklyBuckets.SingleOrDefaultAsync(x => x.Id == id);
+            return weeklyBucket;
         }
     }
 }

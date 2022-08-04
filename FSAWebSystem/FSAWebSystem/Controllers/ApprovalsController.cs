@@ -16,12 +16,16 @@ namespace FSAWebSystem.Controllers
     {
         private readonly FSAWebSystemDbContext _context;
         private readonly IApprovalService _approvalService;
+        private readonly IProposalService _proposalService;
+        private readonly IBucketService _bucketService;
 
 
-        public ApprovalsController(FSAWebSystemDbContext context, IApprovalService approvalService)
+        public ApprovalsController(FSAWebSystemDbContext context, IApprovalService approvalService, IProposalService proposalService, IBucketService bucketService)
         {
             _context = context;
             _approvalService = approvalService;
+            _proposalService = proposalService;
+            _bucketService = bucketService;
         }
 
         // GET: Approvals
@@ -124,41 +128,30 @@ namespace FSAWebSystem.Controllers
             return View(approval);
         }
 
-        // GET: Approvals/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+
+        [HttpPost]
+        public async Task ApproveProposal(string proposalId, string approvalId)
         {
-            if (id == null || _context.Approvals == null)
+            try
             {
-                return NotFound();
+                var approval = await _approvalService.GetApprovalById(Guid.Parse(approvalId));
+                approval.ApprovedAt = DateTime.Now;
+                approval.ApprovedBy = User.Identity.Name;
+                approval.ApprovalStatus = ApprovalStatus.Approved;
+
+                var proposal = await _proposalService.GetProposalById(Guid.Parse(proposalId));
+                proposal.IsWaitingApproval = false;
+                var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
+                var currentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week).ToString()).GetValue(weeklyBucket));
+                weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week + 1).ToString()).SetValue(weeklyBucket, currentBucket + proposal.Rephase);
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+
             }
 
-            var approval = await _context.Approvals
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (approval == null)
-            {
-                return NotFound();
-            }
-
-            return View(approval);
-        }
-
-        // POST: Approvals/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            if (_context.Approvals == null)
-            {
-                return Problem("Entity set 'FSAWebSystemDbContext.Approvals'  is null.");
-            }
-            var approval = await _context.Approvals.FindAsync(id);
-            if (approval != null)
-            {
-                _context.Approvals.Remove(approval);
-            }
-            
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
         }
 
         private bool ApprovalExists(Guid id)

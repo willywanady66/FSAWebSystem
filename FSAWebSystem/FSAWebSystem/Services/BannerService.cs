@@ -103,9 +103,9 @@ namespace FSAWebSystem.Services
             return await _db.Banners.Where(x => x.IsActive).AnyAsync(x => x.BannerName.ToUpper() == name.ToUpper());
         }
 
-        public async Task<bool> IsBannerUsed(string name)
+        public async Task<bool> IsBannerUsed(string name, string plantCode)
         {
-            var usedBanner = await _db.Banners.Where(x => x.IsActive).Include(x => x.UserUnilevers).SingleOrDefaultAsync(x => x.BannerName.ToUpper() == name.ToUpper());
+            var usedBanner = await _db.Banners.Where(x => x.IsActive).Include(x => x.UserUnilevers).SingleOrDefaultAsync(x => x.BannerName.ToUpper() == name.ToUpper() && x.PlantCode == plantCode);
             return usedBanner.UserUnilevers.Any();
 
         }

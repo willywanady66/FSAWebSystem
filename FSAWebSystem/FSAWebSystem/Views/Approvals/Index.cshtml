@@ -7,9 +7,12 @@
 
 
 <script src="~/js/Approval/dataTableApproval.js"></script>
-<h1>Approval</h1>
-
-
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Approval</h1>
+  </div>
+  <div class="text-danger">
+    <ul id="error-messages"></ul>
+  </div>
 <div class="card shadow mb-4 pt-4 pl-2">
   <div class="card-header py-3">
     <h5 class="m-0 font-weight-bold text-primary d-inline">Approval</h5>
@@ -27,6 +30,7 @@
             <th rowspan="2" class="align-middle">Propose Additional FSA</th>
             <th rowspan="2" class="align-middle">Rephase</th>
             <th colspan="2" class="align-middle">Action</th>
+            <th rowspan="2" class="hide_column">ProposalId</th>
             </tr>
             <tr>
                 <th>Level 1</th>
