@@ -28,13 +28,13 @@
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                   
-                        return `<a href="./UserUnilevers/Edit/${full.userId}">
+
+                    return `<a href="./UserUnilevers/Edit/${full.userId}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
-                    
+
                     return null;
-                    
+
                 }
 
 
@@ -112,10 +112,10 @@
             { "data": "pcMap" },  //0
             { "data": "descriptionMap" },       //1
             { "data": "category" },  //2
-            { "data": "status"}, //3
+            { "data": "status" }, //3
             { "data": "id" } //4
         ],
-        columnDefs:[{
+        columnDefs: [{
             targets: 4,
             orderable: false,
             className: 'text-center',
@@ -123,7 +123,7 @@
                 return `<a href="./SKUs/Edit/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
-            }  
+            }
         }],
         "rowCallback": function (row, data, index) {
             if (data.status == "Active") {
@@ -148,7 +148,7 @@
             { "data": "wl" },  //1
             { "data": "status" },  //2
             { "data": "id" }  //3
-          
+
         ],
         columnDefs: [
             {
@@ -214,8 +214,9 @@
             },
             {
                 targets: 'all',
-                defaultContent: ""}
-            ],
+                defaultContent: ""
+            }
+        ],
         rowsGroup: [5],
         "rowCallback": function (row, data, index) {
             $('td:eq(5)', row).addClass('align-middle');
@@ -236,4 +237,21 @@
         year = $('#dropDownYear option:selected').val();
         dtCalendar.draw();
     });
+
+
+    var doc = $('#documentType option:selected').val();
+    if (doc !== "Monthly Bucked") {
+        $('#uploadMonthGroup').hide();
+
+    }
+
+    $('#documentType').change(function () {
+        doc = $('#documentType option:selected').text();
+        if (doc !== "Monthly Bucket") {
+            $('#uploadMonthGroup').hide();
+        }
+        else {
+            $('#uploadMonthGroup').show();
+        }
+    })
 });

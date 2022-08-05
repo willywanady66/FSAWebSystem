@@ -65,10 +65,11 @@ namespace FSAWebSystem.Controllers
             try
             {
                 var fsaDetail = await _calendarService.GetCalendarDetail(currentDate.Date);
-                var week = fsaDetail.Week;
+               
                 if (fsaDetail != null)
                 {
-                    if(Convert.ToInt32(param.month) != currentDate.Month || Convert.ToInt32(param.year) != currentDate.Year)
+                    var week = fsaDetail.Week;
+                    if (Convert.ToInt32(param.month) != currentDate.Month || Convert.ToInt32(param.year) != currentDate.Year)
 					{
                         week = 1;
 					}

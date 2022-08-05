@@ -134,11 +134,19 @@ namespace FSAWebSystem.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> UploadFile(IFormFile excelDocument, string documentType, string loggedUser)
+        public async Task<IActionResult> UploadFile(IFormFile excelDocument, string documentType, string loggedUser, string? uploadMonth)
         {
-            var doc = (DocumentUpload)(Convert.ToInt32(documentType));
-            List<string> errorMessages = new List<string>();
             var currDate = DateTime.Now;
+            var month = currDate.Month;
+            if (!string.IsNullOrEmpty(uploadMonth))
+            {
+                month = Convert.ToInt32(uploadMonth);
+
+            }
+            var doc = (DocumentUpload)(Convert.ToInt32(documentType));
+            
+            List<string> errorMessages = new List<string>();
+           
 
             if (excelDocument != null)
             {
@@ -152,8 +160,8 @@ namespace FSAWebSystem.Controllers
 
                 if (doc == DocumentUpload.MonthlyBucket)
                 {
-                    var isCalendarExist = await _db.FSACalendarHeader.AnyAsync(x => x.Month == currDate.Month && x.Year == currDate.Year);
-                    var monthName = currDate.ToString("MMMM");
+                    var isCalendarExist = await _db.FSACalendarHeader.AnyAsync(x => x.Month == month && x.Year == currDate.Year);
+                    var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
                     if (!isCalendarExist)
                     {
                         errorMessages.Add("Please Input FSACalendar for " + monthName + "-" + currDate.Year.ToString());
@@ -194,7 +202,7 @@ namespace FSAWebSystem.Controllers
                         case DocumentUpload.MonthlyBucket:
                             columns = _uploadDocService.GetMonthlyBucketColumns();
                             dt = CreateDataTable(sheet, columns, errorMessages);
-                            await SaveMonthlyBuckets(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+                            await SaveMonthlyBuckets(dt, excelDocument.FileName, month, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.WeeklyDispatch:
                             columns = _uploadDocService.GetWeeklyDispatchColumns();
@@ -505,7 +513,7 @@ namespace FSAWebSystem.Controllers
 
         }
 
-        private async Task SaveMonthlyBuckets(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
+        private async Task SaveMonthlyBuckets(DataTable dt, string fileName, int month, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
         {
             List<MonthlyBucket> listMonthlyBucket = new List<MonthlyBucket>();
 
@@ -515,7 +523,7 @@ namespace FSAWebSystem.Controllers
 
             FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
             var currentDate = DateTime.Now;
-            var fsaDetail = await _calendarService.GetCalendarDetail(currentDate.Date);
+            //var fsaDetail = await _calendarService.GetCalendarDetail(currentDate.Date);
             var row = 0;
             try
             {
@@ -536,8 +544,8 @@ namespace FSAWebSystem.Controllers
                         RatingRate = Decimal.Parse(ConvertNumber(dr["Rating Rate"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
                         TCT = Decimal.Parse(ConvertNumber(dr["TCT"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }) * 100,
                         MonthlyTarget = Decimal.Parse(ConvertNumber(dr["Monthly Target"].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }) * 100,
-                        Month = fsaDetail.Month,
-                        Year = fsaDetail.Year,
+                        Month = month,
+                        Year = currentDate.Year,
                         CreatedAt = DateTime.Now,
                         CreatedBy = loggedUser,
                         FSADocument = fsaDoc
@@ -551,7 +559,7 @@ namespace FSAWebSystem.Controllers
                 errorMessages.Add(ex.Message);
             }
 
-            var savedMonthlyBucket = _bucketService.GetMonthlyBuckets().Where(x => x.Month == fsaDetail.Month && x.Year == fsaDetail.Year);
+            var savedMonthlyBucket = _bucketService.GetMonthlyBuckets().Where(x => x.Month == month && x.Year == currentDate.Year);
             ValidateMonthlyBucketExcel(listMonthlyBucket, savedMonthlyBucket, errorMessages);
             if (!errorMessages.Any())
             {
@@ -567,8 +575,6 @@ namespace FSAWebSystem.Controllers
                 await _uploadDocService.SaveDocument(fsaDoc);
                 await CreateWeeklyBucket(listMonthlyBucket);
             }
-
-
         }
 
         private async Task SaveBanners(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
@@ -684,15 +690,18 @@ namespace FSAWebSystem.Controllers
                     var totalDispatch = decimal.Zero;
                     if (calendarDetail.Week == 1)
                     {
-                        remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek1;
+                        remainingBucket = savedWeeklyBucket.BucketWeek1;
+                        //remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek1;
                     }
                     else if (calendarDetail.Week == 2)
                     {
-                        remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek2;
+                        remainingBucket = savedWeeklyBucket.BucketWeek2;
+                        //remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek2;
                     }
                     else if (calendarDetail.Week == 3)
                     {
-                        remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek3;
+                        remainingBucket =  savedWeeklyBucket.BucketWeek3;
+                        remainingBucket = /*savedWeeklyBucket.ValidBJ*/ - savedWeeklyBucket.BucketWeek3;
                     }
                     else
                     {
