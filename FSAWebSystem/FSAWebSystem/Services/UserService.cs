@@ -132,7 +132,7 @@ namespace FSAWebSystem.Services
             {
                 Name = name,
                 Email = email,
-                //Password = Input.Password,
+                Password = password,
                 Id = Guid.NewGuid(),
                 CreatedAt = DateTime.Now,
                 CreatedBy = loggedUser,

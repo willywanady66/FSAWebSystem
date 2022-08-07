@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20220806165518_Init54")]
+    partial class Init54
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -125,9 +127,6 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<Guid>("ProposalId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("ProposalType")
-                        .HasColumnType("int");
 
                     b.Property<string>("RejectionReason")
                         .HasColumnType("nvarchar(max)");
@@ -488,9 +487,6 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<decimal>("ApprovedRephase")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("BannerTargetId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsWaitingApproval")
                         .HasColumnType("bit");

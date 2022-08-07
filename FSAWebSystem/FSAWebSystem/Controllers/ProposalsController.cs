@@ -26,9 +26,10 @@ namespace FSAWebSystem.Controllers
         private readonly IUserService _userService;
         private readonly INotyfService _notyfService;
         private readonly IApprovalService _approvalService;
+        private readonly IBannerService _bannerService;
         private readonly UserManager<FSAWebSystemUser> _userManager;
 
-        public ProposalsController(FSAWebSystemDbContext db, IProposalService proposalService, IBucketService bucketService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager, IUserService userService, INotyfService notyfService, IApprovalService approvalService)
+        public ProposalsController(FSAWebSystemDbContext db, IProposalService proposalService, IBucketService bucketService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager, IUserService userService, INotyfService notyfService, IBannerService bannerService, IApprovalService approvalService)
         {
             _db = db;
             _proposalService = proposalService;
@@ -38,6 +39,7 @@ namespace FSAWebSystem.Controllers
             _userService = userService;
             _notyfService = notyfService;
             _approvalService = approvalService;
+            _bannerService = bannerService;
         }
 
         // GET: Proposals
@@ -61,18 +63,18 @@ namespace FSAWebSystem.Controllers
             var listData = Json(new { });
             var data = new ProposalData();
             var currentDate = DateTime.Now;
-          
+
             try
             {
                 var fsaDetail = await _calendarService.GetCalendarDetail(currentDate.Date);
-               
+
                 if (fsaDetail != null)
                 {
                     var week = fsaDetail.Week;
                     if (Convert.ToInt32(param.month) != currentDate.Month || Convert.ToInt32(param.year) != currentDate.Year)
-					{
+                    {
                         week = 1;
-					}
+                    }
                     data = await _proposalService.GetProposalForView(Convert.ToInt32(param.month), Convert.ToInt32(param.year), week, param, userUnilever.Id);
 
                 }
@@ -95,7 +97,7 @@ namespace FSAWebSystem.Controllers
                     recordsTotal = data.totalRecord,
                     recordsFiltered = data.totalRecord,
                     data = data.proposals
-                }); 
+                });
             }
             catch (Exception ex)
             {
@@ -107,6 +109,50 @@ namespace FSAWebSystem.Controllers
 
             return listData;
 
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetProposalReallocatePagination(DataTableParamProposal param)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var userUnilever = await _userService.GetUser(Guid.Parse(user.Id));
+            List<Proposal> listProposal = new List<Proposal>();
+            var listData = Json(new { });
+            var data = new ProposalData();
+            var currentDate = DateTime.Now;
+
+            var weeklyBucketBanners = await _bucketService.GetWeeklyBucketBanners();
+            var userBanners = await _bannerService.GetUserBanners(userUnilever.Id);
+            var dropdownBanner = userBanners.Where(x => weeklyBucketBanners.Contains(x.Id)).Select(x => new SelectListItem { Text = x.BannerName + " (" + x.PlantName + ")" + " (" + x.PlantCode + ')', Value = x.Id.ToString() }).ToList();
+
+            try
+            {
+                var fsaDetail = await _calendarService.GetCalendarDetail(currentDate.Date);
+                if (fsaDetail != null)
+                {
+                    var week = fsaDetail.Week;
+                    if (Convert.ToInt32(param.month) != currentDate.Month || Convert.ToInt32(param.year) != currentDate.Year)
+                    {
+                        week = 1;
+                    }
+                    data = await _proposalService.GetProposalReallocateForView(Convert.ToInt32(param.month), Convert.ToInt32(param.year), week, param, userUnilever.Id);
+                }
+
+                listData = Json(new
+                {
+
+                    draw = param.draw,
+                    recordsTotal = data.totalRecord,
+                    recordsFiltered = data.totalRecord,
+                    data = data.proposals,
+                    dropdownBanner = dropdownBanner
+                });
+            }
+            catch
+            {
+
+            }
+            return listData;
         }
 
         [HttpPost]
@@ -198,50 +244,83 @@ namespace FSAWebSystem.Controllers
 
                     if (Guid.Parse(proposalInput.id) == Guid.Empty)
                     {
-                        var approval = new Approval
+                        if (proposalInput.rephase > 0)
                         {
-                            Id = Guid.NewGuid(),
-                            ApprovalStatus = ApprovalStatus.Pending,
-                            SubmittedAt = DateTime.Now,
-                            SubmittedBy = (Guid)user.UserUnileverId
-                        };
-                        var proposal = new Proposal
-                        {
-                            Id = Guid.NewGuid(),
-                            Week = fsaDetail.Week,
-                            Year = fsaDetail.Year,
-                            Month = fsaDetail.Month,
-                            WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
-                            Rephase = proposalInput.rephase,
-                            ProposeAdditional = proposalInput.proposeAdditional,
-                            Remark = proposalInput.remark,
-                            IsWaitingApproval = true,
-                            ApprovalId = approval.Id
-                        };
+                            var approval = new Approval
+                            {
+                                Id = Guid.NewGuid(),
+                                ApprovalStatus = ApprovalStatus.Pending,
+                                SubmittedAt = DateTime.Now,
+                                SubmittedBy = (Guid)user.UserUnileverId
+                            };
 
-                        approval.ProposalId = proposal.Id;
-                        listApproval.Add(approval);
-                        listProposal.Add(proposal);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            var savedApproval = savedApprovals.Single(x => x.Id == Guid.Parse(proposalInput.approvalId));
-                            savedApproval.SubmittedAt = DateTime.Now;
-
-                            var savedProposal = savedProposals.Single(x => x.Id == Guid.Parse(proposalInput.id));
-                            savedProposal.Remark = proposalInput.remark;
-                            savedProposal.Rephase = proposalInput.rephase;
-                            savedProposal.ProposeAdditional = proposalInput.proposeAdditional;
-                        }
-                        catch (Exception ex)
-                        {
-
+                            var proposal = new Proposal
+                            {
+                                Id = Guid.NewGuid(),
+                                Week = fsaDetail.Week,
+                                Year = fsaDetail.Year,
+                                Month = fsaDetail.Month,
+                                WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
+                                Rephase = proposalInput.rephase,
+                                Remark = proposalInput.remark,
+                                IsWaitingApproval = true,
+                                ApprovalId = approval.Id,
+                                Type = ProposalType.Rephase
+                            };
+                            approval.ProposalId = proposal.Id;
+                            approval.ProposalType = proposal.Type.Value;
+                            listApproval.Add(approval);
+                            listProposal.Add(proposal);
                         }
 
-                    }
+                        if (proposalInput.proposeAdditional > 0)
+                        {
+                            var approval = new Approval
+                            {
+                                Id = Guid.NewGuid(),
+                                ApprovalStatus = ApprovalStatus.Pending,
+                                SubmittedAt = DateTime.Now,
+                                SubmittedBy = (Guid)user.UserUnileverId
+                            };
 
+                            var proposal = new Proposal
+                            {
+                                Id = Guid.NewGuid(),
+                                Week = fsaDetail.Week,
+                                Year = fsaDetail.Year,
+                                Month = fsaDetail.Month,
+                                WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
+                                Rephase = proposalInput.rephase,
+                                Remark = proposalInput.remark,
+                                ProposeAdditional = proposalInput.proposeAdditional,
+                                IsWaitingApproval = true,
+                                ApprovalId = approval.Id,
+                                Type = ProposalType.ProposeAdditional
+                            };
+                            approval.ProposalId = proposal.Id;
+                            approval.ProposalType = proposal.Type.Value;
+                            listApproval.Add(approval);
+                            listProposal.Add(proposal);
+                        }
+                    }
+                    //else
+                    //{
+                    //    try
+                    //    {
+                    //        var savedApproval = savedApprovals.Single(x => x.Id == Guid.Parse(proposalInput.approvalId));
+                    //        savedApproval.SubmittedAt = DateTime.Now;
+
+                    //        var savedProposal = savedProposals.Single(x => x.Id == Guid.Parse(proposalInput.id));
+                    //        savedProposal.Remark = proposalInput.remark;
+                    //        savedProposal.Rephase = proposalInput.rephase;
+                    //        savedProposal.ProposeAdditional = proposalInput.proposeAdditional;
+                    //    }
+                    //    catch (Exception ex)
+                    //    {
+
+                    //    }
+
+                    //}
                 }
                 await _proposalService.SaveProposals(listProposal);
                 await _approvalService.SaveApprovals(listApproval);
@@ -249,7 +328,7 @@ namespace FSAWebSystem.Controllers
                 {
                     await _db.SaveChangesAsync();
 
-                    message = "Your Proposal has been saved!";
+                    message = "Your Proposal has been submitted!";
                     _notyfService.Success(message);
                     return Ok(proposals);
                 }
@@ -267,15 +346,117 @@ namespace FSAWebSystem.Controllers
             return BadRequest(Json(new { proposals, errorMessages }));
         }
 
+
+        public async Task<IActionResult> SaveProposalReallocate(List<ProposalInput> proposals)
+        {
+            var currDate = DateTime.Now;
+            var user = await _userManager.GetUserAsync(User);
+            List<string> errorMessages = new List<string>();
+            var message = string.Empty;
+            ValidateProposalReallcoateInput(proposals, errorMessages);
+            if (!errorMessages.Any())
+            {
+                List<Proposal> listProposal = new List<Proposal>();
+                List<Approval> listApproval = new List<Approval>();
+                var fsaDetail = await _calendarService.GetCalendarDetail(currDate.Date);
+                var savedProposals = _proposalService.GetPendingProposals(fsaDetail, (Guid)user.UserUnileverId).Where(x => x.Type == ProposalType.Reallocate);
+                var savedApprovals = _approvalService.GetPendingApprovals();
+                foreach (var proposalInput in proposals.Where(x => x.reallocate > 0))
+                {
+                    if (Guid.Parse(proposalInput.id) == Guid.Empty)
+                    {
+                        var approval = new Approval
+                        {
+                            Id = Guid.NewGuid(),
+                            ApprovalStatus = ApprovalStatus.Pending,
+                            SubmittedAt = DateTime.Now,
+                            SubmittedBy = (Guid)user.UserUnileverId
+                        };
+
+                        var proposal = new Proposal
+                        {
+                            Id = Guid.NewGuid(),
+                            Week = fsaDetail.Week,
+                            Year = fsaDetail.Year,
+                            Month = fsaDetail.Month,
+                            WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
+                            BannerTargetId = Guid.Parse(proposalInput.bannerTargetId),
+                            Reallocate = proposalInput.reallocate,
+                            IsWaitingApproval = true,
+                            ApprovalId = approval.Id,
+                            Type = ProposalType.Reallocate
+                        };
+                        approval.ProposalId = proposal.Id;
+                        approval.ProposalType = proposal.Type.Value;
+                        listApproval.Add(approval);
+                        listProposal.Add(proposal);
+                    }
+
+                }
+                await _proposalService.SaveProposals(listProposal);
+                await _approvalService.SaveApprovals(listApproval);
+                try
+                {
+                    await _db.SaveChangesAsync();
+
+                    message = "Your Proposal has been submitted!";
+                    _notyfService.Success(message);
+                    return Ok(proposals);
+                }
+                catch (Exception ex)
+                {
+                   
+                    message = "Submit Proposal Failed";
+                    _notyfService.Warning(message);
+                }
+            }
+
+            else
+            {
+                message = "Submit Proposal Failed";
+                _notyfService.Warning(message);
+
+            }
+            return BadRequest(Json(new { proposals, errorMessages }));
+        }
+
+
         public void ValidateProposalInput(List<ProposalInput> proposalInputs, List<string> errorMessages)
         {
+            var currDate = DateTime.Now;
+          
             foreach (var proposal in proposalInputs.Where(x => (!string.IsNullOrEmpty(x.remark) || x.proposeAdditional > 0 || x.rephase > 0)))
             {
+                if(proposal.rephase > 0 && (currDate.DayOfWeek >= DayOfWeek.Thursday && currDate.TimeOfDay.Hours > 12) || currDate.DayOfWeek == DayOfWeek.Sunday)
+				{
+                    errorMessages.Add("Cannot request rephase after Thursday 12 AM, Please request again on Monday");
+				}
+
                 if (proposal.rephase > proposal.nextWeekBucket)
                 {
                     errorMessages.Add(string.Format("Cannot request rephase more than next week bucket value on Bucket Name: {0}, PlantName: {1} and PCMap: {2}", proposal.bannerName, proposal.plantName, proposal.pcMap));
                 }
             }
         }
+
+        public void ValidateProposalReallcoateInput(List<ProposalInput> proposalInputs, List<string> errorMessages)
+        {
+            {
+                foreach (var proposal in proposalInputs.Where(x => x.reallocate > 0))
+                {
+                    if(string.IsNullOrEmpty(proposal.bannerTargetId))
+                    {
+                        errorMessages.Add(string.Format("Banner target must be filled on Banner: {0} {1}", proposal.bannerName, proposal.plantName));
+                    }
+
+                    if(proposal.currentBucket < proposal.reallocate)
+					{
+                        errorMessages.Add(string.Format("Cannot request reallocation more than current bucket on Banner: {0} {1}", proposal.bannerName, proposal.plantName));
+					}
+                }
+            }
+        }
     }
 }
+
+

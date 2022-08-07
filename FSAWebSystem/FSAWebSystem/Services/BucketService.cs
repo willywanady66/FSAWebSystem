@@ -101,5 +101,17 @@ namespace FSAWebSystem.Services
             var weeklyBucket = await _db.WeeklyBuckets.SingleOrDefaultAsync(x => x.Id == id);
             return weeklyBucket;
         }
+
+        public async Task<List<Guid>> GetWeeklyBucketBanners()
+		{
+            var weeklyBucketBanners = await _db.WeeklyBuckets.Select(x => x.BannerId).Distinct().ToListAsync();
+            return weeklyBucketBanners;
+		}
+		
+        public async Task<WeeklyBucket> GetWeeklyBucketByBanner(Guid targetBanner, int year, int month)
+		{
+            var weeklyBucket = await _db.WeeklyBuckets.SingleAsync(x => x.BannerId == targetBanner && x.Month == month && x.Year == year);
+            return weeklyBucket;
+        }
     }
 }

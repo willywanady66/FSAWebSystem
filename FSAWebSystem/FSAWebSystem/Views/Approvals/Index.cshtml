@@ -17,7 +17,31 @@
   <div class="card-header py-3">
     <h5 class="m-0 font-weight-bold text-primary d-inline">Approval</h5>
   </div>
-  <div class="card-body">
+
+
+  	<ul class="nav nav-tabs" id="myTab2" role="tablist">
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link active" id="approval-tab" data-toggle="tab" href="#approval"
+			   role="tab" aria-controls="approval" aria-selected="true">Approval</a>
+		</li>
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link" id="approvalReallocate-tab" data-toggle="tab"
+			   href="#approvalReallocate" role="tab" aria-control="approvalReallocate"
+			   aria-selected="false">Approval Reallocate</a>
+		</li>
+	</ul>
+
+
+	
+	<div class="tab-content" id="myTabContent2">
+		<div class="tab-pane fade active show" id="approval" role="tabpanel"
+			 aria-labelledby="approval-tab">
+			<div class="card-header py-3">
+				<h5 class="m-0 font-weight-bold text-primary d-inline">
+					Approval
+				</h5>
+			</div>
+			<div class="card-body">
     <div class="table-responsive">
       <table class="table table-bordered" id="dataTableApproval" width="100%" cellspacing="0">
         <thead>
@@ -29,6 +53,7 @@
             <th rowspan="2" class="align-middle">Description</th>
             <th rowspan="2" class="align-middle">Propose Additional FSA</th>
             <th rowspan="2" class="align-middle">Rephase</th>
+            <th rowspan="2" class="align-middle">Remark</th>
             <th colspan="2" class="align-middle">Action</th>
             <th rowspan="2" class="hide_column">ProposalId</th>
             </tr>
@@ -42,4 +67,70 @@
       </table>
     </div>
   </div>
+			</div>
+
+
+				<div class="tab-pane fade" id="approvalReallocate" role="tabpanel"
+			 aria-labelledby="approvalReallocate-tab">
+			<div class="card-header py-3">
+				<h5 class="m-0 font-weight-bold text-primary d-inline">
+					Approval Reallocate
+				</h5>
+			</div>
+				<div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered" id="dataTableApprovalReallocate" width="100%" cellspacing="0">
+        <thead>
+          <tr class="text-center">
+            <th rowspan="2" class="align-middle">Submit Date</th>
+            <th colspan="2" class="align-middle">Status Approval</th>
+            <th rowspan="2" class="align-middle">Banner</th>
+            <th rowspan="2" class="align-middle">PC Map</th>
+            <th rowspan="2" class="align-middle">Description</th>
+            <th rowspan="2" class="align-middle">Reallocate</th>
+            <th rowspan="2" class="align-middle">Banner Target</th>
+            <th rowspan="2" class="align-middle">Remark</th>
+            <th colspan="2" class="align-middle">Action</th>
+            <th rowspan="2" class="hide_column">ProposalId</th>
+            </tr>
+            <tr>
+                <th>Level 1</th>
+                <th>Level 2</th>
+                <th>Approve</th>
+                <th>Reject</th>
+            </tr>
+        </thead>
+      </table>
+    </div>
+			</div>
+	</div>
+
+
+  
+</div>
+
+
+
+<div class="modal fade" id="submitProposalModal" tabindex="-1" role="dialog"
+	 aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">
+					Submit Proposal?
+				</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">Are you sure want to Submit Proposal?</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-primary" id="submitProposalBtn"
+						data-dismiss="modal">
+					Submit
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
 </div>

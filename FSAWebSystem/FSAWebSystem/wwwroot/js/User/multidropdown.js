@@ -1,5 +1,6 @@
 ﻿$(document).ready(function () {
     $('#dropDownListBanners').multiselect({
+        enableFiltering:true,
         includeSelectAllOption: true,
         maxHeight: 450
     });

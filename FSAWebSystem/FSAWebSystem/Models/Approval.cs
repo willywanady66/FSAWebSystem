@@ -10,6 +10,8 @@ namespace FSAWebSystem.Models
         public DateTime SubmittedAt { get; set; }
         public ApprovalStatus ApprovalStatus { get; set; }
 
+        public ProposalType ProposalType { get; set; }
+
         //public decimal ApprovedRephase { get; set; }
         //public decimal ApprovedProposeAdditional { get; set; }
         [NotMapped]
@@ -20,6 +22,9 @@ namespace FSAWebSystem.Models
         public string? ApprovedBy { get; set; }
         public DateTime? ApprovedAt { get; set; }
 
+
+		[NotMapped]
+        public Proposal Proposal { get; set; }
         [NotMapped]
         public int Week { get; set; }
         [NotMapped]
@@ -35,6 +40,7 @@ namespace FSAWebSystem.Models
 
         [NotMapped]
         public string BannerName { get; set; }
+		
         [NotMapped]
         public string PlantName { get; set; }
         [NotMapped]
@@ -45,4 +51,13 @@ namespace FSAWebSystem.Models
         public string SubmitDate { get; set; }
 
     }
+
+    public enum ApprovalStatus
+    {
+        Pending,
+        Approved,
+        Rejected,
+        Cancelled
+    }
+
 }

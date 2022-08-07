@@ -7,6 +7,8 @@ namespace FSAWebSystem.Services.Interface
     public interface IBannerService
     {
         public IQueryable<Banner> GetAllBanner();
+
+        public Task<List<Banner>> GetUserBanners(Guid userId);
         public Task<BannerPagingData> GetBannerPagination(DataTableParam param);
         public IQueryable<Banner> GetAllActiveBanner();
         public Task<Banner> GetBanner(Guid id);

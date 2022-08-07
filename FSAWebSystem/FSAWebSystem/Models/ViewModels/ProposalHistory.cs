@@ -18,6 +18,8 @@ namespace FSAWebSystem.Models.ViewModels
 
         [NotMapped]
         public decimal Rephase { get; set; }
+		[NotMapped]
+        public decimal Reallocate { get; set; }
         [NotMapped]
         public string Remark { get; set; }
         [NotMapped]

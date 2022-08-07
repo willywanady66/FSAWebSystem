@@ -380,6 +380,7 @@ namespace FSAWebSystem.Controllers
                         savedUser.FSADocumentId = fSADocument.Id;
                         savedUser.WLId = workLevelId;
                         savedUser.Banners = banners;
+                        savedUser.Password = group.First().Password;
                         savedUserLogin.Role = userRole.RoleName;
 
                         var claims = await _userManager.GetClaimsAsync(savedUserLogin);

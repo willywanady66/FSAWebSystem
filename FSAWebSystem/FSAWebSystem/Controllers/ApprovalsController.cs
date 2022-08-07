@@ -76,7 +76,29 @@ namespace FSAWebSystem.Controllers
             return listData;
         }
 
+		[HttpPost]
+        public async Task<IActionResult> GetApprovalReallocatePagination(DataTableParam param)
+		{
+            var listData = Json(new { });
+            try
+            {
 
+                var currentDate = DateTime.Now;
+                var data = await _approvalService.GetApprovalReallocatePagination(param, currentDate.Month, currentDate.Year);
+                listData = Json(new
+                {
+                    draw = param.draw,
+                    recordsTotal = data.totalRecord,
+                    recordsFiltered = data.totalRecord,
+                    data = data.approvals
+                });
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return listData;
+        }
         // GET: Approvals/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
@@ -130,12 +152,13 @@ namespace FSAWebSystem.Controllers
 
 
         [HttpPost]
-        public async Task ApproveProposal(string proposalId, string approvalId)
+        public async Task ApproveProposal(string proposalId, string approvalId, ProposalType type)
         {
             try
             {
+                var currDate = DateTime.Now;
                 var approval = await _approvalService.GetApprovalById(Guid.Parse(approvalId));
-                approval.ApprovedAt = DateTime.Now;
+                approval.ApprovedAt = currDate;
                 approval.ApprovedBy = User.Identity.Name;
                 approval.ApprovalStatus = ApprovalStatus.Approved;
 
@@ -143,7 +166,18 @@ namespace FSAWebSystem.Controllers
                 proposal.IsWaitingApproval = false;
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
                 var currentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week).ToString()).GetValue(weeklyBucket));
-                weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week + 1).ToString()).SetValue(weeklyBucket, currentBucket + proposal.Rephase);
+                if (type == ProposalType.Reallocate)
+				{
+                    var targetBucket = await _bucketService.GetWeeklyBucketByBanner(proposal.BannerTargetId, currDate.Year, currDate.Month);
+                    targetBucket.GetType().GetProperty("BucketWeek" + (proposal.Week).ToString()).SetValue(targetBucket, proposal.Reallocate);
+				}
+				else if(type == ProposalType.Rephase)
+				{
+                    proposal.ApprovedRephase = proposal.Rephase;
+                   
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week + 1).ToString()).SetValue(weeklyBucket, currentBucket + proposal.Rephase);
+                }
+               
 
                 await _context.SaveChangesAsync();
             }
@@ -153,6 +187,26 @@ namespace FSAWebSystem.Controllers
             }
 
         }
+
+		//[HttpPost]
+  //      public async Task ApproveProposalReallocate(string proposalId, string approvalId)
+		//{
+		//	try
+		//	{
+  //              var approval = await _approvalService.GetApprovalById(Guid.Parse(approvalId));
+  //              approval.ApprovedAt = DateTime.Now;
+  //              approval.ApprovedBy = User.Identity.Name;
+  //              approval.ApprovalStatus = ApprovalStatus.Approved;
+
+  //              var proposal = await _proposalService.GetProposalById(Guid.Parse(proposalId));
+
+
+  //          }
+		//	catch (Exception ex)
+		//	{
+
+		//	}
+		//}
 
         private bool ApprovalExists(Guid id)
         {

@@ -10,9 +10,14 @@ namespace FSAWebSystem.Models
         public int Year { get; set; }
         public Guid WeeklyBucketId { get; set; }    
         public decimal Rephase { get; set; }
+        public decimal ApprovedRephase { get; set; }
         public decimal ProposeAdditional { get; set; }
+        public decimal ApprovedProposeAdditional { get; set; }
+        public decimal Reallocate { get; set; }
+        public Guid BannerTargetId { get; set; }
         public string? Remark { get; set; }
 
+        public ProposalType? Type { get; set; }
         public Guid ApprovalId { get; set; }
         public bool IsWaitingApproval { get; set; }
 
@@ -20,11 +25,15 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public string BannerName { get; set; }
         [NotMapped]
+        public Guid BannerId { get; set; }
+        [NotMapped]
         public string PlantCode { get; set; }
         [NotMapped]
         public string PlantName { get; set; }
         [NotMapped]
         public string PCMap { get; set; }
+        [NotMapped]
+        public string Category { get; set; }
 
         [NotMapped]
         public string DescriptionMap { get; set; }
@@ -52,14 +61,21 @@ namespace FSAWebSystem.Models
         public string ApprovedBy { get; set; }
         [NotMapped]
         public string RejectionReason { get; set; }
+
+		[NotMapped]
+        public string BannerNameTarget { get; set; }
+		[NotMapped]
+        public string PlantNameTarget { get; set; }
+		[NotMapped]
+        public string PlantCodeTarget { get; set; }
     }
 
-    public enum ApprovalStatus
-    {
-        Pending,
-        Approved,
-        Rejected,
-        Cancelled
-    }
+
+    public enum ProposalType
+	{
+        Rephase,
+        ProposeAdditional,
+        Reallocate
+	}
 
  }

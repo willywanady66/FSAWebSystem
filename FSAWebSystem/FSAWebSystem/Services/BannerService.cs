@@ -22,19 +22,18 @@ namespace FSAWebSystem.Services
             throw new NotImplementedException();
         }
 
-        //public async Task DeleteUserBanners(List<Banner> userBanners)
-        //{
-        //    _db.Banners.RemoveRange(userBanners);
-        //    await _db.SaveChangesAsync();
-
-        //}
+        public async Task<List<Banner>> GetUserBanners(Guid userId)
+		{
+            var bannerUsers = await _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)).ToListAsync();
+            return bannerUsers;
+        }
 
         public async Task FillBannerDropdown(ViewDataDictionary viewData)
         {
             var banners = GetAllBanner().ToList();
-            MultiDropDownListViewModel listBanner = new MultiDropDownListViewModel();
-            listBanner.ItemList = banners.Select(x => new SelectListItem { Text = x.BannerName + " (" + x.PlantName + ')', Value = x.Id.ToString() }).ToList();
-            viewData["ListBanner"] = listBanner.ItemList;
+             
+            var listBanner = banners.Select(x => new SelectListItem { Text = x.BannerName + " (" + x.PlantName + ") " + "(" + x.PlantCode + ")", Value = x.Id.ToString() }).ToList();
+            viewData["ListBanner"] = listBanner;
         }
 
         public IQueryable<Banner> GetAllActiveBanner()
@@ -106,7 +105,10 @@ namespace FSAWebSystem.Services
         public async Task<bool> IsBannerUsed(string name, string plantCode)
         {
             var usedBanner = await _db.Banners.Where(x => x.IsActive).Include(x => x.UserUnilevers).SingleOrDefaultAsync(x => x.BannerName.ToUpper() == name.ToUpper() && x.PlantCode == plantCode);
-            return usedBanner.UserUnilevers.Any();
+
+            var usedBannerBucket =  _db.MonthlyBuckets.Where(x => x.BannerId == usedBanner.Id);
+            var bannerUsed = usedBanner.UserUnilevers.Any() && usedBannerBucket.Any();
+            return bannerUsed;
 
         }
 

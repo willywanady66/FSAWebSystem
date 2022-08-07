@@ -12,5 +12,9 @@ namespace FSAWebSystem.Services.Interface
         public IQueryable<WeeklyBucket> GetWeeklyBuckets();
 
         public Task<WeeklyBucket> GetWeeklyBucket(Guid id);
+
+        public Task<List<Guid>> GetWeeklyBucketBanners();
+
+        public Task<WeeklyBucket> GetWeeklyBucketByBanner(Guid targetBanner, int year, int month);
     }
 }

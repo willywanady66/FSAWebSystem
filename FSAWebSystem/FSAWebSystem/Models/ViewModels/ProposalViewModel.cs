@@ -25,10 +25,14 @@
             public string bannerName { get; set; }
             public string plantName { get; set; }
             public string pcMap { get; set; }
+            public decimal currentBucket { get; set; }
             public decimal nextWeekBucket { get; set; }
             public decimal rephase { get; set; }
             public decimal proposeAdditional { get; set; }
+            public decimal reallocate { get; set; }
             public string remark { get; set; }
+            public string bannerId { get; set; }
+            public string bannerTargetId { get; set; }
             //public string Remark { get; set; }
         }
     }

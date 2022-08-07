@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20220807161123_Init55")]
+    partial class Init55
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -488,9 +490,6 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<decimal>("ApprovedRephase")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("BannerTargetId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsWaitingApproval")
                         .HasColumnType("bit");

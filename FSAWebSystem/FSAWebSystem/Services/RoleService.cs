@@ -20,7 +20,6 @@ namespace FSAWebSystem.Services
         public async Task FillRoleDropdown(ViewDataDictionary viewData)
         {
             var roles = await GetAllRoles().ToListAsync();
-            MultiDropDownListViewModel listRole = new MultiDropDownListViewModel();
             viewData["ListRole"] = roles.Select(x => new SelectListItem { Text = x.RoleName, Value = x.RoleUnileverId.ToString() }).ToList();
         }
 
