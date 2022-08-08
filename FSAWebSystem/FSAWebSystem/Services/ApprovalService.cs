@@ -103,6 +103,7 @@ namespace FSAWebSystem.Services
                                                                          Id = weeklyBucket.Id,
                                                                          BannerName = banner.BannerName,
                                                                          PlantName = banner.PlantName,
+                                                                         PlantCode = banner.PlantCode,
                                                                          PCMap = sku.PCMap,
                                                                          DescriptionMap = sku.DescriptionMap,
                                                                      }) on proposal.WeeklyBucketId equals weeklyBucket.Id
@@ -112,6 +113,7 @@ namespace FSAWebSystem.Services
                                                    Id = proposal.Id,
                                                    BannerName = weeklyBucket.BannerName,
                                                    PlantName = weeklyBucket.PlantName,
+                                                   PlantCode = weeklyBucket.PlantCode,
                                                    PCMap = weeklyBucket.PCMap,
                                                    DescriptionMap = weeklyBucket.DescriptionMap,
                                                    ProposeAdditional = proposal.ProposeAdditional,

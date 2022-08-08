@@ -9,6 +9,7 @@ using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
+using AspNetCoreHero.ToastNotification.Abstractions;
 
 namespace FSAWebSystem.Controllers
 {
@@ -18,14 +19,15 @@ namespace FSAWebSystem.Controllers
         private readonly IApprovalService _approvalService;
         private readonly IProposalService _proposalService;
         private readonly IBucketService _bucketService;
+        private readonly INotyfService _notyfService;
 
-
-        public ApprovalsController(FSAWebSystemDbContext context, IApprovalService approvalService, IProposalService proposalService, IBucketService bucketService)
+        public ApprovalsController(FSAWebSystemDbContext context, IApprovalService approvalService, IProposalService proposalService, IBucketService bucketService, INotyfService notyfService)
         {
             _context = context;
             _approvalService = approvalService;
             _proposalService = proposalService;
             _bucketService = bucketService;
+            _notyfService = notyfService;
         }
 
         // GET: Approvals
@@ -152,7 +154,7 @@ namespace FSAWebSystem.Controllers
 
 
         [HttpPost]
-        public async Task ApproveProposal(string proposalId, string approvalId, ProposalType type)
+        public async Task<IActionResult> ApproveProposal(string proposalId, string approvalId, ProposalType type)
         {
             try
             {
@@ -177,15 +179,18 @@ namespace FSAWebSystem.Controllers
                    
                     weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week + 1).ToString()).SetValue(weeklyBucket, currentBucket + proposal.Rephase);
                 }
-               
 
                 await _context.SaveChangesAsync();
+
+                _notyfService.Success("Proposal Approved");
+                return Ok();
             }
             catch (Exception ex)
             {
 
             }
-
+            return BadRequest();
+            
         }
 
 		//[HttpPost]

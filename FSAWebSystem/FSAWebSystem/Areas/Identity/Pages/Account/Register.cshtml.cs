@@ -148,7 +148,7 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
                 var savedUser = await _userService.GetUserByEmail(Input.Email);
                 var savedUserLogin = await _userManager.FindByEmailAsync(Input.Email);
 
-                if(savedUser != null && savedUserLogin != null)
+                if(savedUser == null && savedUserLogin == null)
                 {
                     var userUnilever = await _userService.CreateUser(Input.Name, Input.Email, Input.Password, bannerIds, roleId, worklevelId, User.Identity.Name, _userStore, _emailStore);
                     if (userUnilever.Message != null)

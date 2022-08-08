@@ -10,5 +10,6 @@
         public List<Order> order { get; set; }
         public string month{ get; set; }
         public string year{ get; set; }
+        public ProposalType type { get; set; }
     }
 }

@@ -843,6 +843,7 @@ namespace FSAWebSystem.Controllers
 
         private void ValidateWeeklyBucketExcel(List<WeeklyBucket> listWeeklyBucket,  List<string> errorMessages)
         {
+            var currDate = DateTime.Now;
             if (listWeeklyBucket.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
             {
                 errorMessages.Add("Please fill all PCMap and BannerName column");
@@ -851,8 +852,9 @@ namespace FSAWebSystem.Controllers
 
             var bannersNotExist = (from weeklyBucket in listWeeklyBucket
                                    where !(
-                                   from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => x.BannerId)
+                                   from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerId, x.Month, x.Year })
                                    join banner in _bannerService.GetAllActiveBanner().AsEnumerable() on monthlyBucket.BannerId equals banner.Id
+                                   where monthlyBucket.Month == currDate.Month && monthlyBucket.Year == currDate.Year
                                    select new
                                    {
                                        banner.BannerName,
@@ -871,8 +873,9 @@ namespace FSAWebSystem.Controllers
 
             var skusNotExist = (from weeklyBucket in listWeeklyBucket
                                 where !(
-                                from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId })
+                                from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId, x.Month, x.Year })
                                 join sku in _skuService.GetAllProducts().Where(x => x.IsActive).AsEnumerable() on monthlyBucket.SKUId equals sku.Id
+                                where monthlyBucket.Month == currDate.Month && monthlyBucket.Year == currDate.Year
                                 select new
                                 {
                                     sku.PCMap

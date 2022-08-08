@@ -75,7 +75,8 @@ namespace FSAWebSystem.Models
 	{
         Rephase,
         ProposeAdditional,
-        Reallocate
+        Reallocate,
+        All = 99
 	}
 
  }

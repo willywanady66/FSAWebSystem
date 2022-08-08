@@ -25,7 +25,7 @@ namespace FSAWebSystem.Services
             var proposals = (from weeklyBucket in _db.WeeklyBuckets
                              join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
                              join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
-                             join proposal in _db.Proposals.Where(x => x.Type != ProposalType.Reallocate) on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
+                             join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
                              where weeklyBucket.Month == month && weeklyBucket.Year == year
                              select new Proposal
@@ -52,7 +52,8 @@ namespace FSAWebSystem.Services
                                  ApprovedRephase = p != null ? p.ApprovedRephase : decimal.Zero,
                                  ProposeAdditional = p != null ? p.ProposeAdditional : decimal.Zero,
                                  ApprovedProposeAdditional = p != null ? p.ApprovedProposeAdditional : decimal.Zero,
-                                 IsWaitingApproval = p != null ? p.IsWaitingApproval : false
+                                 IsWaitingApproval = p != null ? p.IsWaitingApproval : false,
+                                 Type = p != null ? p.Type : null
                              });
 
             var proposal2 = (from proposal in proposals
@@ -77,17 +78,17 @@ namespace FSAWebSystem.Services
                                  RemFSA = proposal.MonthlyBucket - proposal.ValidBJ,
                                  CurrentBucket = proposal.CurrentBucket,
                                  NextBucket = proposal.NextBucket,
-                                 Remark = proposal.Remark,
-                                 Rephase =  proposal.Rephase,
+                                 Remark = proposal.IsWaitingApproval ? proposal.Remark : string.Empty,
+                                 Rephase = proposal.IsWaitingApproval ?  proposal.Rephase : decimal.Zero,
                                  ApprovedRephase = proposal.ApprovedRephase,
                                  ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending,
-                                 ProposeAdditional = proposal.ProposeAdditional,
+                                 ProposeAdditional = proposal.IsWaitingApproval ? proposal.ProposeAdditional : decimal.Zero,
                                  ApprovedProposeAdditional = proposal.ApprovedProposeAdditional,
-                                 IsWaitingApproval = proposal.IsWaitingApproval
+                                 IsWaitingApproval = proposal.IsWaitingApproval,
+                                 Type = proposal.Type
                              });
 
-            proposal2 = proposal2.Where(x => !x.IsWaitingApproval);
-           
+
             var totalCount = proposal2.Count();
             var listProposal = proposal2.Skip(param.start).Take(param.length).ToList();
             _db.ChangeTracker.AutoDetectChangesEnabled = true;
@@ -106,7 +107,7 @@ namespace FSAWebSystem.Services
             var proposals = (from weeklyBucket in _db.WeeklyBuckets
                              join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
                              join sku in _db.SKUs.Include(x => x.ProductCategory) on weeklyBucket.SKUId equals sku.Id
-                             join proposal in _db.Proposals.Where(x => x.Type == ProposalType.Reallocate) on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
+                             join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
                              where weeklyBucket.Month == month && weeklyBucket.Year == year
                              select new Proposal
@@ -142,7 +143,7 @@ namespace FSAWebSystem.Services
                              from apprvl in approvalGroup.DefaultIfEmpty()
                              select new Proposal
                              {
-                                 Id = proposal.Id,
+                                 Id = proposal.IsWaitingApproval ? proposal.Id : Guid.Empty,
                                  WeeklyBucketId = proposal.WeeklyBucketId,
                                  BannerName = proposal.BannerName,
                                  BannerId = proposal.BannerId,
@@ -155,18 +156,13 @@ namespace FSAWebSystem.Services
                                  Category = proposal.Category,
                                  CurrentBucket = proposal.CurrentBucket,
                                  DescriptionMap = proposal.DescriptionMap,
-                                 Remark = proposal.Remark,
-                                 Reallocate = proposal.Reallocate,
-                                 BannerTargetId = proposal.BannerTargetId,
+                                 Remark = proposal.IsWaitingApproval ? proposal.Remark : string.Empty,
+                                 Reallocate = proposal.IsWaitingApproval ? proposal.Reallocate : decimal.Zero,
+                                 BannerTargetId = proposal.IsWaitingApproval ? proposal.BannerTargetId : Guid.Empty,
                                  Type = proposal.Type,
                                  ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending,
-                                 ProposeAdditional = proposal.ProposeAdditional,
                                  IsWaitingApproval = proposal.IsWaitingApproval
                              });
-
-
-
-            proposal2 = proposal2.Where(x => !x.IsWaitingApproval);
 
             var totalCount = proposal2.Count();
             var listProposal = proposal2.Skip(param.start).Take(param.length).ToList();
@@ -179,12 +175,17 @@ namespace FSAWebSystem.Services
             };
 
         }
-        public ProposalHistoryPagingData GetProposalHistoryPagination(DataTableParam param, Guid userId, int month, int year)
+        public ProposalHistoryPagingData GetProposalHistoryPagination(DataTableParam param, Guid userId, int month, int year, ProposalType type)
         {
+            var proposals = _db.Proposals.AsQueryable();
+            if(type != ProposalType.All)
+			{
+                proposals = proposals.Where(x => x.Type == type);
+			}
             var proposalsHistory = (from approval in _db.Approvals 
                                     join userUnilever in _db.UsersUnilever.Where(x => x.Id == userId) on approval.SubmittedBy equals userUnilever.Id
-                                    join proposal in ( from proposal in _db.Proposals
-                                                        join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
+                                    join proposal in ( from proposal in proposals
+                                                       join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
                                                                             join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
                                                                             join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
                                                                               select new WeeklyBucket
@@ -244,6 +245,77 @@ namespace FSAWebSystem.Services
             };
 
 
+        }
+
+
+        public ProposalHistoryPagingData GetProposalHistoryReallocatePagination(DataTableParam param, Guid userId, int month, int year)
+		{
+            var proposalsHistory = (from approval in _db.Approvals
+                                    join userUnilever in _db.UsersUnilever.Where(x => x.Id == userId) on approval.SubmittedBy equals userUnilever.Id
+                                    join proposal in (from proposal in _db.Proposals.Where(x => x.Type == ProposalType.Reallocate)
+                                                      join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
+                                                                            join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
+                                                                            join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
+                                                                            select new WeeklyBucket
+                                                                            {
+                                                                                Id = weeklyBucket.Id,
+                                                                                BannerName = banner.BannerName,
+                                                                                PlantName = banner.PlantName,
+                                                                                PCMap = sku.PCMap,
+                                                                                DescriptionMap = sku.DescriptionMap,
+                                                                            }) on proposal.WeeklyBucketId equals weeklyBucket.Id
+                                                      where proposal.Month == month && proposal.Year == year
+                                                      join bannerTarget in _db.Banners on proposal.BannerTargetId equals bannerTarget.Id
+                                                      select new Proposal
+                                                      {
+                                                          Id = proposal.Id,
+                                                          BannerName = weeklyBucket.BannerName,
+                                                          PlantName = weeklyBucket.PlantName,
+                                                          PCMap = weeklyBucket.PCMap,
+                                                          DescriptionMap = weeklyBucket.DescriptionMap,
+                                                          ProposeAdditional = proposal.ProposeAdditional,
+                                                          Rephase = proposal.Rephase,
+                                                          Reallocate = proposal.Reallocate,
+                                                          Remark = proposal.Remark,
+                                                          BannerNameTarget = bannerTarget.BannerName,
+                                                          PlantCodeTarget = bannerTarget.PlantCode,
+                                                          PlantNameTarget = bannerTarget.PlantName,
+                                                          //Year = proposal.Year,
+                                                          //Month = proposal.Month,
+                                                          Week = proposal.Week
+                                                      }) on approval.ProposalId equals proposal.Id
+                                    select new ProposalHistory
+                                    {
+                                        SubmittedAt = approval.SubmittedAt.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                                        BannerName = proposal.BannerName,
+                                        PlantName = proposal.PlantName,
+                                        PCMap = proposal.PCMap,
+                                        DescriptionMap = proposal.DescriptionMap,
+                                        Rephase = proposal.Rephase,
+                                        Remark = proposal.Remark,
+                                        ApprovedRephase = 0,
+                                        ProposeAdditional = proposal.ProposeAdditional,
+                                        ApprovedProposeAdditional = 0,
+                                        Reallocate = proposal.Reallocate,
+                                        Status = approval.ApprovalStatus.ToString(),
+                                        ApprovedBy = userUnilever.Name,
+                                        RejectionReason = approval.RejectionReason,
+                                        Week = proposal.Week,
+                                        BannerTargetName = proposal.BannerNameTarget + " (" + proposal.PlantNameTarget + ") (" + proposal.PlantCodeTarget + ")"
+                                    });
+
+            if (!string.IsNullOrEmpty(param.search.value))
+            {
+                var search = param.search.value.ToLower();
+                proposalsHistory = proposalsHistory.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search) || x.Status.ToLower().Contains(search));
+            }
+            var totalCount = proposalsHistory.Count();
+            var listProposalHistory = proposalsHistory.Skip(param.start).Take(param.length).ToList();
+            return new ProposalHistoryPagingData
+            {
+                totalRecord = totalCount,
+                proposalsHistory = listProposalHistory
+            };
         }
 
         public async Task<bool> IsProposalExist(FSACalendarDetail fsaDetail)

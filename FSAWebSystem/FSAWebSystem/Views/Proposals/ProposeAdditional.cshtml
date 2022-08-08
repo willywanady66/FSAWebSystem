@@ -1,0 +1,155 @@
+﻿@model IEnumerable<FSAWebSystem.Models.Proposal>
+
+@{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	List<SelectListItem> listMonths = ViewData["listMonth"] as List<SelectListItem>;
+	List<SelectListItem> listYears = ViewData["listYear"] as List<SelectListItem>;
+}
+
+<script src="~/js/Proposal/proposeAdditional.js"></script>
+
+
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+	<h1 class="h3 mb-0 text-gray-800">Propose FSA</h1>
+</div>
+<div class="text-danger">
+	<ul id="error-messages"></ul>
+</div>
+
+<div class="card shadow mb-4 pt-4 pl-2 pb-4">
+
+		<div class="row px-4 py-4">
+		<div class="col-4">
+			<label class="form-label d-inline">Month</label>
+			<select class="form-control form-select" id="dropDownMonth" name="month"
+					asp-items="@listMonths"></select>
+		</div>
+		<div class="col-4"></div>
+		<div class="col-4">
+			<label class="form-label d-inline">Year</label>
+			<select class="form-control form-select" id="dropDownYear" name="month"
+					asp-items="@listYears"></select>
+		</div>
+	</div>
+
+	<div class="card-header py-3">
+		<h5 class="m-0 font-weight-bold text-primary d-inline">Proposal Propose Additional</h5>
+	</div>
+			<div class="card-body">
+				<div class="row" style="overflow-x:auto">
+					<table class="table table-bordered responsive" id="dataTableProposalProposeAdditional" width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>Banner</th>
+								<th>Plant Name</th>
+								<th>PC Map</th>
+								<th>Description Map</th>
+								<th>RR</th>
+								<th>Monthly Bucket</th>
+								<th>Current Bucket</th>
+								<th>Next Week Bucket</th>
+								<th>Valid + BJ</th>
+								<th>REM FSA</th>
+								<th style="width:20%">Propose Additional</th>
+								<th style="width:20%">Remark</th>
+								<th class="hide_column">WeeklyId</th>
+								<th class="hide_column">Id</th>
+								<th class="hide_column">ApprovalId</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+				<div class="row mt-5">
+					<button class="btn btn-primary" data-toggle="modal"
+							data-target="#submitProposalModal">
+						Submit
+					</button>
+				</div>
+			</div>
+		</div>
+
+
+
+
+<div class="card shadow mb-4 pt-4 pl-2 pb-4">
+
+
+			<div class="card-header py-3">
+				<h5 class="m-0 font-weight-bold text-primary d-inline">
+					Proposal History
+				</h5>
+	
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableProposalHistory" width="100%"
+						   cellspacing="0">
+						<thead>
+							<tr>
+								<th>Submit Date</th>
+								<th>Week</th>
+								<th>Banner Name</th>
+								<th>Plant Name</th>
+								<th>PC Map</th>
+								<th>Description Map</th>
+								<th>Propose Additional</th>
+								<th>Approved Propose Additional</th>
+								<th>Remark</th>
+								<th>Approval Status</th>
+								<th>Approved By</th>
+								<th>Rejection Status</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+</div>
+
+<div class="modal fade" id="submitProposalModal" tabindex="-1" role="dialog"
+	 aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">
+					Submit Proposal?
+				</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">Are you sure want to Submit Proposal?</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-primary" id="submitProposalBtn"
+						data-dismiss="modal">
+					Submit
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal fade" id="submitProposalReallocateModal" tabindex="-1" role="dialog"
+	 aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">
+					Submit Proposal Reallocate?
+				</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">Are you sure want to Submit Proposal Reallocate?</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-primary" id="submitProposalReallocateBtn"
+						data-dismiss="modal">
+					Submit
+				</button>
+			</div>
+		</div>
+	</div>
+</div>

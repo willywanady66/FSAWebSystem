@@ -53,6 +53,38 @@ namespace FSAWebSystem.Controllers
             return View();
         }
 
+        [Authorize(Policy = ("ProposalPage"))]
+        public async Task<IActionResult> Rephase(string message)
+        {
+            ViewData["ListMonth"] = _calendarService.GetListMonth();
+            ViewData["ListYear"] = _calendarService.GetListYear();
+            return View();
+        }
+
+
+        [Authorize(Policy = ("ProposalPage"))]
+        public async Task<IActionResult> ProposeAdditional(string message)
+        {
+            ViewData["ListMonth"] = _calendarService.GetListMonth();
+            ViewData["ListYear"] = _calendarService.GetListYear();
+            return View();
+        }
+
+        [Authorize(Policy = ("ProposalPage"))]
+        public async Task<IActionResult> Reallocate(string message)
+        {
+            ViewData["ListMonth"] = _calendarService.GetListMonth();
+            ViewData["ListYear"] = _calendarService.GetListYear();
+            return View();
+        }
+
+        [Authorize(Policy = ("ProposalPage"))]
+        public async Task<IActionResult> History(string message)
+        {
+            ViewData["ListMonth"] = _calendarService.GetListMonth();
+            ViewData["ListYear"] = _calendarService.GetListYear();
+            return View();
+        }
 
         [HttpPost]
         public async Task<IActionResult> GetProposalPagination(DataTableParamProposal param)
@@ -162,7 +194,30 @@ namespace FSAWebSystem.Controllers
             var listData = Json(new { });
             try
             {
-                var listProposalHistory = _proposalService.GetProposalHistoryPagination(param, (Guid)user.UserUnileverId, Convert.ToInt32(param.month), Convert.ToInt32(param.year));
+                var listProposalHistory = _proposalService.GetProposalHistoryPagination(param, (Guid)user.UserUnileverId, Convert.ToInt32(param.month), Convert.ToInt32(param.year), param.type);
+                listData = Json(new
+                {
+                    draw = param.draw,
+                    recordsTotal = listProposalHistory.totalRecord,
+                    recordsFiltered = listProposalHistory.totalRecord,
+                    data = listProposalHistory.proposalsHistory
+                });
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return listData;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetProposalReallocateHistoryPagination(DataTableParam param)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var listData = Json(new { });
+            try
+            {
+                var listProposalHistory = _proposalService.GetProposalHistoryReallocatePagination(param, (Guid)user.UserUnileverId, Convert.ToInt32(param.month), Convert.ToInt32(param.year));
                 listData = Json(new
                 {
                     draw = param.draw,

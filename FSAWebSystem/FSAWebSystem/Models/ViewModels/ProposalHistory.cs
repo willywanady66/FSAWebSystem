@@ -33,5 +33,7 @@ namespace FSAWebSystem.Models.ViewModels
 
         [NotMapped]
         public string BannerName { get; set; }
+		[NotMapped]
+        public string BannerTargetName { get; set; }
     }
 }

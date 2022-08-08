@@ -1,0 +1,160 @@
+﻿@model IEnumerable<FSAWebSystem.Models.Proposal>
+
+@{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	List<SelectListItem> listMonths = ViewData["listMonth"] as List<SelectListItem>;
+	List<SelectListItem> listYears = ViewData["listYear"] as List<SelectListItem>;
+}
+
+<script src="~/js/Proposal/history.js"></script>
+
+
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+	<h1 class="h3 mb-0 text-gray-800">History</h1>
+</div>
+<div class="text-danger">
+	<ul id="error-messages"></ul>
+</div>
+
+<div class="card shadow mb-4 pt-4 pl-2 pb-4">
+	<div class="card-header py-3">
+		<h5 class="m-0 font-weight-bold text-primary d-inline">History</h5>
+	</div>
+
+			<div class="row px-4 py-4">
+		<div class="col-4">
+			<label class="form-label d-inline">Month</label>
+			<select class="form-control form-select" id="dropDownMonth" name="month"
+					asp-items="@listMonths"></select>
+		</div>
+		<div class="col-4"></div>
+		<div class="col-4">
+			<label class="form-label d-inline">Year</label>
+			<select class="form-control form-select" id="dropDownYear" name="month"
+					asp-items="@listYears"></select>
+		</div>
+	</div>
+
+
+	<ul class="nav nav-tabs" id="myTab1" role="tablist">
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link active" id="proposalHistory-tab" data-toggle="tab"
+			   href="#proposalHistory" role="tab" aria-controls="proposalHistory"
+			   aria-selected="true">Proposal History</a>
+		</li>
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link" id="monthlyBucketHistory-tab" data-toggle="tab"
+			   href="#monthlyBucket" role="tab" aria-control="monthlyBucket"
+			   aria-selected="false">Monthly Bucket History</a>
+		</li>
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link" id="weeklyBucket-tab" data-toggle="tab" href="#weeklyBucket"
+			   role="tab" aria-controls="weeklyBucket" aria-selected="false">
+				Weekly Bucket
+				History
+			</a>
+		</li>
+	</ul>
+
+	<div class="tab-content" id="myTabContent1">
+		<div class="tab-pane fade active show" id="proposalHistory" role="tabpanel"
+			 aria-labelledby="proposalHistory-tab">
+			<div class="card-header py-3">
+				<h5 class="m-0 font-weight-bold text-primary d-inline">
+					Proposal History
+				</h5>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableProposalHistory" width="100%"
+						   cellspacing="0">
+						<thead>
+							<tr>
+								<th>Submit Date</th>
+								<th>Week</th>
+								<th>Banner Name</th>
+								<th>Plant Name</th>
+								<th>PC Map</th>
+								<th>Description Map</th>
+								<th>Rephase</th>
+								<th>Approved Rephase</th>
+								<th>Propose Additional</th>
+								<th>Approved Propose Additional</th>
+								<th>Reallocate</th>
+								<th>Remark</th>
+								<th>Approval Status</th>
+								<th>Approved By</th>
+								<th>Rejection Status</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="tab-pane fade" id="monthlyBucket" role="tabpanel"
+			 aria-labelledby="monthlyBucket-tab">
+			<div class="card-header py-3">
+				<h5 class="m-0 font-weight-bold text-primary d-inline">
+					Monthly Bucket History
+				</h5>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableMonthlyBucketHistory"
+						   width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>Upload Date</th>
+								<th>Year</th>
+								<th>Month</th>
+								<th>Banner Name</th>
+								<th>Plant Name</th>
+								<th>PC Map</th>
+								<th>Description Map</th>
+								<th>Price</th>
+								<th>Plant Contribution</th>
+								<th>Rating Rate</th>
+								<th>TCT</th>
+								<th>Monthly Target</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="tab-pane fade" id="weeklyBucket" role="tabpanel"
+			 aria-labelledby="weeklyBucket-tab">
+			<div class="card-header py-3">
+				<h5 class="m-0 font-weight-bold text-primary d-inline">
+					Weekly Bucket History
+				</h5>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableWeeklyBucketHistory"
+						   width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>Upload Date</th>
+								<th>Year</th>
+								<th>Month</th>
+								<th>Week</th>
+								<th>Banner Name</th>
+								<th>Plant Name</th>
+								<th>PC Map</th>
+								<th>Description Map</th>
+								<th>Dispatch / Consume</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+

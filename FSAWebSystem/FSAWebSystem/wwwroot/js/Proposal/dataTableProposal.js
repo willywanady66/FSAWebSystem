@@ -23,7 +23,7 @@
         "serverSide": true,
         autoWidth: false,
         "ajax": {
-            url: "Proposals/GetProposalPagination",
+            url: "/Proposals/GetProposalPagination",
             type: "POST",
             data: function (d) {
                 return $.extend(d, { "proposalInputs": getUserInput(proposalInputs), "month": month, "year": year });
@@ -169,7 +169,7 @@
         //$("#submitProposalModal").modal("hide");
         $.ajax({
             type: "POST",
-            url: "Proposals/SaveProposal",
+            url: "/Proposals/SaveProposal",
             data: { "proposals": proposals },
             success: function (data) {
                 var ul = document.getElementById('error-messages');
@@ -198,7 +198,7 @@
         let proposals = getUserInputReallocate(proposalInputsReallocate);
         $.ajax({
             type: "POST",
-            url: "Proposals/SaveProposalReallocate",
+            url: "/Proposals/SaveProposalReallocate",
             data: { "proposals": proposals },
             success: function (data) {
                 var ul = document.getElementById('error-messages');
@@ -226,7 +226,7 @@ var tableHistory = $("#dataTableProposalHistory").DataTable({
     "processing": true,
     "serverSide": true,
     "ajax": {
-        url: "Proposals/GetProposalHistoryPagination",
+        url: "/Proposals/GetProposalHistoryPagination",
         type: "POST",
         data: function (d) {
             return $.extend(d, { "month": month, "year": year });
@@ -264,7 +264,7 @@ var tableMonthlyBucketHistory = $('#dataTableMonthlyBucketHistory').DataTable({
     "processing": true,
     "serverSide": true,
     "ajax": {
-        url: "Proposals/GetMonthlyBucketHistoryPagination",
+        url: "/Proposals/GetMonthlyBucketHistoryPagination",
         type: "POST",
         data: function (d) {
             return $.extend(d, {
@@ -306,7 +306,7 @@ var tableWeeklyBucketHistory = $('#dataTableWeeklyBucketHistory').DataTable({
     "processing": true,
     "serverSide": true,
     "ajax": {
-        url: "Proposals/GetWeeklyBucketHistoryPagination",
+        url: "/Proposals/GetWeeklyBucketHistoryPagination",
         type: "POST",
         data: function (d) {
             return $.extend(d, {
@@ -367,7 +367,7 @@ var tableProposalsReallocate = $("#dataTableProposalReallocate").DataTable({
     "processing": true,
     "serverSide": true,
     "ajax": {
-        url: "Proposals/GetProposalReallocatePagination",
+        url: "/Proposals/GetProposalReallocatePagination",
         type: "POST",
         data: function (d) {
             return $.extend(d, { "proposalInputs": getUserInputReallocate(proposalInputsReallocate), "month": month, "year": year });

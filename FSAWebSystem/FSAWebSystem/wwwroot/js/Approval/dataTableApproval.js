@@ -62,6 +62,7 @@
             success: function (data) {
                 var ul = document.getElementById('error-messages');
                 ul.innerHTML = '';
+                approvalReallocateTable.draw();
             }
         })
     });
@@ -81,19 +82,20 @@
             { "data": "level1" }, //1
             { "data": "level2" }, //2
             { "data": "bannerName" }, //3
-            { "data": "pcMap" },       //4
-            { "data": "descriptionMap" }, //5
-            { "data": "proposal.reallocate" },      //6
-            { "data": "proposal.bannerTargetId" }, //7
-            { "data": "remark" }, //8
-            { "data": "id" }, //9
-            { "data": "id" }, //10
-            { "data": "proposalId" }, //11
-            //{ "data": "remark" }, //6
+            { "data": "proposal.plantName" }, //4
+            { "data": "proposal.plantCode" }, //5
+            { "data": "pcMap" },       //6
+            { "data": "descriptionMap" }, //7
+            { "data": "proposal.reallocate" },      //8
+            { "data": "proposal.bannerTargetId" }, //9
+            { "data": "remark" }, //10
+            { "data": "id" }, //11
+            { "data": "id" }, //12
+            { "data": "proposalId" }, //13
         ],
         columnDefs: [
             {
-                targets: 7,
+                targets: 9,
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
@@ -101,7 +103,7 @@
                 }
             },
             {
-                targets: 9,
+                targets: 11,
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
@@ -109,7 +111,7 @@
                 }
             },
             {
-                targets: 10,
+                targets: 12,
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
@@ -117,7 +119,7 @@
                 }
             },
             {
-                targets: 11,
+                targets: 13,
                 className: 'hide_column'
             }
         ]
