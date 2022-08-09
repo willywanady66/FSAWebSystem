@@ -8,10 +8,10 @@ namespace FSAWebSystem.Services.Interface
     {
 
         public Task<ProposalData> GetProposalForView(int month, int year, int week, DataTableParamProposal param, Guid userId);
-        public Task<ProposalData> GetProposalReallocateForView(int month, int year, int week, DataTableParamProposal param, Guid userId);
+        //public Task<ProposalData> GetProposalReallocateForView(int month, int year, int week, DataTableParamProposal param, Guid userId);
         //public Task<ProposalData> GetProposalForView(int month, int year, int week, int pageNo, Guid userId);
         public Task SaveProposals(List<Proposal> listProposal);
-
+        public Task SaveProposalHistories(List<ProposalHistory> listProposalHistory);
         public Task<bool> IsProposalExist(FSACalendarDetail fsaDetail);
         public IQueryable<Proposal> GetPendingProposals(FSACalendarDetail fsaDetail, Guid userId);
 

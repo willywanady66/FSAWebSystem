@@ -143,6 +143,15 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             returnUrl ??= Url.Content("~/");
 
             await FillDropdowns(ViewData);
+
+            if(string.IsNullOrEmpty(worklevelId))
+            {
+                ModelState.AddModelError(string.Empty, "Work Level must be filled!");
+                _notyfService.Warning("Create user failed!");
+                return Page();
+            }
+
+
             if (ModelState.IsValid)
             {
                 var savedUser = await _userService.GetUserByEmail(Input.Email);

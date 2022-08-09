@@ -182,7 +182,7 @@
             success: function (data) {
                 var ul = document.getElementById('error-messages');
                 ul.innerHTML = '';
-                
+                redrawTable();
             },
             error: function (data) {
                 var errorMessages = data.responseJSON.value.errorMessages;
@@ -242,26 +242,26 @@ var tableHistory = $("#dataTableProposalHistory").DataTable({
     },
     columns: [
         { "data": "submittedAt" }, //0
-        { "data": "week" }, //1
-        { "data": "bannerName" }, //2
-        { "data": "plantName" },  //3
-        { "data": "pcMap" },       //4
-        { "data": "descriptionMap" }, //5
-        { "data": "rephase" },      //6
-        { "data": "approvedRephase" },   //7
-        { "data": "proposeAdditional" },   //8
-        { "data": "approvedProposeAdditional" },   //9
-        { "data": "reallocate" },   //10
-        { "data": "remark" },   //11
-        { "data": "status" },   //12
+        { "data": "proposal.week" }, //1
+        { "data": "proposal.bannerName" }, //2
+        { "data": "proposal.plantName" },  //3
+        { "data": "proposal.pcMap" },       //4
+        { "data": "proposal.descriptionMap" }, //5
+        { "data": "proposal.rephase" },      //6
+        { "data": "proposal.approvedRephase" },   //7
+        { "data": "proposal.proposeAdditional" },   //8
+        { "data": "proposal.approvedProposeAdditional" },   //9
+        { "data": "proposal.reallocate" },   //10
+        { "data": "proposal.remark" },   //11
+        { "data": "approvalStatus" },   //12
         { "data": "approvedBy" },   //13
         { "data": "rejectionReason" },   //14
     ],
     "rowCallback": function (row, data, index) {
-        if (data.status == "Approved") {
+        if (data.approvalStatus == "Approved") {
             $('td:eq(12)', row).css({ color: "green" });
         }
-        else if (data.status == "Rejected") {
+        else if (data.approvalStatus == "Rejected") {
             $('td:eq(12)', row).css({ color: "red" });
         }
     }

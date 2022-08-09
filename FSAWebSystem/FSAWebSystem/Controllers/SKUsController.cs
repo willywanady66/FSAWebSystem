@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
 using AspNetCoreHero.ToastNotification.Abstractions;
+using FSAWebSystem.Services.Interface;
 
 namespace FSAWebSystem.Controllers
 {
@@ -15,10 +16,12 @@ namespace FSAWebSystem.Controllers
     {
         private readonly FSAWebSystemDbContext _context;
         private readonly INotyfService _notyfService;
-        public SKUsController(FSAWebSystemDbContext context, INotyfService notyfService)
+        private readonly ISKUService _skuService;
+        public SKUsController(FSAWebSystemDbContext context, INotyfService notyfService, ISKUService sKUService)
         {
             _context = context;
             _notyfService = notyfService;
+            _skuService = sKUService;
         }
 
         // GET: SKUs
@@ -110,6 +113,17 @@ namespace FSAWebSystem.Controllers
             {
                 try
                 {
+                    var savedSKU = await _skuService.GetSKU(sKU.PCMap);
+                    if(savedSKU != null)
+                    {
+                        if (savedSKU.Id != sKU.Id)
+                        {
+                            ModelState.AddModelError("", "PCMap: " + sKU.PCMap + " already exist");
+                            _notyfService.Error("Update SKU Failed!");
+                            return View(sKU);
+                        }
+                    }
+                   
                     _context.Update(sKU);
                     await _context.SaveChangesAsync();
                     _notyfService.Success("SKU Updated!");
@@ -130,42 +144,7 @@ namespace FSAWebSystem.Controllers
             return View(sKU);
         }
 
-        // GET: SKUs/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
-        {
-            if (id == null || _context.SKUs == null)
-            {
-                return NotFound();
-            }
 
-            var sKU = await _context.SKUs
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (sKU == null)
-            {
-                return NotFound();
-            }
-
-            return View(sKU);
-        }
-
-        // POST: SKUs/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            if (_context.SKUs == null)
-            {
-                return Problem("Entity set 'FSAWebSystemDbContext.SKUs'  is null.");
-            }
-            var sKU = await _context.SKUs.FindAsync(id);
-            if (sKU != null)
-            {
-                _context.SKUs.Remove(sKU);
-            }
-            
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
         private bool SKUExists(Guid id)
         {

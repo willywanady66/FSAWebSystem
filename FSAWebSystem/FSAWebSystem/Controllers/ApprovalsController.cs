@@ -9,6 +9,9 @@ using FSAWebSystem.Models;
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
+using AspNetCoreHero.ToastNotification.Abstractions;
+using FSAWebSystem.Areas.Identity.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace FSAWebSystem.Controllers
 {
@@ -18,14 +21,19 @@ namespace FSAWebSystem.Controllers
         private readonly IApprovalService _approvalService;
         private readonly IProposalService _proposalService;
         private readonly IBucketService _bucketService;
-
-
-        public ApprovalsController(FSAWebSystemDbContext context, IApprovalService approvalService, IProposalService proposalService, IBucketService bucketService)
+        private readonly UserManager<FSAWebSystemUser> _userManager;
+        private readonly INotyfService _notyfService;
+        private readonly IUserService _userService;
+        
+        public ApprovalsController(FSAWebSystemDbContext context, IApprovalService approvalService, IProposalService proposalService, IBucketService bucketService, INotyfService notyfService, UserManager<FSAWebSystemUser> userManager, IUserService userService)
         {
             _context = context;
             _approvalService = approvalService;
             _proposalService = proposalService;
             _bucketService = bucketService;
+            _notyfService = notyfService;
+            _userManager = userManager;
+            _userService = userService;
         }
 
         // GET: Approvals
@@ -156,10 +164,12 @@ namespace FSAWebSystem.Controllers
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+                var userUnilever = await _userService.GetUser(Guid.Parse(user.Id));
                 var currDate = DateTime.Now;
                 var approval = await _approvalService.GetApprovalById(Guid.Parse(approvalId));
                 approval.ApprovedAt = currDate;
-                approval.ApprovedBy = User.Identity.Name;
+                approval.ApprovedBy.Add(userUnilever);
                 approval.ApprovalStatus = ApprovalStatus.Approved;
 
                 var proposal = await _proposalService.GetProposalById(Guid.Parse(proposalId));
@@ -176,9 +186,10 @@ namespace FSAWebSystem.Controllers
                     proposal.ApprovedRephase = proposal.Rephase;
                    
                     weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week + 1).ToString()).SetValue(weeklyBucket, currentBucket + proposal.Rephase);
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week).ToString()).SetValue(weeklyBucket, currentBucket - proposal.Rephase);
                 }
-               
 
+                _notyfService.Success("Proposal Approved");
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)

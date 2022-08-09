@@ -10,8 +10,10 @@ namespace FSAWebSystem.Models
         public int Year { get; set; }
         public Guid WeeklyBucketId { get; set; }    
         public decimal Rephase { get; set; }
+        [NotMapped]
         public decimal ApprovedRephase { get; set; }
         public decimal ProposeAdditional { get; set; }
+        [NotMapped]
         public decimal ApprovedProposeAdditional { get; set; }
         public decimal Reallocate { get; set; }
         public Guid BannerTargetId { get; set; }
@@ -20,6 +22,10 @@ namespace FSAWebSystem.Models
         public ProposalType? Type { get; set; }
         public Guid ApprovalId { get; set; }
         public bool IsWaitingApproval { get; set; }
+
+        public DateTime SubmittedAt { get; set; }
+   
+        public Guid SubmittedBy { get; set; }
 
 
         [NotMapped]
@@ -51,10 +57,7 @@ namespace FSAWebSystem.Models
         public decimal RemFSA { get; set; }
         [NotMapped]
         public string UserName { get; set; }
-        [NotMapped]
-        public DateTime SubmittedAt { get; set; }
-        [NotMapped]
-        public Guid SubmittedBy { get; set; }
+
         [NotMapped]
         public ApprovalStatus ApprovalStatus { get; set; }
         [NotMapped]

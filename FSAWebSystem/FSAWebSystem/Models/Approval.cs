@@ -4,10 +4,14 @@ namespace FSAWebSystem.Models
 {
     public class Approval
     {
+        public Approval()
+        {
+            ApprovedBy = new List<UserUnilever>();
+        }
         public Guid Id { get; set; }
         public Guid ProposalId { get; set; }
-        public Guid SubmittedBy { get; set; }
-        public DateTime SubmittedAt { get; set; }
+        //public Guid SubmittedBy { get; set; }
+        //public DateTime SubmittedAt { get; set; }
         public ApprovalStatus ApprovalStatus { get; set; }
 
         public ProposalType ProposalType { get; set; }
@@ -19,7 +23,7 @@ namespace FSAWebSystem.Models
         [NotMapped ]
         public string Level2 { get; set; }
         public string? RejectionReason { get; set; }
-        public string? ApprovedBy { get; set; }
+        public List<UserUnilever> ApprovedBy { get; set; }
         public DateTime? ApprovedAt { get; set; }
 
 

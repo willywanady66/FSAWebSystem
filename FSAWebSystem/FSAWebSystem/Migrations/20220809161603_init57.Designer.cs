@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20220809161603_init57")]
+    partial class init57
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +23,6 @@ namespace FSAWebSystem.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
-
-            modelBuilder.Entity("ApprovalUserUnilever", b =>
-                {
-                    b.Property<Guid>("ApprovalsId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ApprovedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ApprovalsId", "ApprovedById");
-
-                    b.HasIndex("ApprovedById");
-
-                    b.ToTable("ApprovalUserUnilever");
-                });
 
             modelBuilder.Entity("BannerUserUnilever", b =>
                 {
@@ -134,6 +121,9 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<DateTime?>("ApprovedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("ProposalId")
                         .HasColumnType("uniqueidentifier");
@@ -489,6 +479,12 @@ namespace FSAWebSystem.Migrations
                     b.Property<Guid>("ApprovalId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("ApprovedProposeAdditional")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ApprovedRephase")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<Guid>("BannerTargetId")
                         .HasColumnType("uniqueidentifier");
 
@@ -531,32 +527,6 @@ namespace FSAWebSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Proposals");
-                });
-
-            modelBuilder.Entity("FSAWebSystem.Models.ProposalHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ApprovalId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Month")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("ProposalId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Week")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProposalHistories");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.RoleUnilever", b =>
@@ -868,21 +838,6 @@ namespace FSAWebSystem.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("ApprovalUserUnilever", b =>
-                {
-                    b.HasOne("FSAWebSystem.Models.Approval", null)
-                        .WithMany()
-                        .HasForeignKey("ApprovalsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FSAWebSystem.Models.UserUnilever", null)
-                        .WithMany()
-                        .HasForeignKey("ApprovedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("BannerUserUnilever", b =>

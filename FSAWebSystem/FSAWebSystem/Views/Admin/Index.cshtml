@@ -126,8 +126,12 @@
 	<ul class="nav nav-tabs" id="myTab3" role="tablist">
 		<li class="nav-item waves-effect waves-light">
 			<a class="nav-link @(tab == "Calendar" || string.IsNullOrEmpty(tab) ? " active" : "")" id="calendar-tab" data-toggle="tab" href="#calendar" role="tab" aria-controls="calendar" aria-selected="@(tab == "Calendar" ? true : false)">Calendar</a>
-
 		</li>
+
+		<li class="nav-item waves-effect waves-light">
+			<a class="nav-link @(tab == "ULI Calendar" ? " active" : "")" id="uliCalendar-tab" data-toggle="tab" href="#uliCalendar" role="tab" aria-controls="uliCalendar" aria-selected="@(tab == "ULI Calendar" ? true : false)">ULI Calendar</a>
+		</li>
+
 		<li class="nav-item waves-effect waves-light">
 			<a class="nav-link @(tab == "UploadDoc" ? " active" : "")" id="uploadDoc-tab" data-toggle="tab" href="#uploadDoc" role="tab" aria-controls="uploadDoc" aria-selected="@(tab == "UploadDoc" ? true : false)">Upload Document</a>
 		</li>
@@ -167,34 +171,49 @@
 								<th width="10px">Action</th>
 							</tr>
 						</thead>
-						@*<tbody>
-							@if (Model.FSACalendar != null)
-							{
-								@if (Model.FSACalendar.FSACalendarDetails.Count > 0)
-								{
-									@foreach (var detail in Model.FSACalendar.FSACalendarDetails)
-									{
-										var startDate = detail.StartDate.Value.ToString("dd/MM/yyyy");
-										var endDate = detail.EndDate.Value.ToString("dd/MM/yyyy");
-										<tr>
-											<td>@Html.DisplayFor(Model => detail.Week)</td>
-											<td>@Html.DisplayFor(Model => startDate)</td>
-											<td>@Html.DisplayFor(Model => endDate)</td>
-											<td>@Html.DisplayFor(Model => Model.FSACalendar.Year)</td>
-											<td>@Html.DisplayFor(Model => Model.FSACalendar.Month)</td>
-											@if(detail.Week == 1)
-											{
-												<td class="text-center align-middle" rowspan="@Model.FSACalendar.FSACalendarDetails.Count"><a asp-action="Edit" asp-controller="FSACalendarHeaders" asp-route-id="@Model.FSACalendar.Id"><i class="fas fa-pen"></i></a></td>
-											}
-										</tr>
-									}
-								}
-							}
-						</tbody>*@
 					</table>
 				</div>
 			</div>
 		</div>
+
+		<div class="tab-pane fade @(tab == "ULI Calendar" ? " active show" : "")" id="uliCalendar" role="tabpanel" aria-labelledby="uliCalendar-tab">
+			<div class="card-header py-3">
+				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-file"></i> ULI Calendar</h5>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="card-body">
+				<div class="row pb-2">
+					<div class="col-4">
+						<label class="form-label d-inline">Month</label>
+						<select class="form-control form-select" id="dropDownMonth" name="month" asp-items="@listMonths"></select>
+					</div>
+					<div class="col-4"></div>
+					<div class="col-4">
+						<label class="form-label d-inline">Year</label>
+						<select class="form-control form-select" id="dropDownYear" name="month" asp-items="@listYears"></select>
+					</div>
+				</div>
+				
+				
+				<div class="table-responsive">
+					<table class="table table-bordered" id="dataTableUliCalendar" width="100%" cellspacing="0">
+						<thead>
+							<tr>
+								<th>Week</th>
+								<th>Start Date</th>
+								<th>End Date</th>
+								<th>Year</th>
+								<th>Month</th>
+								<th width="10px">Action</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+				</div>
+				</div>
+			</div>
+			</div>
 
 
 		<div class="tab-pane fade @(tab == "UploadDoc" ? " active show" : "")" id="uploadDoc" role="tabpanel" aria-labelledby="uploadDoc-tab">
