@@ -78,18 +78,18 @@ namespace FSAWebSystem.Controllers
                     data = await _proposalService.GetProposalForView(Convert.ToInt32(param.month), Convert.ToInt32(param.year), week, param, userUnilever.Id);
 
                 }
-                if (param.proposalInputs != null)
-                {
-                    var weeklyBucketIds = data.proposals.Select(x => x.WeeklyBucketId).ToList();
-                    var proposalForUpdate = param.proposalInputs.Where(x => (!string.IsNullOrEmpty(x.remark) || x.proposeAdditional > 0 || x.rephase > 0) && weeklyBucketIds.Contains(Guid.Parse(x.weeklyBucketId))).ToList();
-                    foreach (var proposalInput in proposalForUpdate)
-                    {
-                        var proposal = data.proposals.SingleOrDefault(x => x.WeeklyBucketId == Guid.Parse(proposalInput.weeklyBucketId));
-                        proposal.Rephase = proposalInput.rephase;
-                        proposal.ProposeAdditional = proposalInput.proposeAdditional;
-                        proposal.Remark = proposalInput.remark;
-                    }
-                }
+                //if (param.proposalInputs != null)
+                //{
+                //    var weeklyBucketIds = data.proposals.Select(x => x.WeeklyBucketId).ToList();
+                //    var proposalForUpdate = param.proposalInputs.Where(x => (!string.IsNullOrEmpty(x.remark) || x.proposeAdditional > 0 || x.rephase > 0) && weeklyBucketIds.Contains(Guid.Parse(x.weeklyBucketId))).ToList();
+                //    foreach (var proposalInput in proposalForUpdate)
+                //    {
+                //        var proposal = data.proposals.SingleOrDefault(x => x.WeeklyBucketId == Guid.Parse(proposalInput.weeklyBucketId) && x.Type == );
+                //        proposal.Rephase = proposalInput.rephase;
+                //        proposal.ProposeAdditional = proposalInput.proposeAdditional;
+                //        proposal.Remark = proposalInput.remark;
+                //    }
+                //}
                 listData = Json(new
                 {
 
@@ -239,7 +239,7 @@ namespace FSAWebSystem.Controllers
                 var fsaDetail = await _calendarService.GetCalendarDetail(currDate.Date);
                 var savedProposals = _proposalService.GetPendingProposals(fsaDetail, (Guid)user.UserUnileverId);
                 var savedApprovals = _approvalService.GetPendingApprovals();
-                foreach (var proposalInput in proposals.Where(x => (!string.IsNullOrEmpty(x.remark) || x.proposeAdditional > 0 || x.rephase > 0)))
+                foreach (var proposalInput in proposals.Where(x => (x.proposeAdditional > 0 || x.rephase > 0) && !x.isWaitingApproval))
                 {
 
                     if (Guid.Parse(proposalInput.id) == Guid.Empty)
@@ -361,7 +361,7 @@ namespace FSAWebSystem.Controllers
                 var fsaDetail = await _calendarService.GetCalendarDetail(currDate.Date);
                 var savedProposals = _proposalService.GetPendingProposals(fsaDetail, (Guid)user.UserUnileverId).Where(x => x.Type == ProposalType.Reallocate);
                 var savedApprovals = _approvalService.GetPendingApprovals();
-                foreach (var proposalInput in proposals.Where(x => x.reallocate > 0))
+                foreach (var proposalInput in proposals.Where(x => x.reallocate > 0 && !x.isWaitingApproval))
                 {
                     if (Guid.Parse(proposalInput.id) == Guid.Empty)
                     {

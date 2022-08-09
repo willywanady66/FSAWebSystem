@@ -45,7 +45,8 @@
             { "data": "remark" },           //12
             { "data": "weeklyBucketId" },  //13
             { "data": "id" }, //14
-            { "data": "approvalId" } //15
+            { "data": "approvalId" }, //15
+            { "data": "isWaitingApproval" },    //16
         ],
         "order": [[0, 'asc']],
         "drawCallback": function (data) {
@@ -53,7 +54,7 @@
         },
         "columnDefs": [
             {
-                "targets": [13, 14, 15],
+                "targets": [13, 14, 15, 16],
                 "className": "hide_column"
             },
             {
@@ -69,7 +70,7 @@
                 "targets": 10,
                 "render": function (data, type, full, meta) {
                     let input = "";
-                    if (day > 4 && hour > 12 || day == 0) {
+                    if ((day > 4 && hour > 12 || day == 0) || full.isWaitingApproval) {
                         input = `<input type="number" class="form-control" id="row-${meta.row}-rephase" name="row-${meta.row}-rephase" disabled min=0 value=${full.rephase} />`;
                     }
                     else {
@@ -82,7 +83,7 @@
             {
                 "targets": 11,
                 "render": function (data, type, full, meta) {
-                    if (full.week != 1) {
+                    if (full.week != 1 && !full.isWaitingApproval) {
                         input = `<input type="number" class="form-control" id="row-${meta.row}-additional" name="row-${meta.row}-additional" min=0 value=${full.proposeAdditional} />`;
                     }
                     else {
@@ -107,7 +108,13 @@
                         }
                     })
 
-                    var select = `<select class="form-control form-select" style="width:100%" id="row-${meta.row}-remark" name="row-${meta.row}-remark">${options}</select>`;
+                    var select = '';
+                    if (full.isWaitingApproval) {
+                        select = `<select class="form-control form-select" style="width:100%" disabled id="row-${meta.row}-remark" name="row-${meta.row}-remark">${options}</select>`;
+                    }
+                    else {
+                        select = `<select class="form-control form-select" style="width:100%" id="row-${meta.row}-remark" name="row-${meta.row}-remark">${options}</select>`;
+                    }
                     return select;
                 },
                 "orderable": false,
@@ -143,6 +150,7 @@
             proposal.PlantName = row.find("TD").eq(1).html();
             proposal.Id = row.find("TD").eq(14).html();
             proposal.NextWeekBucket = row.find("TD").eq(7).html();
+            proposal.IsWaitingApproval = row.find("TD").eq(16).html();
             if (proposalInputs.length == 0) {
                 proposalInputs.push(proposal);
             }
@@ -174,7 +182,7 @@
             success: function (data) {
                 var ul = document.getElementById('error-messages');
                 ul.innerHTML = '';
-                redrawTable();
+                
             },
             error: function (data) {
                 var errorMessages = data.responseJSON.value.errorMessages;
@@ -191,7 +199,7 @@
 
             }
         });
-
+        redrawTable();
     });
 
     $('#submitProposalReallocateBtn').click(function () {
@@ -391,6 +399,7 @@ var tableProposalsReallocate = $("#dataTableProposalReallocate").DataTable({
         { "data": "bannerId" },    //9
         { "data": "weeklyBucketId" },    //10
         { "data": "id" },    //11
+        { "data": "isWaitingApproval" },    //12
     ],
     columnDefs: [
         {
@@ -400,8 +409,13 @@ var tableProposalsReallocate = $("#dataTableProposalReallocate").DataTable({
             "targets": 6,
             "render": function (data, type, full, meta) {
                 let input = "";
-
-                input = `<input type="number" class="form-control" id="row-${meta.row}-reallocate" name="row-${meta.row}-rephase"  min=0 value=${full.reallocate} />`
+                if (full.isWaitingApproval) {
+                    input = `<input type="number" disabled class="form-control" id="row-${meta.row}-reallocate" name="row-${meta.row}-rephase"  min=0 value=${full.reallocate} />`
+                }
+                else {
+                    input = `<input type="number" class="form-control" id="row-${meta.row}-reallocate" name="row-${meta.row}-rephase"  min=0 value=${full.reallocate} />`
+                }
+               
 
                 return input;
             },
@@ -423,8 +437,14 @@ var tableProposalsReallocate = $("#dataTableProposalReallocate").DataTable({
                    
 
                 })
-
-                var select = `<select class="form-control form-select" id="row-${meta.row}-bannerSource" name="row-${meta.row}-bannerSource">${options}</select>`;
+                var select = '';
+                if (full.isWaitingApproval) {
+                    select = `<select class="form-control form-select" disabled id="row-${meta.row}-bannerSource" name="row-${meta.row}-bannerSource">${options}</select>`;
+                }
+                else {
+                    select = `<select class="form-control form-select" id="row-${meta.row}-bannerSource" name="row-${meta.row}-bannerSource">${options}</select>`;
+                }
+      
                 return select;
             },
             orderable: false
@@ -444,13 +464,20 @@ var tableProposalsReallocate = $("#dataTableProposalReallocate").DataTable({
                     }
                 })
 
-                var select = `<select class="form-control form-select" id="row-${meta.row}-remarkReallocate" name="row-${meta.row}-remarkReallocate">${options}</select>`;
+                var select = '';
+                if (full.isWaitingApproval) {
+                    select = `<select class="form-control form-select" disabled id="row-${meta.row}-remarkReallocate" name="row-${meta.row}-remarkReallocate">${options}</select>`;
+                }
+                else {
+                    select = `<select class="form-control form-select" id="row-${meta.row}-remarkReallocate" name="row-${meta.row}-remarkReallocate">${options}</select>`;
+                }
+
                 return select;
             },
             orderable: false
         },
         {
-            "targets": [9, 10, 11],
+            "targets": [9, 10, 11, 12],
             "className": "hide_column"
         }
         //{
@@ -493,6 +520,7 @@ function getUserInputReallocate(proposalInputs) {
         proposal.BannerId = row.find("TD").eq(9).html();
         proposal.WeeklyBucketId = row.find("TD").eq(10).html();
         proposal.Id = row.find("TD").eq(11).html();
+        proposal.IsWaitingApproval = row.find("TD").eq(12).html();
         if (proposalInputsReallocate.length == 0) {
             proposalInputsReallocate.push(proposal);
         }

@@ -60,7 +60,7 @@ namespace FSAWebSystem.Services
                              from apprvl in approvalGroup.DefaultIfEmpty()
                              select new Proposal
                              {
-                                 Id = proposal.Id,
+                                 Id = proposal.IsWaitingApproval ? proposal.Id : Guid.Empty,
                                  BannerId = proposal.BannerId,
                                  WeeklyBucketId = proposal.WeeklyBucketId,
                                  BannerName = proposal.BannerName,
@@ -77,16 +77,16 @@ namespace FSAWebSystem.Services
                                  RemFSA = proposal.MonthlyBucket - proposal.ValidBJ,
                                  CurrentBucket = proposal.CurrentBucket,
                                  NextBucket = proposal.NextBucket,
-                                 Remark = proposal.Remark,
-                                 Rephase =  proposal.Rephase,
+                                 Remark = proposal.IsWaitingApproval ? proposal.Remark : string.Empty,
+                                 Rephase = proposal.IsWaitingApproval ?  proposal.Rephase : decimal.Zero,
                                  ApprovedRephase = proposal.ApprovedRephase,
                                  ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending,
-                                 ProposeAdditional = proposal.ProposeAdditional,
+                                 ProposeAdditional = proposal.IsWaitingApproval ? proposal.ProposeAdditional : decimal.Zero,
                                  ApprovedProposeAdditional = proposal.ApprovedProposeAdditional,
                                  IsWaitingApproval = proposal.IsWaitingApproval
                              });
 
-            proposal2 = proposal2.Where(x => !x.IsWaitingApproval);
+            //proposal2 = proposal2.Where(x => !x.IsWaitingApproval);
            
             var totalCount = proposal2.Count();
             var listProposal = proposal2.Skip(param.start).Take(param.length).ToList();
@@ -142,7 +142,7 @@ namespace FSAWebSystem.Services
                              from apprvl in approvalGroup.DefaultIfEmpty()
                              select new Proposal
                              {
-                                 Id = proposal.Id,
+                                 Id = proposal.IsWaitingApproval ? proposal.Id : Guid.Empty,
                                  WeeklyBucketId = proposal.WeeklyBucketId,
                                  BannerName = proposal.BannerName,
                                  BannerId = proposal.BannerId,
@@ -155,9 +155,9 @@ namespace FSAWebSystem.Services
                                  Category = proposal.Category,
                                  CurrentBucket = proposal.CurrentBucket,
                                  DescriptionMap = proposal.DescriptionMap,
-                                 Remark = proposal.Remark,
-                                 Reallocate = proposal.Reallocate,
-                                 BannerTargetId = proposal.BannerTargetId,
+                                 Remark = proposal.IsWaitingApproval ? proposal.Remark : string.Empty,
+                                 Reallocate = proposal.IsWaitingApproval ? proposal.Reallocate : decimal.Zero,
+                                 BannerTargetId = proposal.IsWaitingApproval ? proposal.BannerTargetId : Guid.Empty,
                                  Type = proposal.Type,
                                  ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending,
                                  ProposeAdditional = proposal.ProposeAdditional,
@@ -166,7 +166,7 @@ namespace FSAWebSystem.Services
 
 
 
-            proposal2 = proposal2.Where(x => !x.IsWaitingApproval);
+            //proposal2 = proposal2.Where(x => !x.IsWaitingApproval);
 
             var totalCount = proposal2.Count();
             var listProposal = proposal2.Skip(param.start).Take(param.length).ToList();
