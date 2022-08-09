@@ -236,106 +236,116 @@ namespace FSAWebSystem.Controllers
             List<Approval> listApproval = new List<Approval>();
             if (!errorMessages.Any() && !proposals.Any(x => string.IsNullOrEmpty(x.weeklyBucketId)))
             {
-                var fsaDetail = await _calendarService.GetCalendarDetail(currDate.Date);
-                var savedProposals = _proposalService.GetPendingProposals(fsaDetail, (Guid)user.UserUnileverId);
-                var savedApprovals = _approvalService.GetPendingApprovals();
-                foreach (var proposalInput in proposals.Where(x => (x.proposeAdditional > 0 || x.rephase > 0) && !x.isWaitingApproval))
-                {
-
-                    if (Guid.Parse(proposalInput.id) == Guid.Empty)
-                    {
-                        if (proposalInput.rephase > 0)
-                        {
-                            var approval = new Approval
-                            {
-                                Id = Guid.NewGuid(),
-                                ApprovalStatus = ApprovalStatus.Pending,
-                                SubmittedAt = DateTime.Now,
-                                SubmittedBy = (Guid)user.UserUnileverId
-                            };
-
-                            var proposal = new Proposal
-                            {
-                                Id = Guid.NewGuid(),
-                                Week = fsaDetail.Week,
-                                Year = fsaDetail.Year,
-                                Month = fsaDetail.Month,
-                                WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
-                                Rephase = proposalInput.rephase,
-                                Remark = proposalInput.remark,
-                                IsWaitingApproval = true,
-                                ApprovalId = approval.Id,
-                                Type = ProposalType.Rephase
-                            };
-                            approval.ProposalId = proposal.Id;
-                            approval.ProposalType = proposal.Type.Value;
-                            listApproval.Add(approval);
-                            listProposal.Add(proposal);
-                        }
-
-                        if (proposalInput.proposeAdditional > 0)
-                        {
-                            var approval = new Approval
-                            {
-                                Id = Guid.NewGuid(),
-                                ApprovalStatus = ApprovalStatus.Pending,
-                                SubmittedAt = DateTime.Now,
-                                SubmittedBy = (Guid)user.UserUnileverId
-                            };
-
-                            var proposal = new Proposal
-                            {
-                                Id = Guid.NewGuid(),
-                                Week = fsaDetail.Week,
-                                Year = fsaDetail.Year,
-                                Month = fsaDetail.Month,
-                                WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
-                                Rephase = proposalInput.rephase,
-                                Remark = proposalInput.remark,
-                                ProposeAdditional = proposalInput.proposeAdditional,
-                                IsWaitingApproval = true,
-                                ApprovalId = approval.Id,
-                                Type = ProposalType.ProposeAdditional
-                            };
-                            approval.ProposalId = proposal.Id;
-                            approval.ProposalType = proposal.Type.Value;
-                            listApproval.Add(approval);
-                            listProposal.Add(proposal);
-                        }
-                    }
-                    //else
-                    //{
-                    //    try
-                    //    {
-                    //        var savedApproval = savedApprovals.Single(x => x.Id == Guid.Parse(proposalInput.approvalId));
-                    //        savedApproval.SubmittedAt = DateTime.Now;
-
-                    //        var savedProposal = savedProposals.Single(x => x.Id == Guid.Parse(proposalInput.id));
-                    //        savedProposal.Remark = proposalInput.remark;
-                    //        savedProposal.Rephase = proposalInput.rephase;
-                    //        savedProposal.ProposeAdditional = proposalInput.proposeAdditional;
-                    //    }
-                    //    catch (Exception ex)
-                    //    {
-
-                    //    }
-
-                    //}
-                }
-                await _proposalService.SaveProposals(listProposal);
-                await _approvalService.SaveApprovals(listApproval);
                 try
                 {
+                    var fsaDetail = await _calendarService.GetCalendarDetail(currDate.Date);
+                    var savedProposals = _proposalService.GetPendingProposals(fsaDetail, (Guid)user.UserUnileverId);
+                    var savedApprovals = _approvalService.GetPendingApprovals();
+                    foreach (var proposalInput in proposals.Where(x => (x.proposeAdditional > 0 || x.rephase > 0) && !x.isWaitingApproval))
+                    {
+
+                        if (Guid.Parse(proposalInput.id) == Guid.Empty)
+                        {
+                            if (proposalInput.rephase > 0)
+                            {
+                                var approval = new Approval
+                                {
+                                    Id = Guid.NewGuid(),
+                                    ApprovalStatus = ApprovalStatus.Pending,
+                                    SubmittedAt = DateTime.Now,
+                                    SubmittedBy = (Guid)user.UserUnileverId
+                                };
+
+                                var proposal = new Proposal
+                                {
+                                    Id = Guid.NewGuid(),
+                                    Week = fsaDetail.Week,
+                                    Year = fsaDetail.Year,
+                                    Month = fsaDetail.Month,
+                                    WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
+                                    Rephase = proposalInput.rephase,
+                                    Remark = proposalInput.remark,
+                                    IsWaitingApproval = true,
+                                    ApprovalId = approval.Id,
+                                    Type = ProposalType.Rephase
+                                };
+                                approval.ProposalId = proposal.Id;
+                                approval.ProposalType = proposal.Type.Value;
+                                listApproval.Add(approval);
+                                listProposal.Add(proposal);
+                            }
+
+                            if (proposalInput.proposeAdditional > 0)
+                            {
+                                var approval = new Approval
+                                {
+                                    Id = Guid.NewGuid(),
+                                    ApprovalStatus = ApprovalStatus.Pending,
+                                    SubmittedAt = DateTime.Now,
+                                    SubmittedBy = (Guid)user.UserUnileverId
+                                };
+
+                                var proposal = new Proposal
+                                {
+                                    Id = Guid.NewGuid(),
+                                    Week = fsaDetail.Week,
+                                    Year = fsaDetail.Year,
+                                    Month = fsaDetail.Month,
+                                    WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
+                                    Rephase = proposalInput.rephase,
+                                    Remark = proposalInput.remark,
+                                    ProposeAdditional = proposalInput.proposeAdditional,
+                                    IsWaitingApproval = true,
+                                    ApprovalId = approval.Id,
+                                    Type = ProposalType.ProposeAdditional
+                                };
+                                approval.ProposalId = proposal.Id;
+                                approval.ProposalType = proposal.Type.Value;
+                                listApproval.Add(approval);
+                                listProposal.Add(proposal);
+                            }
+                        }
+                        else
+                        {
+
+                            var savedApproval = savedApprovals.Single(x => x.Id == Guid.Parse(proposalInput.approvalId));
+                            savedApproval.SubmittedAt = DateTime.Now;
+                            savedApproval.SubmittedBy = (Guid)user.UserUnileverId;
+
+                            var savedProposal = savedProposals.Single(x => x.Id == Guid.Parse(proposalInput.id));
+                            if (proposalInput.rephase > 0)
+                            {
+                                savedProposal.Rephase = proposalInput.rephase;
+                                savedProposal.Type = ProposalType.Rephase;
+                            }
+
+                            if (proposalInput.proposeAdditional > 0)
+                            {
+                                savedProposal.ProposeAdditional = proposalInput.proposeAdditional;
+                                savedProposal.Type = ProposalType.ProposeAdditional;
+                            }
+                            savedProposal.Remark = proposalInput.remark;
+
+
+
+
+                        }
+                    }
+                    await _proposalService.SaveProposals(listProposal);
+                    await _approvalService.SaveApprovals(listApproval);
+
                     await _db.SaveChangesAsync();
 
                     message = "Your Proposal has been submitted!";
                     _notyfService.Success(message);
                     return Ok(proposals);
+
                 }
                 catch (Exception ex)
                 {
                     message = "Submit Proposal Failed";
                     _notyfService.Warning(message);
+                    errorMessages.Add(ex.Message);
                 }
             }
             else
@@ -356,6 +366,15 @@ namespace FSAWebSystem.Controllers
             ValidateProposalReallcoateInput(proposals, errorMessages);
             if (!errorMessages.Any())
             {
+                try
+                {
+
+
+                }
+                catch(Exception ex)
+                {
+
+                }
                 List<Proposal> listProposal = new List<Proposal>();
                 List<Approval> listApproval = new List<Approval>();
                 var fsaDetail = await _calendarService.GetCalendarDetail(currDate.Date);
