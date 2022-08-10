@@ -27,9 +27,9 @@ namespace FSAWebSystem.Controllers
         // GET: SKUs
         public async Task<IActionResult> Index()
         {
-              return _context.SKUs != null ? 
-                          View(await _context.SKUs.ToListAsync()) :
-                          Problem("Entity set 'FSAWebSystemDbContext.SKUs'  is null.");
+            return _context.SKUs != null ?
+                        View(await _context.SKUs.ToListAsync()) :
+                        Problem("Entity set 'FSAWebSystemDbContext.SKUs'  is null.");
         }
 
         // GET: SKUs/Details/5
@@ -113,17 +113,14 @@ namespace FSAWebSystem.Controllers
             {
                 try
                 {
-                    var savedSKU = await _skuService.GetSKU(sKU.PCMap);
-                    if(savedSKU != null)
+
+                    if (await _skuService.IsDuplicate(sKU.PCMap, sKU.Id))
                     {
-                        if (savedSKU.Id != sKU.Id)
-                        {
-                            ModelState.AddModelError("", "PCMap: " + sKU.PCMap + " already exist");
-                            _notyfService.Error("Update SKU Failed!");
-                            return View(sKU);
-                        }
+                        ModelState.AddModelError("", "PCMap: " + sKU.PCMap + " already exist");
+                        _notyfService.Error("Update SKU Failed!");
+                        return View(sKU);
                     }
-                   
+
                     _context.Update(sKU);
                     await _context.SaveChangesAsync();
                     _notyfService.Success("SKU Updated!");
@@ -148,7 +145,7 @@ namespace FSAWebSystem.Controllers
 
         private bool SKUExists(Guid id)
         {
-          return (_context.SKUs?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.SKUs?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

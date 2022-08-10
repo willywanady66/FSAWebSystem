@@ -16,5 +16,6 @@ namespace FSAWebSystem.Services.Interface
 		public Task SaveProductCategories(List<ProductCategory> listProductCategory);
 
 		public Task SaveSKUs(List<SKU> listSKUs);
+		public Task<bool> IsDuplicate(string pcMap, Guid id);
 	}
 }

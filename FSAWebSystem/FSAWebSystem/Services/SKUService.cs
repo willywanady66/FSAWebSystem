@@ -21,6 +21,11 @@ namespace FSAWebSystem.Services
 			return _db.SKUs;
 		}
 
+        public async Task<bool> IsDuplicate(string pcMap, Guid id)
+        {
+            return await _db.SKUs.AnyAsync(x => x.PCMap == pcMap && x.Id != id);
+        }
+
 		public async Task<SKU> GetSKU(string pcMap)
         {
 			return await _db.SKUs.SingleOrDefaultAsync(x => x.PCMap == pcMap);
