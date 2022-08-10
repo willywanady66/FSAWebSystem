@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using FSAWebSystem.Areas.Identity.Data;
 using FSAWebSystem.Services;
+using FSAWebSystem.Services.Interface;
 
 namespace FSAWebSystem.Areas.Identity.Pages.Account
 {
@@ -23,11 +24,13 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
     {
         private readonly UserManager<FSAWebSystemUser> _userManager;
         private readonly IEmailService _emailService;
+        private readonly IUserService _userService;
 
-        public ForgotPasswordModel(UserManager<FSAWebSystemUser> userManager, IEmailService emailService)
+        public ForgotPasswordModel(UserManager<FSAWebSystemUser> userManager, IEmailService emailService, IUserService userService)
         {
             _userManager = userManager;
             _emailService = emailService;
+            _userService = userService;
         }
 
         /// <summary>
@@ -50,6 +53,9 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             [Required]
             [EmailAddress]
             public string Email { get; set; }
+
+            [Display(Name = "Retrieve Password?")]
+            public bool RetrievePassword { get; set; }
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -60,26 +66,41 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
                 if (user == null)
                 {
                     // Don't reveal that the user does not exist or is not confirmed
-                    return RedirectToPage("./ForgotPasswordConfirmation");
+                    ModelState.AddModelError("", "Email doesn't exist!");
+                    return Page();
                 }
 
                 // For more information on how to enable account confirmation and password reset please
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                var callbackUrl = Url.Page(
-                    "/Account/ResetPassword",
-                    pageHandler: null,
-                    values: new { area = "Identity", code },
-                    protocol: Request.Scheme);
+                if(Input.RetrievePassword)
+                {
+                    var userUnilever = await _userService.GetUserByEmail(Input.Email);
+                    var password = userUnilever.Password;
+                    await _emailService.SendEmailAsync(
+                        Input.Email,
+                        "Retrieve Password",
+                        $"This is your FSA System password: <strong>{password}</strong>.");
+                }
+                else
+                {
+                    var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                await _emailService.SendEmailAsync(
-                    Input.Email,
-                    "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    var callbackUrl = Url.Page(
+                        "/Account/ResetPassword",
+                        pageHandler: null,
+                        values: new { area = "Identity", code },
+                        protocol: Request.Scheme);
 
-                return RedirectToPage("./Login");
+                    await _emailService.SendEmailAsync(
+                        Input.Email,
+                        "Reset Password",
+                        $"Please reset your FSA System password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                }
+
+
+                return RedirectToPage("./ForgotPasswordConfirmation");
             }
 
             return Page();

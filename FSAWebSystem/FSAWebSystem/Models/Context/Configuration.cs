@@ -60,6 +60,7 @@ namespace FSAWebSystem.Models.Context
                 var userUnilever = new UserUnilever
                 {
                     Id = (Guid)user.UserUnileverId,
+                    Password = "Administrator1*",
                     Name = user.UserName,
                     Email = user.Email,
                     CreatedAt = DateTime.Now,
