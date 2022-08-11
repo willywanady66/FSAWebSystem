@@ -22,13 +22,12 @@
             { "data": "rephase" }, //7
             { "data": "remark" }, //8
             { "data": "id" }, //9
-            { "data": "id" }, //10
-            { "data": "proposalId" }, //11
+            { "data": "proposalId" } //10
             //{ "data": "remark" }, //6
         ],
        columnDefs: [
            {
-               "targets": [11],
+               "targets": [10],
                "className": "hide_column"
            },
             {
@@ -36,17 +35,20 @@
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    return `<button id="approveBtn" class="btn btn-primary">Approve</button>`
-                }
-            },
-            {
-                targets: 10,
-                orderable: false,
-                className: 'text-center',
-                "render": function (data, type, full, meta) {
-                    return `<button class="btn btn-danger">Reject</button>`
+                    
+                    return `<a href="./Approvals/Detail/${full.id}">
+                                <i class="fas fa-eye"></i>
+                            <a/>`;
                 }
             }
+            //{
+            //    targets: 10,
+            //    orderable: false,
+            //    className: 'text-center',
+            //    "render": function (data, type, full, meta) {
+            //        return `<button class="btn btn-danger">Reject</button>`
+            //    }
+            //}
         ],
     });
 

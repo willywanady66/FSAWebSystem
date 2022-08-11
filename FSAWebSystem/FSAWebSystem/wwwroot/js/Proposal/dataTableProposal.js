@@ -1,4 +1,8 @@
 ﻿$(document).ready(function () {
+    var currDate = new Date();
+    var day = currDate.getDay();
+    var hour = currDate.getHours();
+
 
     function redrawTable() {
         tableProposals.draw();
@@ -6,6 +10,12 @@
         tableHistory.draw();
         tableMonthlyBucketHistory.draw();
         tableWeeklyBucketHistory.draw();
+        if (month != currDate.getMonth() + 1 || year != currDate.getFullYear()) {
+            $('#openConfirmSubmitModalBtn').prop('disabled', true);
+        }
+        else {
+            $('#openConfirmSubmitModalBtn').prop('disabled', false);
+        }
     }
 
     var month = $('#dropDownMonth option:selected').val();
@@ -14,9 +24,7 @@
     let remarks = ["", "Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year"];
     //var proposals = getUserInput(proposalInputs);
 
-    var currDate = new Date();
-    var day = currDate.getDay();
-    var hour = currDate.getHours();
+ 
     console.log(day + " " + hour);
     var tableProposals = $("#dataTableProposal").DataTable({
         "processing": true,
@@ -338,12 +346,20 @@ var tableWeeklyBucketHistory = $('#dataTableWeeklyBucketHistory').DataTable({
 $('#dropDownMonth').change(function () {
     month = $('#dropDownMonth option:selected').val();
     redrawTable();
+
 });
 
 
 $('#dropDownYear').change(function () {
     year = $('#dropDownYear option:selected').val();
     redrawTable();
+    if (year != currDate.getFullYear()) {
+
+        $('#submitProposalBtn').attr('disabled', 'disabled');
+    }
+    else {
+        $('#submitProposalBtn').removeAttr('disabled');
+    }
 });
 
 var listBanners = [];

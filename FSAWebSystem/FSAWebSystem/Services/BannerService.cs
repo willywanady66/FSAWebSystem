@@ -59,12 +59,18 @@ namespace FSAWebSystem.Services
                         banners = order.dir == "desc" ? banners.OrderByDescending(x => x.Trade) : banners.OrderBy(x => x.Trade);
                         break;
                     case 1:
-                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.BannerName) : banners.OrderBy(x => x.BannerName);
+                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.CDM) : banners.OrderBy(x => x.CDM);
                         break;
                     case 2:
-                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.PlantCode) : banners.OrderBy(x => x.PlantCode);
+                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.KAM) : banners.OrderBy(x => x.KAM);
                         break;
                     case 3:
+                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.BannerName) : banners.OrderBy(x => x.BannerName);
+                        break;
+                    case 4:
+                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.PlantCode) : banners.OrderBy(x => x.PlantCode);
+                        break;
+                    case 5:
                         banners = order.dir == "desc" ? banners.OrderByDescending(x => x.PlantName) : banners.OrderBy(x => x.PlantName);
                         break;
                     

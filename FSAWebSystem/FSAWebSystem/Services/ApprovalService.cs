@@ -55,11 +55,11 @@ namespace FSAWebSystem.Services
                                                    //Year = proposal.Year,
                                                    //Month = proposal.Month,
                                                    Week = proposal.Week
-                                               }) on approval.ProposalId equals proposal.Id
+                                               }) on approval.Id equals proposal.ApprovalId
                                                where approval.ApprovalStatus == ApprovalStatus.Pending && (approval.ProposalType == ProposalType.Rephase || approval.ProposalType == ProposalType.ProposeAdditional)
                              select new Approval
                              {
-                                 ProposalId = approval.ProposalId,
+                                 ProposalId = proposal.Id,
                                  Proposal = proposal,
                                  Id = approval.Id,
                                  SubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
@@ -125,12 +125,12 @@ namespace FSAWebSystem.Services
                                                    //Year = proposal.Year,
                                                    //Month = proposal.Month,
                                                    Week = proposal.Week
-                                               }) on approval.ProposalId equals proposal.Id
+                                               }) on approval.Id equals proposal.ApprovalId
                                                where approval.ApprovalStatus == ApprovalStatus.Pending
                                                && approval.ProposalType == ProposalType.Reallocate
                              select new Approval
                              {
-                                 ProposalId = approval.ProposalId,
+                                 ProposalId = proposal.Id,
                                  Proposal = proposal,
                                  Id= approval.Id,
                                  SubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
@@ -157,6 +157,72 @@ namespace FSAWebSystem.Services
                 approvals = listApproval
             };
 		}
+
+        public async Task<List<ApprovalDetail>> GetApprovalDetails(Guid approvalId)
+        {
+            var approvalDetails = await (from approvalDetail in _db.ApprovalDetail
+                                         join approval in (from approval in _db.Approvals
+                                                           join proposal in (from proposal in _db.Proposals
+                                                                             join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
+                                                                                                       //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
+                                                                                                   join banner in _db.Banners on weeklyBucket.BannerId equals banner.Id
+                                                                                                   join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
+                                                                                                   select new WeeklyBucket
+                                                                                                   {
+                                                                                                       Id = weeklyBucket.Id,
+                                                                                                       BannerName = banner.BannerName,
+                                                                                                       PlantName = banner.PlantName,
+                                                                                                       PCMap = sku.PCMap,
+                                                                                                       DescriptionMap = sku.DescriptionMap
+                                                                                                   }) on proposal.WeeklyBucketId equals weeklyBucket.Id
+                                                                             select new Proposal
+                                                                             {
+                                                                                 Id = proposal.Id,
+                                                                                 BannerName = weeklyBucket.BannerName,
+                                                                                 PlantName = weeklyBucket.PlantName,
+                                                                                 PlantCode = weeklyBucket.PlantCode,
+                                                                                 PCMap = weeklyBucket.PCMap,
+                                                                                 DescriptionMap = weeklyBucket.DescriptionMap,
+                                                                                 ProposeAdditional = proposal.ProposeAdditional,
+                                                                                 Rephase = proposal.Rephase,
+                                                                                 Remark = proposal.Remark,
+                                                                                 Type = proposal.Type,
+                                                                                 //Year = proposal.Year,
+                                                                                 //Month = proposal.Month,
+                                                                                 Week = proposal.Week
+                                                                             }) on approval.Id equals proposal.ApprovalId
+                                                           select new Approval
+                                                           {
+                                                               Id = approval.Id,
+                                                               BannerName = proposal.BannerName,
+                                                               PlantName = proposal.PlantName,
+                                                               PlantCode = proposal.PlantCode,
+                                                               PCMap = proposal.PCMap,
+                                                               DescriptionMap = proposal.DescriptionMap,
+                                                               ProposeAdditional = proposal.ProposeAdditional,
+                                                               Rephase = proposal.Rephase,
+                                                               Remark = proposal.Remark,
+                                                               ProposalType = proposal.Type.Value
+                                                           }) on approvalDetail.ApprovalId equals approval.Id
+                                         where approvalDetail.ApprovalId == approvalId
+                                         select new ApprovalDetail
+                                         {
+                                             BannerName = approval.BannerName,
+                                             PlantCode = approval.PlantCode,
+                                             PlantName = approval.PlantName,
+                                             PCMap = approval.PCMap,
+                                             DescriptionMap = approval.DescriptionMap,
+                                             RatingRate = approvalDetail.RatingRate,
+                                             MonthlyBucket = approvalDetail.MonthlyBucket,
+                                             CurrentBucket = approvalDetail.CurrentBucket,
+                                             NextWeekBucket = approvalDetail.NextWeekBucket,
+                                             ValidBJ = approvalDetail.ValidBJ,
+                                             RemFSA = approvalDetail.RemFSA,
+                                             ProposeAdditional = approvalDetail.ProposeAdditional
+                                         }).ToListAsync();
+
+            return approvalDetails;
+        }
 
         public async Task<Approval> GetApprovalById(Guid approvalId)
         {

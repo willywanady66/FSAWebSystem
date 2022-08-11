@@ -588,6 +588,8 @@ namespace FSAWebSystem.Controllers
                 {
                     Id = Guid.NewGuid(),
                     Trade = dr["Trade"].ToString(),
+                    CDM = dr["CDM"].ToString(),
+                    KAM = dr["KAM"].ToString(),
                     BannerName = dr["Banner Name"].ToString(),
                     PlantCode = dr["Plant Code"].ToString(),
                     PlantName = dr["Plant Name"].ToString(),
@@ -757,6 +759,7 @@ namespace FSAWebSystem.Controllers
                     var skuId = skus.Single(x => x.PCMap == dailyOrder.PCMap).Id;
                     var weeklyBucket = weeklyBuckets.Single(x => x.BannerId == bannerId && x.SKUId == skuId && x.Year == dailyOrder.Year && x.Month == dailyOrder.Month);
                     weeklyBucket.ValidBJ += dailyOrder.ValidBJ;
+                    weeklyBucket.RemFSA = weeklyBucket.MonthlyBucket - dailyOrder.ValidBJ;
                 }
             }
         }

@@ -57,7 +57,7 @@ namespace FSAWebSystem.Services
                              });
 
             var proposal2 = (from proposal in proposals.Where(x => x.SubmittedBy == userId || x.SubmittedBy == Guid.Empty)
-                             join approval in _db.Approvals.Where(x => x.ApprovalStatus == ApprovalStatus.Pending) on proposal.Id equals approval.ProposalId into approvalGroup
+                             join approval in _db.Approvals.Where(x => x.ApprovalStatus == ApprovalStatus.Pending) on proposal.ApprovalId equals approval.Id into approvalGroup
                              from apprvl in approvalGroup.DefaultIfEmpty()
                              select new Proposal
                              {

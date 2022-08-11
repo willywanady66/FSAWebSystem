@@ -92,7 +92,7 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Trade,BannerName,PlantName,PlantCode,IsActive")] Banner banner)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Trade, CDM, KAM, BannerName,PlantName,PlantCode,IsActive")] Banner banner)
         {
             if (id != banner.Id)
             {
@@ -114,6 +114,8 @@ namespace FSAWebSystem.Controllers
                     savedBanner.BannerName = banner.BannerName;
                     savedBanner.PlantName = banner.PlantName;
                     savedBanner.PlantCode = banner.PlantCode;
+                    savedBanner.KAM = banner.KAM;
+                    savedBanner.CDM = banner.CDM;
                     await _bannerService.UpdateBanner(savedBanner, User.Identity.Name);
                     return RedirectToAction("Index", "Admin");
                 }

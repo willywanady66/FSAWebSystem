@@ -11,5 +11,6 @@ namespace FSAWebSystem.Services.Interface
         public Task<ApprovalPagingData> GetApprovalPagination(DataTableParam param, int month, int year);
         public Task<ApprovalPagingData> GetApprovalReallocatePagination(DataTableParam param, int month, int year);
         public Task<Approval> GetApprovalById(Guid approvalId);
+        public Task<List<ApprovalDetail>> GetApprovalDetails(Guid approvalId);
     }
 }

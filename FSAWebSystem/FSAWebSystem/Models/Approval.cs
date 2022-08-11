@@ -9,13 +9,14 @@ namespace FSAWebSystem.Models
             ApprovedBy = new List<UserUnilever>();
         }
         public Guid Id { get; set; }
-        public Guid ProposalId { get; set; }
+        //public Guid ProposalId { get; set; }
         //public Guid SubmittedBy { get; set; }
         //public DateTime SubmittedAt { get; set; }
         public ApprovalStatus ApprovalStatus { get; set; }
 
         public ProposalType ProposalType { get; set; }
 
+        public List<ApprovalDetail> ApprovalDetails { get; set; }
         //public decimal ApprovedRephase { get; set; }
         //public decimal ApprovedProposeAdditional { get; set; }
         [NotMapped]
@@ -29,6 +30,8 @@ namespace FSAWebSystem.Models
 
 		[NotMapped]
         public Proposal Proposal { get; set; }
+        [NotMapped]
+        public Guid ProposalId { get; set; }
         [NotMapped]
         public int Week { get; set; }
         [NotMapped]
@@ -47,6 +50,8 @@ namespace FSAWebSystem.Models
 		
         [NotMapped]
         public string PlantName { get; set; }
+        [NotMapped]
+        public string PlantCode { get; set; }
         [NotMapped]
         public string PCMap { get; set; }
         [NotMapped]

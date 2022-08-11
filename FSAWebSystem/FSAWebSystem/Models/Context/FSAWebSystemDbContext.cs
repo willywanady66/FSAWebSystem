@@ -53,5 +53,6 @@ namespace FSAWebSystem.Models.Context
         public DbSet<Menu> Menus { get; set; }
         public DbSet<WeeklyBucketHistory> WeeklyBucketHistories { get; set; }
         public DbSet<ProposalHistory> ProposalHistories { get; set; }
+        public DbSet<FSAWebSystem.Models.ApprovalDetail>? ApprovalDetail { get; set; }
     }
 }

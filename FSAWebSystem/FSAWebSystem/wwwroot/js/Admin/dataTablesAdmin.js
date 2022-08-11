@@ -60,14 +60,16 @@
         },
         "columns": [
             { "data": "trade" },  //0
-            { "data": "bannerName" },       //1
-            { "data": "plantName" }, //2
-            { "data": "plantCode" },      //3
-            { "data": "id" } //4
+            { "data": "cdm" },  //1
+            { "data": "kam" },  //2
+            { "data": "bannerName" },       //3
+            { "data": "plantName" }, //4
+            { "data": "plantCode" },      //5
+            { "data": "id" } //6
         ],
         columnDefs: [
             {
-                targets: 4,
+                targets: 6,
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
@@ -78,6 +80,7 @@
             }
         ]
     });
+
     $('#dataTableProductCategory').DataTable({
         "processing": true,
         "serverSide": true,

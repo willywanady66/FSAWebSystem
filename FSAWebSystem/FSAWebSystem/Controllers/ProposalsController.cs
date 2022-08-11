@@ -14,6 +14,7 @@ using FSAWebSystem.Areas.Identity.Data;
 using static FSAWebSystem.Models.ViewModels.ProposalViewModel;
 using Microsoft.AspNetCore.Authorization;
 using AspNetCoreHero.ToastNotification.Abstractions;
+using FSAWebSystem.Models.Bucket;
 
 namespace FSAWebSystem.Controllers
 {
@@ -27,9 +28,11 @@ namespace FSAWebSystem.Controllers
         private readonly INotyfService _notyfService;
         private readonly IApprovalService _approvalService;
         private readonly IBannerService _bannerService;
+        private readonly ISKUService _skuService;
         private readonly UserManager<FSAWebSystemUser> _userManager;
 
-        public ProposalsController(FSAWebSystemDbContext db, IProposalService proposalService, IBucketService bucketService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager, IUserService userService, INotyfService notyfService, IBannerService bannerService, IApprovalService approvalService)
+        public ProposalsController(FSAWebSystemDbContext db, IProposalService proposalService, IBucketService bucketService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager, IUserService userService, INotyfService notyfService, 
+            IBannerService bannerService, IApprovalService approvalService, ISKUService skuService)
         {
             _db = db;
             _proposalService = proposalService;
@@ -40,6 +43,7 @@ namespace FSAWebSystem.Controllers
             _notyfService = notyfService;
             _approvalService = approvalService;
             _bannerService = bannerService;
+            _skuService = skuService;
         }
 
         // GET: Proposals
@@ -239,102 +243,39 @@ namespace FSAWebSystem.Controllers
             {
                 try
                 {
+                    var banners = _bannerService.GetAllActiveBanner();
+                    var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
                     var fsaDetail = await _calendarService.GetCalendarDetail(currDate.Date);
                     var savedProposals = _proposalService.GetPendingProposals(fsaDetail, (Guid)user.UserUnileverId);
                     var savedApprovals = _approvalService.GetPendingApprovals();
                     foreach (var proposalInput in proposals.Where(x => (x.proposeAdditional > 0 || x.rephase > 0) && !x.isWaitingApproval))
                     {
-                        var proposalHistory = new ProposalHistory
-                        {
-                            Id = Guid.NewGuid(),
-                            Week = fsaDetail.Week,
-                            Month = fsaDetail.Month,
-                            Year = fsaDetail.Year,
-                        };
+                        var approval = new Approval();
+                        var proposal = new Proposal();
+                        var proposalHistory = new ProposalHistory();
                         if (Guid.Parse(proposalInput.id) == Guid.Empty)
                         {
                             if (proposalInput.rephase > 0)
                             {
-                                var approval = new Approval
-                                {
-                                    Id = Guid.NewGuid(),
-                                    ApprovalStatus = ApprovalStatus.Pending,
-                                };
+                                approval = CreateApproval(ProposalType.Rephase);
 
-                                var proposal = new Proposal
-                                {
-                                    Id = Guid.NewGuid(),
-                                    Week = fsaDetail.Week,
-                                    Year = fsaDetail.Year,
-                                    Month = fsaDetail.Month,
-                                    WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
-                                    Rephase = proposalInput.rephase,
-                                    Remark = proposalInput.remark,
-                                    IsWaitingApproval = true,
-                                    ApprovalId = approval.Id,
-                                    Type = ProposalType.Rephase,
-                                    SubmittedAt = DateTime.Now,
-                                    SubmittedBy = (Guid)user.UserUnileverId
-                                };
-
-                                proposalHistory.ProposalId = proposal.Id;
-                                proposalHistory.ApprovalId = approval.Id;
-                                approval.ProposalId = proposal.Id;
-                                approval.ProposalType = proposal.Type.Value;
-                                listApproval.Add(approval);
-                                listProposal.Add(proposal);
-                                listProposalHistory.Add(proposalHistory);
-                            }
-
-                            if (proposalInput.proposeAdditional > 0)
+                                proposal = CreateProposalRephase(proposalInput, fsaDetail, (Guid)user.UserUnileverId);
+                            } else if (proposalInput.proposeAdditional > 0)
                             {
-                                var approval = new Approval
-                                {
-                                    Id = Guid.NewGuid(),
-                                    ApprovalStatus = ApprovalStatus.Pending,
-                                   
-                                };
-
-                                var proposal = new Proposal
-                                {
-                                    Id = Guid.NewGuid(),
-                                    Week = fsaDetail.Week,
-                                    Year = fsaDetail.Year,
-                                    Month = fsaDetail.Month,
-                                    WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
-                                    Rephase = proposalInput.rephase,
-                                    Remark = proposalInput.remark,
-                                    ProposeAdditional = proposalInput.proposeAdditional,
-                                    IsWaitingApproval = true,
-                                    ApprovalId = approval.Id,
-                                    Type = ProposalType.ProposeAdditional,
-                                    SubmittedAt = DateTime.Now,
-                                    SubmittedBy = (Guid)user.UserUnileverId
-                                };
-
-
-                                proposalHistory.ProposalId = proposal.Id;
-                                proposalHistory.ApprovalId = approval.Id;
-                                approval.ProposalId = proposal.Id;
-                                approval.ProposalType = proposal.Type.Value;
-                                listApproval.Add(approval);
-                                listProposal.Add(proposal);
-                                listProposalHistory.Add(proposalHistory);
+                                approval = CreateApproval(ProposalType.ProposeAdditional);
+                                approval.ApprovalDetails = await CreateApprovalDetail(proposalInput.proposeAdditional, approval.Id, Guid.Parse(proposalInput.weeklyBucketId), fsaDetail, banners, skus);
+                                proposal = CreateProposaProposeAdditional(proposalInput, fsaDetail, (Guid)user.UserUnileverId);
                             }
+                            proposalHistory = CrateProposalHistory(approval.Id, proposal.Id, fsaDetail);
                         }
                         else
                         {
 
                             var savedProposal = savedProposals.Single(x => x.Id == Guid.Parse(proposalInput.id));
 
-                            var approval = new Approval
-                            {
-                                Id = Guid.NewGuid(),
-                                ApprovalStatus = ApprovalStatus.Pending,
-                            };
+                            approval = CreateApproval(savedProposal.Type.Value);
 
-            
-                            listProposalHistory.Add(proposalHistory);
+                            
                             if (proposalInput.rephase > 0)
                             {
                                 savedProposal.Rephase = proposalInput.rephase;
@@ -347,15 +288,16 @@ namespace FSAWebSystem.Controllers
                                 savedProposal.Type = ProposalType.ProposeAdditional;
                             }
 
-                            proposalHistory.ProposalId = savedProposal.Id;
-                            proposalHistory.ApprovalId = approval.Id;
-                            approval.ProposalId = savedProposal.Id;
-                            approval.ProposalType = savedProposal.Type.Value;
                             savedProposal.Remark = proposalInput.remark;
                             savedProposal.IsWaitingApproval = true;
                             savedProposal.SubmittedAt = DateTime.Now;
-                            listApproval.Add(approval);
+
+                            proposalHistory = CrateProposalHistory(approval.Id, proposal.Id, fsaDetail);
                         }
+
+                        listApproval.Add(approval);
+                        listProposal.Add(proposal);
+                        listProposalHistory.Add(proposalHistory);
                     }
                     await _proposalService.SaveProposals(listProposal);
                     await _proposalService.SaveProposalHistories(listProposalHistory);
@@ -381,6 +323,143 @@ namespace FSAWebSystem.Controllers
                 _notyfService.Warning(message);
             }
             return BadRequest(Json(new { proposals, errorMessages }));
+        }
+
+
+        public Proposal CreateProposalRephase(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId)
+        {
+            var proposal = new Proposal
+            {
+                Id = Guid.NewGuid(),
+                Week = fsaDetail.Week,
+                Year = fsaDetail.Year,
+                Month = fsaDetail.Month,
+                WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
+                Rephase = proposalInput.rephase,
+                Remark = proposalInput.remark,
+                IsWaitingApproval = true,
+                //ApprovalId = approval.Id,
+                Type = ProposalType.Rephase,
+                SubmittedAt = DateTime.Now,
+                SubmittedBy = userId
+            };
+
+
+            return proposal;
+        }
+
+        public Proposal CreateProposaProposeAdditional(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId)
+        {
+            var proposal = new Proposal
+            {
+                Id = Guid.NewGuid(),
+                Week = fsaDetail.Week,
+                Year = fsaDetail.Year,
+                Month = fsaDetail.Month,
+                WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId),
+                ProposeAdditional = proposalInput.proposeAdditional,
+                Remark = proposalInput.remark,
+                IsWaitingApproval = true,
+                //ApprovalId = approval.Id,
+                Type = ProposalType.ProposeAdditional,
+                SubmittedAt = DateTime.Now,
+                SubmittedBy = userId
+            };
+
+
+            return proposal;
+        }
+
+
+        public Approval CreateApproval(ProposalType proposalType)
+        {
+            var approval = new Approval
+            {
+                Id = Guid.NewGuid(),
+                ApprovalStatus = ApprovalStatus.Pending,
+                ProposalType = proposalType
+            };
+
+            return approval;
+        }
+
+        public async Task<List<ApprovalDetail>> CreateApprovalDetail(decimal proposeAdditional, Guid approvalId, Guid weeklyBucketId, FSACalendarDetail fsaDetail, IQueryable<Banner> banners, IQueryable<SKU> skus)
+        {
+            var listApprovalDetail = new List<ApprovalDetail>();
+            var approvalDetail = new ApprovalDetail();
+  
+
+            var weeklyBucket = await _bucketService.GetWeeklyBucket(weeklyBucketId);
+            var sku = await skus.SingleAsync(x => x.Id == weeklyBucket.SKUId);
+            var banner = await banners.SingleAsync(x => x.Id == weeklyBucket.BannerId);
+
+            var bucketTargetIds = await banners.Where(x => x.KAM == banner.KAM).Select(x => x.Id).ToListAsync();
+
+            var weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id);
+
+            var weeklyBucketTarget = new WeeklyBucket();
+            var weeklyBucketTarget1 = await weeklyBucketTargets.Where(x => x.MonthlyBucket > proposeAdditional).OrderByDescending(x => x.MonthlyBucket).FirstOrDefaultAsync();
+            var weeklyBucketTarget2 = await weeklyBucketTargets.Where(x => x.RemFSA > proposeAdditional).OrderByDescending(x => x.RemFSA).FirstOrDefaultAsync();
+            if(weeklyBucketTarget1 != null && weeklyBucketTarget2 != null)
+            {
+                bucketTargetIds = await banners.Where(x => x.CDM == banner.CDM).Select(x => x.Id).ToListAsync();
+                weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id);
+                weeklyBucketTarget1 = await weeklyBucketTargets.Where(x => x.RemFSA > proposeAdditional).OrderByDescending(x => x.RemFSA).FirstOrDefaultAsync();
+                if(weeklyBucketTarget1 != null)
+                {
+                    var bannerTarget = await banners.SingleAsync(x => x.Id == weeklyBucketTarget1.BannerId);
+                    var approvalDetail1 = new ApprovalDetail();
+                    approvalDetail1.MonthlyBucket = weeklyBucketTarget1.MonthlyBucket;
+                    approvalDetail1.RatingRate = weeklyBucketTarget1.RatingRate;
+                    approvalDetail1.ValidBJ = weeklyBucketTarget1.ValidBJ;
+                    approvalDetail1.RemFSA = weeklyBucketTarget1.RemFSA;
+                    approvalDetail1.CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + fsaDetail.Week.ToString()).GetValue(weeklyBucket, null));
+                    approvalDetail1.NextWeekBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (fsaDetail.Week + 1).ToString()).GetValue(weeklyBucket, null));
+                    approvalDetail1.RemFSA = weeklyBucket.RemFSA;
+                    approvalDetail1.BannerName = bannerTarget.BannerName;
+                    approvalDetail1.PlantName = bannerTarget.PlantName;
+                    approvalDetail1.PlantCode = bannerTarget.PlantCode;
+                    approvalDetail1.PCMap = sku.PCMap;
+                    approvalDetail1.DescriptionMap = sku.DescriptionMap;
+                    approvalDetail1.ProposeAdditional = -1 * proposeAdditional;
+                }    
+            }   
+
+            else
+            {
+                //if(weeklyBucket.)
+            }
+
+
+            approvalDetail.MonthlyBucket = weeklyBucket.MonthlyBucket;
+            approvalDetail.RatingRate = weeklyBucket.RatingRate;
+            approvalDetail.ValidBJ = weeklyBucket.ValidBJ;
+            approvalDetail.RemFSA = weeklyBucket.RemFSA;
+            approvalDetail.CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + fsaDetail.Week.ToString()).GetValue(weeklyBucket, null));
+            approvalDetail.NextWeekBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (fsaDetail.Week + 1).ToString()).GetValue(weeklyBucket, null));
+            approvalDetail.PCMap = sku.PCMap;
+            approvalDetail.DescriptionMap = sku.DescriptionMap;
+            approvalDetail.BannerName = banner.BannerName;
+            approvalDetail.PlantName = banner.PlantName;
+            approvalDetail.PlantCode = banner.PlantCode;
+           
+
+            listApprovalDetail.Add(approvalDetail);
+            return listApprovalDetail;
+        }
+
+        public ProposalHistory CrateProposalHistory(Guid approvalId, Guid proposalId, FSACalendarDetail fsaDetail)
+        {
+            var propHistory = new ProposalHistory
+            {
+                Id = Guid.NewGuid(),
+                Week = fsaDetail.Week,
+                Month = fsaDetail.Month,
+                Year = fsaDetail.Year,
+                ApprovalId = approvalId,
+                ProposalId = proposalId
+            };
+            return propHistory;
         }
 
 

@@ -11,7 +11,15 @@ namespace FSAWebSystem.Models
         [Required]
         [Display(Name = "Trade")]
         public string Trade{ get; set; }
-        
+
+        [Required]
+        [Display(Name = "CDM")]
+        public string CDM { get; set; }
+
+        [Required]
+        [Display(Name = "KAM")]
+        public string KAM { get; set; }
+
         [Required]
         [Display(Name = "Banner Name")]
         public string BannerName { get; set; }

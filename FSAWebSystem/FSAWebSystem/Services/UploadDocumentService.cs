@@ -59,6 +59,8 @@ namespace FSAWebSystem.Services
             return new List<string>
             {
                 "Trade",
+                "CDM",
+                "KAM",
                 "Banner Name",
                 "Plant Name",
                 "Plant Code"
