@@ -44,6 +44,7 @@ namespace FSAWebSystem.Services
                                                select new Proposal
                                                {
                                                    Id = proposal.Id,
+                                                   ApprovalId = proposal.ApprovalId,
                                                    BannerName = weeklyBucket.BannerName,
                                                    PlantName = weeklyBucket.PlantName,
                                                    PCMap = weeklyBucket.PCMap,
@@ -173,7 +174,10 @@ namespace FSAWebSystem.Services
                                                                                                        BannerName = banner.BannerName,
                                                                                                        PlantName = banner.PlantName,
                                                                                                        PCMap = sku.PCMap,
-                                                                                                       DescriptionMap = sku.DescriptionMap
+                                                                                                       DescriptionMap = sku.DescriptionMap,
+                                                                                                       MonthlyBucket = weeklyBucket.MonthlyBucket,
+                                                                                                       CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week).ToString()).GetValue(weeklyBucket, null)),
+                                                                                                       NextBucket = proposal.Week <= 4 ? Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week + 1).ToString()).GetValue(weeklyBucket, null)) : 0,
                                                                                                    }) on proposal.WeeklyBucketId equals weeklyBucket.Id
                                                                              select new Proposal
                                                                              {
@@ -189,7 +193,13 @@ namespace FSAWebSystem.Services
                                                                                  Type = proposal.Type,
                                                                                  //Year = proposal.Year,
                                                                                  //Month = proposal.Month,
-                                                                                 Week = proposal.Week
+                                                                                 Week = proposal.Week,
+                                                                                 RatingRate = weeklyBucket.RatingRate,
+                                                                                 MonthlyBucket = weeklyBucket.MonthlyBucket,
+                                                                                 CurrentBucket = weeklyBucket.c,
+                                                                                 NextBucket = proposal.Week <= 4 ? Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week + 1).ToString()).GetValue(weeklyBucket, null)) : 0,
+                                                                                 ValidBJ = weeklyBucket.ValidBJ,
+                                                                                 RemFSA = weeklyBucket.RemFSA,
                                                                              }) on approval.Id equals proposal.ApprovalId
                                                            select new Approval
                                                            {
@@ -202,7 +212,13 @@ namespace FSAWebSystem.Services
                                                                ProposeAdditional = proposal.ProposeAdditional,
                                                                Rephase = proposal.Rephase,
                                                                Remark = proposal.Remark,
-                                                               ProposalType = proposal.Type.Value
+                                                               ProposalType = proposal.Type.Value,
+                                                               RatingRate = proposal.RatingRate,
+                                                               MonthlyBucket = proposal.MonthlyBucket,
+                                                               CurrentBucket = proposal.CurrentBucket,
+                                                               NextWeekBucket = proposal.NextBucket,
+                                                               ValidBJ = proposal.ValidBJ,
+                                                               RemFSA = proposal.RemFSA,
                                                            }) on approvalDetail.ApprovalId equals approval.Id
                                          where approvalDetail.ApprovalId == approvalId
                                          select new ApprovalDetail
@@ -215,7 +231,7 @@ namespace FSAWebSystem.Services
                                              RatingRate = approvalDetail.RatingRate,
                                              MonthlyBucket = approvalDetail.MonthlyBucket,
                                              CurrentBucket = approvalDetail.CurrentBucket,
-                                             NextWeekBucket = approvalDetail.NextWeekBucket,
+                                             NextBucket = approvalDetail.NextBucket,
                                              ValidBJ = approvalDetail.ValidBJ,
                                              RemFSA = approvalDetail.RemFSA,
                                              ProposeAdditional = approvalDetail.ProposeAdditional

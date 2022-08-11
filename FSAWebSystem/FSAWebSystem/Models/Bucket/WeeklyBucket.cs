@@ -33,6 +33,9 @@ namespace FSAWebSystem.Models.Bucket
         public string PCMap { get; set; }
         [NotMapped]
         public string DescriptionMap { get; set; }
-
+        [NotMapped]
+        public decimal CurrentBucket { get; set; }
+        [NotMapped]
+        public decimal NextBucket { get; set; }
     }
 }

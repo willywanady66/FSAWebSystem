@@ -185,7 +185,10 @@ namespace FSAWebSystem.Controllers
 				{
                     proposal.ApprovedRephase = proposal.Rephase;
                    
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week + 1).ToString()).SetValue(weeklyBucket, currentBucket + proposal.Rephase);
+                    if(proposal.Week <= 4)
+                    {
+                        weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week + 1).ToString()).SetValue(weeklyBucket, currentBucket + proposal.Rephase);
+                    }
                     weeklyBucket.GetType().GetProperty("BucketWeek" + (proposal.Week).ToString()).SetValue(weeklyBucket, currentBucket - proposal.Rephase);
                 }
 

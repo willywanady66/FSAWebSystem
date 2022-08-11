@@ -29,20 +29,20 @@ namespace FSAWebSystem.Controllers
         // GET: FSACalendarHeaders
         public async Task<IActionResult> Index()
         {
-            return _db.FSACalendarHeader != null ?
-                        View(await _db.FSACalendarHeader.ToListAsync()) :
+            return _db.FSACalendarHeaders != null ?
+                        View(await _db.FSACalendarHeaders.ToListAsync()) :
                         Problem("Entity set 'FSAWebSystemDbContext.FSACalendarHeader'  is null.");
         }
 
         // GET: FSACalendarHeaders/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {
-            if (id == null || _db.FSACalendarHeader == null)
+            if (id == null || _db.FSACalendarHeaders == null)
             {
                 return NotFound();
             }
 
-            var fSACalendarHeader = await _db.FSACalendarHeader
+            var fSACalendarHeader = await _db.FSACalendarHeaders
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (fSACalendarHeader == null)
             {
@@ -136,7 +136,7 @@ namespace FSAWebSystem.Controllers
         // GET: FSACalendarHeaders/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
-            if (id == null || _db.FSACalendarHeader == null)
+            if (id == null || _db.FSACalendarHeaders == null)
             {
                 return NotFound();
             }
@@ -218,46 +218,11 @@ namespace FSAWebSystem.Controllers
             return View(fSACalendarHeader);
         }
 
-        // GET: FSACalendarHeaders/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
-        {
-            if (id == null || _db.FSACalendarHeader == null)
-            {
-                return NotFound();
-            }
 
-            var fSACalendarHeader = await _db.FSACalendarHeader
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (fSACalendarHeader == null)
-            {
-                return NotFound();
-            }
-
-            return View(fSACalendarHeader);
-        }
-
-        // POST: FSACalendarHeaders/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            if (_db.FSACalendarHeader == null)
-            {
-                return Problem("Entity set 'FSAWebSystemDbContext.FSACalendarHeader'  is null.");
-            }
-            var fSACalendarHeader = await _db.FSACalendarHeader.FindAsync(id);
-            if (fSACalendarHeader != null)
-            {
-                _db.FSACalendarHeader.Remove(fSACalendarHeader);
-            }
-
-            await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
         private bool FSACalendarHeaderExists(Guid id)
         {
-            return (_db.FSACalendarHeader?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_db.FSACalendarHeaders?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
 

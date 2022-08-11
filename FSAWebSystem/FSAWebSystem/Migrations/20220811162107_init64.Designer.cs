@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20220811162107_init64")]
+    partial class init64
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -404,7 +406,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("FSACalendarHeaderId");
 
-                    b.ToTable("FSACalendarDetails");
+                    b.ToTable("FSACalendarDetail");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarHeader", b =>
@@ -433,7 +435,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FSACalendarHeaders");
+                    b.ToTable("FSACalendarHeader");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.FSADocument", b =>
@@ -656,60 +658,6 @@ namespace FSAWebSystem.Migrations
                     b.HasIndex("ProductCategoryId");
 
                     b.ToTable("SKUs");
-                });
-
-            modelBuilder.Entity("FSAWebSystem.Models.ULICalendar", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Month")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ULICalendars");
-                });
-
-            modelBuilder.Entity("FSAWebSystem.Models.ULICalendarDetail", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("ULICalendarId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Week")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ULICalendarId");
-
-                    b.ToTable("ULICalendarDetails");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.UserUnilever", b =>
@@ -1019,13 +967,6 @@ namespace FSAWebSystem.Migrations
                     b.Navigation("ProductCategory");
                 });
 
-            modelBuilder.Entity("FSAWebSystem.Models.ULICalendarDetail", b =>
-                {
-                    b.HasOne("FSAWebSystem.Models.ULICalendar", null)
-                        .WithMany("ULICalendarDetails")
-                        .HasForeignKey("ULICalendarId");
-                });
-
             modelBuilder.Entity("FSAWebSystem.Models.UserUnilever", b =>
                 {
                     b.HasOne("FSAWebSystem.Models.RoleUnilever", "RoleUnilever")
@@ -1111,11 +1052,6 @@ namespace FSAWebSystem.Migrations
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarHeader", b =>
                 {
                     b.Navigation("FSACalendarDetails");
-                });
-
-            modelBuilder.Entity("FSAWebSystem.Models.ULICalendar", b =>
-                {
-                    b.Navigation("ULICalendarDetails");
                 });
 #pragma warning restore 612, 618
         }

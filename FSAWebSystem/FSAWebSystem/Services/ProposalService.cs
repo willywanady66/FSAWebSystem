@@ -46,15 +46,16 @@ namespace FSAWebSystem.Services
                                  ValidBJ = weeklyBucket.ValidBJ,
                                  RemFSA = weeklyBucket.MonthlyBucket - weeklyBucket.ValidBJ,
                                  CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + week.ToString()).GetValue(weeklyBucket, null)),
-                                 NextBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null)),
+                                 NextBucket = week <= 4 ? Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null)) : 0,
                                  Remark = p != null ? p.Remark : string.Empty,
                                  Rephase = p != null ? p.Rephase : decimal.Zero,
                                  ApprovedRephase = p != null ? p.ApprovedRephase : decimal.Zero,
                                  ProposeAdditional = p != null ? p.ProposeAdditional : decimal.Zero,
                                  ApprovedProposeAdditional = p != null ? p.ApprovedProposeAdditional : decimal.Zero,
                                  IsWaitingApproval = p != null ? p.IsWaitingApproval : false,
-                                 SubmittedBy = p != null ? p.SubmittedBy : Guid.Empty
-                             });
+                                 SubmittedBy = p != null ? p.SubmittedBy : Guid.Empty,
+                                 ApprovalId = p != null ? p.ApprovalId : Guid.Empty
+                             }) ;
 
             var proposal2 = (from proposal in proposals.Where(x => x.SubmittedBy == userId || x.SubmittedBy == Guid.Empty)
                              join approval in _db.Approvals.Where(x => x.ApprovalStatus == ApprovalStatus.Pending) on proposal.ApprovalId equals approval.Id into approvalGroup

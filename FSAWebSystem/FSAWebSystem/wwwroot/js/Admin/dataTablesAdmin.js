@@ -186,6 +186,9 @@
     var month = $('#dropDownMonth option:selected').val();
     var year = $('#dropDownYear option:selected').val();
 
+    var monthUli = $('#dropDownMonthULI option:selected').val();
+    var yearUli = $('#dropDownYearULI option:selected').val();
+
     var dtCalendar = $('#dataTableCalendar').DataTable({
         "processing": true,
         "serverSide": true,
@@ -238,6 +241,18 @@
 
     $('#dropDownYear').change(function () {
         year = $('#dropDownYear option:selected').val();
+        dtCalendar.draw();
+    });
+
+
+    $('#dropDownMonthULI').change(function () {
+        month = $('#dropDownMonthULI option:selected').val();
+        dtCalendar.draw();
+    });
+
+
+    $().change(function () {
+        year = $('#dropDownYearULI option:selected').val();
         dtCalendar.draw();
     });
 

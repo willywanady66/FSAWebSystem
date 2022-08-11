@@ -30,19 +30,25 @@ namespace FSAWebSystem.Services
         public async Task<FSACalendarDetail> GetCalendarDetail(DateTime date)
         {
             date = date.Date;
-            var calendarDetail = await _db.FSACalendarDetail.SingleOrDefaultAsync(x => date >= x.StartDate.Value.Date && date <= x.EndDate.Value.Date);
+            var calendarDetail = await _db.FSACalendarDetails.SingleOrDefaultAsync(x => date >= x.StartDate.Value.Date && date <= x.EndDate.Value.Date);
             return calendarDetail;
         }
 
         public async Task<FSACalendarHeader> GetFSACalendarHeader(int month, int year)
         {
-            var fsaCalendar = await _db.FSACalendarHeader.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Month == month && x.Year == year);
+            var fsaCalendar = await _db.FSACalendarHeaders.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Month == month && x.Year == year);
             return fsaCalendar;
+        }
+
+        public async Task<ULICalendar> GetULICalendar(int month, int year)
+        {
+            var uliCalendar = await _db.ULICalendars.Include(x => x.ULICalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Month == month && x.Year == year);
+            return uliCalendar;
         }
 
         public async Task<FSACalendarHeader> GetFSACalendarById(Guid id)
         {
-            var fsaCalendar = await _db.FSACalendarHeader.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Id == id);
+            var fsaCalendar = await _db.FSACalendarHeaders.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Id == id);
             return fsaCalendar;
         }
 

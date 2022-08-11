@@ -141,9 +141,7 @@
 		<div class="tab-pane fade @(tab == "Calendar" || string.IsNullOrEmpty(tab) ? " active show" : "")" id="calendar" role="tabpanel" aria-labelledby="calendar-tab">
 			<div class="card-header py-3">
 				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-calendar"></i> Calendar</h5>
-
-					<a asp-area="" asp-controller="FSACalendarHeaders" asp-action="Create"><button class="btn btn-primary float-right m-0 "><i class="fas fa-plus"></i> Add Calendar</button></a>
-
+				<a asp-area="" asp-controller="FSACalendarHeaders" asp-action="Create"><button class="btn btn-primary float-right m-0 "><i class="fas fa-plus"></i> Add FSA Calendar</button></a>
 			</div>
 			<div class="card-body">
 				<div class="row pb-2">
@@ -179,6 +177,7 @@
 		<div class="tab-pane fade @(tab == "ULI Calendar" ? " active show" : "")" id="uliCalendar" role="tabpanel" aria-labelledby="uliCalendar-tab">
 			<div class="card-header py-3">
 				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-file"></i> ULI Calendar</h5>
+				<a asp-area="" asp-controller="ULICalendars" asp-action="Create"><button class="btn btn-primary float-right m-0 "><i class="fas fa-plus"></i> Add ULI Calendar</button></a>
 			</div>
 			<div class="card-body">
 				<div class="row">
@@ -186,12 +185,12 @@
 				<div class="row pb-2">
 					<div class="col-4">
 						<label class="form-label d-inline">Month</label>
-						<select class="form-control form-select" id="dropDownMonth" name="month" asp-items="@listMonths"></select>
+						<select class="form-control form-select" id="dropDownMonthULI" name="monthULI" asp-items="@listMonths"></select>
 					</div>
 					<div class="col-4"></div>
 					<div class="col-4">
 						<label class="form-label d-inline">Year</label>
-						<select class="form-control form-select" id="dropDownYear" name="month" asp-items="@listYears"></select>
+						<select class="form-control form-select" id="dropDownYearULI" name="yearULI" asp-items="@listYears"></select>
 					</div>
 				</div>
 				

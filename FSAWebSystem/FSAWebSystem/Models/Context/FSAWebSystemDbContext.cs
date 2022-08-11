@@ -42,8 +42,10 @@ namespace FSAWebSystem.Models.Context
         public DbSet<SKU> SKUs { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<RoleUnilever> RoleUnilevers { get; set; }
-        public DbSet<FSACalendarHeader> FSACalendarHeader { get; set; }
-        public DbSet<FSACalendarDetail> FSACalendarDetail { get; set; }
+        public DbSet<FSACalendarHeader> FSACalendarHeaders { get; set; }
+        public DbSet<FSACalendarDetail> FSACalendarDetails { get; set; }
+        public DbSet<ULICalendar> ULICalendars { get; set; }
+        public DbSet<ULICalendarDetail> ULICalendarDetails { get; set; }
         public DbSet<FSADocument> FSADocuments{ get; set; }
         public DbSet<MonthlyBucket> MonthlyBuckets{ get; set; }
         public DbSet<WeeklyBucket> WeeklyBuckets{ get; set; }
@@ -53,6 +55,6 @@ namespace FSAWebSystem.Models.Context
         public DbSet<Menu> Menus { get; set; }
         public DbSet<WeeklyBucketHistory> WeeklyBucketHistories { get; set; }
         public DbSet<ProposalHistory> ProposalHistories { get; set; }
-        public DbSet<FSAWebSystem.Models.ApprovalDetail>? ApprovalDetail { get; set; }
+        public DbSet<ApprovalDetail> ApprovalDetail { get; set; }
     }
 }

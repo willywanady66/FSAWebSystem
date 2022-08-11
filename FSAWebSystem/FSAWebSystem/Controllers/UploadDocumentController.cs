@@ -160,7 +160,7 @@ namespace FSAWebSystem.Controllers
 
                 if (doc == DocumentUpload.MonthlyBucket)
                 {
-                    var isCalendarExist = await _db.FSACalendarHeader.AnyAsync(x => x.Month == month && x.Year == currDate.Year);
+                    var isCalendarExist = await _db.FSACalendarHeaders.AnyAsync(x => x.Month == month && x.Year == currDate.Year);
                     var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
                     if (!isCalendarExist)
                     {

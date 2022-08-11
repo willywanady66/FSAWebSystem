@@ -59,6 +59,18 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public string SubmitDate { get; set; }
 
+        [NotMapped]
+        public decimal RatingRate { get; set; }
+        [NotMapped]
+        public decimal MonthlyBucket { get; set; }
+        [NotMapped]
+        public decimal CurrentBucket { get; set; }
+        [NotMapped]
+        public decimal NextWeekBucket { get; set; }
+        [NotMapped]
+        public decimal ValidBJ { get; set; }
+        [NotMapped]
+        public decimal RemFSA { get; set; }
     }
 
     public enum ApprovalStatus

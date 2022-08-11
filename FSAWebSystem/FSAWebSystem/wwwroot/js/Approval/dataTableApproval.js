@@ -36,7 +36,7 @@
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
                     
-                    return `<a href="./Approvals/Detail/${full.id}">
+                    return `<a href="./ApprovalDetails/Index/${full.id}">
                                 <i class="fas fa-eye"></i>
                             <a/>`;
                 }

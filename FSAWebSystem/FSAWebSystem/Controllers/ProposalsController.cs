@@ -259,12 +259,12 @@ namespace FSAWebSystem.Controllers
                             {
                                 approval = CreateApproval(ProposalType.Rephase);
 
-                                proposal = CreateProposalRephase(proposalInput, fsaDetail, (Guid)user.UserUnileverId);
+                                proposal = CreateProposalRephase(proposalInput, fsaDetail, (Guid)user.UserUnileverId, approval.Id);
                             } else if (proposalInput.proposeAdditional > 0)
                             {
                                 approval = CreateApproval(ProposalType.ProposeAdditional);
                                 approval.ApprovalDetails = await CreateApprovalDetail(proposalInput.proposeAdditional, approval.Id, Guid.Parse(proposalInput.weeklyBucketId), fsaDetail, banners, skus);
-                                proposal = CreateProposaProposeAdditional(proposalInput, fsaDetail, (Guid)user.UserUnileverId);
+                                proposal = CreateProposaProposeAdditional(proposalInput, fsaDetail, (Guid)user.UserUnileverId, approval.Id);
                             }
                             proposalHistory = CrateProposalHistory(approval.Id, proposal.Id, fsaDetail);
                         }
@@ -326,7 +326,7 @@ namespace FSAWebSystem.Controllers
         }
 
 
-        public Proposal CreateProposalRephase(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId)
+        public Proposal CreateProposalRephase(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId, Guid approvalId)
         {
             var proposal = new Proposal
             {
@@ -338,7 +338,7 @@ namespace FSAWebSystem.Controllers
                 Rephase = proposalInput.rephase,
                 Remark = proposalInput.remark,
                 IsWaitingApproval = true,
-                //ApprovalId = approval.Id,
+                ApprovalId = approvalId,
                 Type = ProposalType.Rephase,
                 SubmittedAt = DateTime.Now,
                 SubmittedBy = userId
@@ -348,7 +348,7 @@ namespace FSAWebSystem.Controllers
             return proposal;
         }
 
-        public Proposal CreateProposaProposeAdditional(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId)
+        public Proposal CreateProposaProposeAdditional(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId, Guid approvalId)
         {
             var proposal = new Proposal
             {
@@ -360,7 +360,7 @@ namespace FSAWebSystem.Controllers
                 ProposeAdditional = proposalInput.proposeAdditional,
                 Remark = proposalInput.remark,
                 IsWaitingApproval = true,
-                //ApprovalId = approval.Id,
+                ApprovalId = approvalId,
                 Type = ProposalType.ProposeAdditional,
                 SubmittedAt = DateTime.Now,
                 SubmittedBy = userId
@@ -398,53 +398,62 @@ namespace FSAWebSystem.Controllers
             var weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id);
 
             var weeklyBucketTarget = new WeeklyBucket();
-            var weeklyBucketTarget1 = await weeklyBucketTargets.Where(x => x.MonthlyBucket > proposeAdditional).OrderByDescending(x => x.MonthlyBucket).FirstOrDefaultAsync();
-            var weeklyBucketTarget2 = await weeklyBucketTargets.Where(x => x.RemFSA > proposeAdditional).OrderByDescending(x => x.RemFSA).FirstOrDefaultAsync();
-            if(weeklyBucketTarget1 != null && weeklyBucketTarget2 != null)
+            var weeklyBucketTarget1 = await weeklyBucketTargets.Where(x => x.MonthlyBucket > proposeAdditional && x.Id != weeklyBucketId).OrderByDescending(x => x.MonthlyBucket).FirstOrDefaultAsync();
+            var weeklyBucketTarget2 = await weeklyBucketTargets.Where(x => x.RemFSA > proposeAdditional && x.Id != weeklyBucketId).OrderByDescending(x => x.RemFSA).FirstOrDefaultAsync();
+            if(weeklyBucketTarget1 == null && weeklyBucketTarget2 == null)
             {
                 bucketTargetIds = await banners.Where(x => x.CDM == banner.CDM).Select(x => x.Id).ToListAsync();
                 weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id);
                 weeklyBucketTarget1 = await weeklyBucketTargets.Where(x => x.RemFSA > proposeAdditional).OrderByDescending(x => x.RemFSA).FirstOrDefaultAsync();
                 if(weeklyBucketTarget1 != null)
                 {
-                    var bannerTarget = await banners.SingleAsync(x => x.Id == weeklyBucketTarget1.BannerId);
-                    var approvalDetail1 = new ApprovalDetail();
-                    approvalDetail1.MonthlyBucket = weeklyBucketTarget1.MonthlyBucket;
-                    approvalDetail1.RatingRate = weeklyBucketTarget1.RatingRate;
-                    approvalDetail1.ValidBJ = weeklyBucketTarget1.ValidBJ;
-                    approvalDetail1.RemFSA = weeklyBucketTarget1.RemFSA;
-                    approvalDetail1.CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + fsaDetail.Week.ToString()).GetValue(weeklyBucket, null));
-                    approvalDetail1.NextWeekBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (fsaDetail.Week + 1).ToString()).GetValue(weeklyBucket, null));
-                    approvalDetail1.RemFSA = weeklyBucket.RemFSA;
-                    approvalDetail1.BannerName = bannerTarget.BannerName;
-                    approvalDetail1.PlantName = bannerTarget.PlantName;
-                    approvalDetail1.PlantCode = bannerTarget.PlantCode;
-                    approvalDetail1.PCMap = sku.PCMap;
-                    approvalDetail1.DescriptionMap = sku.DescriptionMap;
-                    approvalDetail1.ProposeAdditional = -1 * proposeAdditional;
+                    weeklyBucketTarget = weeklyBucketTarget1;
+                    //var bannerTarget = await banners.SingleAsync(x => x.Id == weeklyBucketTarget1.BannerId);
+                    //approvalDetail1.MonthlyBucket = weeklyBucketTarget1.MonthlyBucket;
+                    //approvalDetail1.RatingRate = weeklyBucketTarget1.RatingRate;
+                    //approvalDetail1.ValidBJ = weeklyBucketTarget1.ValidBJ;
+                    //approvalDetail1.RemFSA = weeklyBucketTarget1.RemFSA;
+                    //approvalDetail1.CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + fsaDetail.Week.ToString()).GetValue(weeklyBucket, null));
+                    //approvalDetail1.NextWeekBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (fsaDetail.Week + 1).ToString()).GetValue(weeklyBucket, null));
+                    //approvalDetail1.RemFSA = weeklyBucket.RemFSA;
+                    //approvalDetail1.BannerName = bannerTarget.BannerName;
+                    //approvalDetail1.PlantName = bannerTarget.PlantName;
+                    //approvalDetail1.PlantCode = bannerTarget.PlantCode;
+                    //approvalDetail1.PCMap = sku.PCMap;
+                    //approvalDetail1.DescriptionMap = sku.DescriptionMap;
+
                 }    
             }   
-
-            else
+            else if(weeklyBucketTarget1 != null && weeklyBucketTarget2 != null)
             {
-                //if(weeklyBucket.)
+                if(weeklyBucketTarget1.MonthlyBucket > weeklyBucketTarget2.RemFSA)
+                {
+                    weeklyBucketTarget = weeklyBucketTarget1;
+                   
+                }
+                else
+                { 
+                    weeklyBucketTarget = weeklyBucketTarget2;
+                }
             }
+            else if(weeklyBucketTarget1 == null)
+            {
+                weeklyBucketTarget = weeklyBucketTarget2;
+            }
+            else if(weeklyBucketTarget2 == null)
+            {
+                weeklyBucketTarget = weeklyBucketTarget1;
+            }
+            var approvalDetail1 = new ApprovalDetail();
+            approvalDetail1.WeeklyBucketId = weeklyBucketTarget.Id;
+            approvalDetail1.ProposeAdditional = -1 * proposeAdditional;
 
+            approvalDetail.WeeklyBucketId = weeklyBucketId;
+            approvalDetail.ProposeAdditional = proposeAdditional;
 
-            approvalDetail.MonthlyBucket = weeklyBucket.MonthlyBucket;
-            approvalDetail.RatingRate = weeklyBucket.RatingRate;
-            approvalDetail.ValidBJ = weeklyBucket.ValidBJ;
-            approvalDetail.RemFSA = weeklyBucket.RemFSA;
-            approvalDetail.CurrentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + fsaDetail.Week.ToString()).GetValue(weeklyBucket, null));
-            approvalDetail.NextWeekBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (fsaDetail.Week + 1).ToString()).GetValue(weeklyBucket, null));
-            approvalDetail.PCMap = sku.PCMap;
-            approvalDetail.DescriptionMap = sku.DescriptionMap;
-            approvalDetail.BannerName = banner.BannerName;
-            approvalDetail.PlantName = banner.PlantName;
-            approvalDetail.PlantCode = banner.PlantCode;
-           
 
             listApprovalDetail.Add(approvalDetail);
+            listApprovalDetail.Add(approvalDetail1);
             return listApprovalDetail;
         }
 

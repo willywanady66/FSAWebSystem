@@ -6,14 +6,8 @@ namespace FSAWebSystem.Models
     {
         public Guid Id { get; set; }
         public Guid ApprovalId { get; set; }
-        public Guid BannerId { get; set; }
-        public Guid SKUId { get; set; }
-        public decimal RatingRate { get; set; }
-        public decimal MonthlyBucket { get; set; }
-        public decimal CurrentBucket { get; set; }
-        public decimal NextWeekBucket { get; set; }
-        public decimal ValidBJ{ get; set; }
-        public decimal RemFSA{ get; set; }
+        public Guid WeeklyBucketId { get; set; }
+      
         public decimal ProposeAdditional { get; set; }
 
 
@@ -28,5 +22,18 @@ namespace FSAWebSystem.Models
         public string PCMap { get; set; }
         [NotMapped]
         public string DescriptionMap { get; set; }
+
+        [NotMapped]
+        public decimal RatingRate { get; set; }
+        [NotMapped]
+        public decimal MonthlyBucket { get; set; }
+        [NotMapped]
+        public decimal CurrentBucket { get; set; }
+        [NotMapped]
+        public decimal NextBucket { get; set; }
+        [NotMapped]
+        public decimal ValidBJ { get; set; }
+        [NotMapped]
+        public decimal RemFSA { get; set; }
     }
 }
