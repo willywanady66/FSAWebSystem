@@ -16,5 +16,7 @@ namespace FSAWebSystem.Services.Interface
         public Task<List<Guid>> GetWeeklyBucketBanners();
 
         public Task<WeeklyBucket> GetWeeklyBucketByBanner(Guid targetBanner, int year, int month);
+
+        public Task<bool> WeeklyBucketExist(int month, int week, int year);
     }
 }

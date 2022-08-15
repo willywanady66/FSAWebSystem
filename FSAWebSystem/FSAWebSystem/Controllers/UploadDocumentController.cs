@@ -170,6 +170,20 @@ namespace FSAWebSystem.Controllers
                         return RedirectToAction("Index", "Admin");
                     }
                 }
+                else if(doc == DocumentUpload.WeeklyDispatch)
+                {
+                    var calendarDetail = await _calendarService.GetCalendarDetail(DateTime.Now);
+                    var weeklyDispatch = await _bucketService.WeeklyBucketExist(calendarDetail.Month, calendarDetail.Week, calendarDetail.Year);
+                    var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(calendarDetail.Month);
+                    if (weeklyDispatch)
+                    {
+                        errorMessages.Add("Cannot upload! Weekly Bucket for Month: " + monthName + ", Week: " + calendarDetail.Week.ToString() + " already exist!");
+                        TempData["ErrorMessages"] = errorMessages;
+                        TempData["Tab"] = "UploadDoc";
+                        return RedirectToAction("Index", "Admin");
+                    }
+                }
+                
 
                 MemoryStream stream = new MemoryStream();
                 //var stream = new FileStream(excelDocument.FileName, FileMode.Open, FileAccess.Read);
@@ -685,26 +699,24 @@ namespace FSAWebSystem.Controllers
                     weeklyBucketHistory.Week = calendarDetail.Week;
 
                     weeklyBucketHistories.Add(weeklyBucketHistory);
-
-                
                     var savedWeeklyBucket = savedWeeklyBuckets.Single(x => x.BannerId == bannerId && x.SKUId == skuId);
                     var currentWeekBucket = decimal.Zero;
                     var remainingBucket = decimal.Zero;
                     var totalDispatch = decimal.Zero;
-                    if (calendarDetail.Week == 1)
+                    if (calendarDetail.Week == 2)
                     {
                         remainingBucket = savedWeeklyBucket.BucketWeek1;
                         //remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek1;
                     }
-                    else if (calendarDetail.Week == 2)
+                    else if (calendarDetail.Week == 3)
                     {
                         remainingBucket = savedWeeklyBucket.BucketWeek2;
                         //remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek2;
                     }
-                    else if (calendarDetail.Week == 3)
+                    else if (calendarDetail.Week == 4)
                     {
                         remainingBucket =  savedWeeklyBucket.BucketWeek3;
-                        remainingBucket = /*savedWeeklyBucket.ValidBJ*/ - savedWeeklyBucket.BucketWeek3;
+                        //remainingBucket = /*savedWeeklyBucket.ValidBJ*/ - savedWeeklyBucket.BucketWeek3;
                     }
                     else
                     {
@@ -714,7 +726,7 @@ namespace FSAWebSystem.Controllers
                     totalDispatch = weeklyBucket.DispatchConsume * (savedWeeklyBucket.PlantContribution / 100);
 
                     currentWeekBucket = remainingBucket - totalDispatch;
-                    savedWeeklyBucket.GetType().GetProperty("BucketWeek" + (calendarDetail.Week + 2).ToString()).SetValue(savedWeeklyBucket, currentWeekBucket);
+                    savedWeeklyBucket.GetType().GetProperty("BucketWeek" + (calendarDetail.Week + 1).ToString()).SetValue(savedWeeklyBucket, currentWeekBucket);
                     savedWeeklyBucket.DispatchConsume += weeklyBucket.DispatchConsume;
                 }
 
@@ -755,9 +767,9 @@ namespace FSAWebSystem.Controllers
                 var skus = _skuService.GetAllProducts();
                 foreach (var dailyOrder in dailyOrders)
                 {
-                    var bannerId = banners.Single(x => x.BannerName == dailyOrder.BannerName && x.PlantCode == dailyOrder.PlantCode).Id;
-                    var skuId = skus.Single(x => x.PCMap == dailyOrder.PCMap).Id;
-                    var weeklyBucket = weeklyBuckets.Single(x => x.BannerId == bannerId && x.SKUId == skuId && x.Year == dailyOrder.Year && x.Month == dailyOrder.Month);
+                    var bannerId = (await banners.SingleAsync(x => x.BannerName == dailyOrder.BannerName && x.PlantCode == dailyOrder.PlantCode)).Id;
+                    var skuId = (await skus.SingleAsync(x => x.PCMap == dailyOrder.PCMap)).Id;
+                    var weeklyBucket = await weeklyBuckets.SingleAsync(x => x.BannerId == bannerId && x.SKUId == skuId && x.Year == dailyOrder.Year && x.Month == dailyOrder.Month);
                     weeklyBucket.ValidBJ += dailyOrder.ValidBJ;
                     weeklyBucket.RemFSA = weeklyBucket.MonthlyBucket - dailyOrder.ValidBJ;
                 }

@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20220815170408_init72")]
+    partial class init72
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -513,6 +515,9 @@ namespace FSAWebSystem.Migrations
                     b.Property<Guid>("ApprovalId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("BannerTargetId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsWaitingApproval")
                         .HasColumnType("bit");
 
@@ -520,6 +525,9 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("ProposeAdditional")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Reallocate")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Remark")
@@ -585,6 +593,9 @@ namespace FSAWebSystem.Migrations
                     b.Property<Guid>("ApprovalId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("BannerId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Month")
                         .HasColumnType("int");
 
@@ -601,12 +612,16 @@ namespace FSAWebSystem.Migrations
                     b.Property<decimal>("Rephase")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<Guid>("SKUId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("SubmittedAt")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("SubmittedBy")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("SubmittedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Week")
                         .HasColumnType("int");

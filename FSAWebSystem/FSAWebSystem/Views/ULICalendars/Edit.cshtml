@@ -3,50 +3,67 @@
 @{
     ViewData["Title"] = "Edit";
     Layout = "~/Views/Shared/_Layout.cshtml";
+		List<SelectListItem> listMonths = ViewData["listMonth"] as List<SelectListItem>;
+	List<SelectListItem> listYears = ViewData["listYear"] as List<SelectListItem>;
 }
 
 <h1>Edit</h1>
 
 <h4>ULICalendar</h4>
 <hr />
+
+<div class="text-danger">
+	<ul id="error-messages"></ul>
+</div>
+
+
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Year" class="control-label"></label>
-                <input asp-for="Year" class="form-control" />
-                <span asp-validation-for="Year" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CreatedAt" class="control-label"></label>
-                <input asp-for="CreatedAt" class="form-control" />
-                <span asp-validation-for="CreatedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CreatedBy" class="control-label"></label>
-                <input asp-for="CreatedBy" class="form-control" />
-                <span asp-validation-for="CreatedBy" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ModifiedAt" class="control-label"></label>
-                <input asp-for="ModifiedAt" class="form-control" />
-                <span asp-validation-for="ModifiedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ModifiedBy" class="control-label"></label>
-                <input asp-for="ModifiedBy" class="form-control" />
-                <span asp-validation-for="ModifiedBy" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+    <div class="row">
+	<div class="col-sm-12 col-md-8 col-lg-6">
+		<form asp-action="Create">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<div class="form-group">
+				<label asp-for="Month" class="control-label"></label>
+				<select class="form-control form-select" id="dropDownListMonths" name="Month" asp-items=@listMonths></select>
+				<span asp-validation-for="Month" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Year" class="control-label"></label>
+				<select class="form-control form-select" id="dropDownListYears" name="Year" asp-items=@listYears></select>
+				<span asp-validation-for="Year" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<div class="table-responsive">
+					<table class="table table-bordered" id="tableCalendar">
+						<thead>
+							<tr>
+								<th>Week</th>
+								<th colspan=3 class="text-center">Range Date</th>
+							</tr>
+						</thead>
+						<tbody>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+								@for(var i = 0; i<Model.ULICalendarDetails.Count; i++)
+							{
+								<tr>
+									<td><span>@Html.EditorFor(Model => Model.ULICalendarDetails[i].Week, new {htmlAttributes = new { @class = "form-control" }})</span></td>
+									<td>@Html.EditorFor(Model => Model.ULICalendarDetails[i].StartDate, new {htmlAttributes = new { @class = "form-control datePicker" } }) </td>
+									<td>To</td>
+									<td>@Html.EditorFor(Model => Model.ULICalendarDetails[i].EndDate, new {htmlAttributes = new { @class = "form-control datePicker" } }) </td>
+									@Html.HiddenFor(Model => Model.ULICalendarDetails[i].Week)
+									@Html.HiddenFor(Model => Model.ULICalendarDetails[i].Id)
+								</tr>
+								}
+							
+						</tbody>
+					</table>
+				</div>
+				
+			</div>
+			<div class="form-group">
+				<input type="submit" value="Create" class="btn btn-primary" />
+			</div>
+		</form>
+	</div>
 </div>
-
+</div>

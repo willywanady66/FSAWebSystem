@@ -207,7 +207,6 @@
 
             }
         });
-        redrawTable();
     });
 
     $('#submitProposalReallocateBtn').click(function () {
@@ -255,22 +254,19 @@ var tableHistory = $("#dataTableProposalHistory").DataTable({
         { "data": "proposal.plantName" },  //3
         { "data": "proposal.pcMap" },       //4
         { "data": "proposal.descriptionMap" }, //5
-        { "data": "proposal.rephase" },      //6
-        { "data": "proposal.approvedRephase" },   //7
-        { "data": "proposal.proposeAdditional" },   //8
-        { "data": "proposal.approvedProposeAdditional" },   //9
-        { "data": "proposal.reallocate" },   //10
-        { "data": "proposal.remark" },   //11
-        { "data": "approvalStatus" },   //12
-        { "data": "approvedBy" },   //13
-        { "data": "rejectionReason" },   //14
+        { "data": "rephase" },      //6
+        { "data": "proposeAdditional" },   //7
+        { "data": "remark" },   //9
+        { "data": "approvalStatus" },   //10
+        { "data": "approvedBy" },   //11
+        { "data": "rejectionReason" },   //12
     ],
     "rowCallback": function (row, data, index) {
         if (data.approvalStatus == "Approved") {
-            $('td:eq(12)', row).css({ color: "green" });
+            $('td:eq(9)', row).css({ color: "green" });
         }
         else if (data.approvalStatus == "Rejected") {
-            $('td:eq(12)', row).css({ color: "red" });
+            $('td:eq(9)', row).css({ color: "red" });
         }
     }
 });

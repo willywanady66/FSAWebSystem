@@ -58,8 +58,8 @@ namespace FSAWebSystem.Controllers
         // GET: UserUnilevers/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
-
-            var userUnilever = await _userService.GetUser(Guid.Parse(id));
+            var user = await _userManager.FindByIdAsync(id);
+            var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
             userUnilever.UserId = id;
             if (userUnilever == null)
             {
@@ -115,12 +115,13 @@ namespace FSAWebSystem.Controllers
             {
                 try
                 {
-					var savedUser = await _userService.GetUser(Guid.Parse(userUnilever.UserId));
+                    var user = await _userManager.FindByIdAsync(userUnilever.UserId);
+					var savedUser = await _userService.GetUser((Guid)user.UserUnileverId);
 
 					List<Guid> selectedBannerId = (from bannerId in bannerIds select Guid.Parse(bannerId)).ToList();
                     var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerId.Contains(x.Id)).ToList();
                     var selectedWorkLevel = _userService.GetAllWorkLevel().Single(x => x.Id == Guid.Parse(workLevelId)).Id;
-                    var user = await _userManager.FindByIdAsync(userUnilever.UserId);
+        
 
                     user.UserName = userUnilever.Email;
                     user.NormalizedUserName = userUnilever.Email;

@@ -186,8 +186,6 @@
     var month = $('#dropDownMonth option:selected').val();
     var year = $('#dropDownYear option:selected').val();
 
-    var monthUli = $('#dropDownMonthULI option:selected').val();
-    var yearUli = $('#dropDownYearULI option:selected').val();
 
     var dtCalendar = $('#dataTableCalendar').DataTable({
         "processing": true,
@@ -245,16 +243,7 @@
     });
 
 
-    $('#dropDownMonthULI').change(function () {
-        month = $('#dropDownMonthULI option:selected').val();
-        dtCalendar.draw();
-    });
 
-
-    $().change(function () {
-        year = $('#dropDownYearULI option:selected').val();
-        dtCalendar.draw();
-    });
 
 
     var doc = $('#documentType option:selected').val();
@@ -271,5 +260,61 @@
         else {
             $('#uploadMonthGroup').show();
         }
-    })
+    });
+
+
+    var monthUli = $('#dropDownMonthULI option:selected').val();
+    var yearUli = $('#dropDownYearULI option:selected').val();
+    $('#dropDownMonthULI').change(function () {
+        monthUli = $('#dropDownMonthULI option:selected').val();
+        dtULICalendar.draw();
+    });
+
+
+    $('#dropDownYearULI').change(function () {
+        yearUli = $('#dropDownYearULI option:selected').val();
+        dtULICalendar.draw();
+    });
+    var dtULICalendar = $('#dataTableUliCalendar').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            url: "Admin/GetULICalendar",
+            type: "GET",
+            data: function (d) {
+                return $.extend(d, { "month": monthUli, "year": yearUli });
+            }
+        },
+        "columns": [
+            { "data": "week" },
+            { "data": "startDate" },
+            { "data": "endDate" },
+            { "data": "year" },
+            { "data": "month" },
+            { "data": "id" }
+        ],
+        columnDefs: [
+            {
+                targets: 5,
+                orderable: false,
+                className: 'text-center',
+                "render": function (data, type, full, meta) {
+                    return `<a href="./ULICalendars/Edit/${full.id}">
+                                <i class="fas fa-pen"></i>
+                            <a/>`
+                }
+            },
+            {
+                targets: 'all',
+                defaultContent: ""
+            }
+        ],
+        rowsGroup: [5],
+        "rowCallback": function (row, data, index) {
+            $('td:eq(5)', row).addClass('align-middle');
+        },
+        "paging": false,
+        "info": false,
+        searching: false
+    });
 });

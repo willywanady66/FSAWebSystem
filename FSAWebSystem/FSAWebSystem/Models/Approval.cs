@@ -4,31 +4,25 @@ namespace FSAWebSystem.Models
 {
     public class Approval
     {
-        public Approval()
-        {
-            ApprovedBy = new List<UserUnilever>();
-        }
+
         public Guid Id { get; set; }
-        //public Guid ProposalId { get; set; }
-        //public Guid SubmittedBy { get; set; }
-        //public DateTime SubmittedAt { get; set; }
         public ApprovalStatus ApprovalStatus { get; set; }
 
         public ProposalType ProposalType { get; set; }
 
         public List<ApprovalDetail> ApprovalDetails { get; set; }
-        //public decimal ApprovedRephase { get; set; }
-        //public decimal ApprovedProposeAdditional { get; set; }
-        [NotMapped]
-        public string Level1 { get; set; }
-        [NotMapped ]
-        public string Level2 { get; set; }
+   
         public string? RejectionReason { get; set; }
-        public List<UserUnilever> ApprovedBy { get; set; }
+        public string ApprovedBy { get; set; }
         public DateTime? ApprovedAt { get; set; }
 
+        public int Level { get; set; }
 
-		[NotMapped]
+        [NotMapped]
+        public string Level1 { get; set; }
+        [NotMapped]
+        public string Level2 { get; set; }
+        [NotMapped]
         public Proposal Proposal { get; set; }
         [NotMapped]
         public Guid ProposalId { get; set; }
@@ -47,7 +41,10 @@ namespace FSAWebSystem.Models
 
         [NotMapped]
         public string BannerName { get; set; }
-		
+
+        [NotMapped]
+        public Guid BannerId { get; set; }
+
         [NotMapped]
         public string PlantName { get; set; }
         [NotMapped]
@@ -57,7 +54,9 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public string DescriptionMap { get; set; }
         [NotMapped]
-        public string SubmitDate { get; set; }
+        public string ProposalSubmitDate { get; set; }
+        [NotMapped]
+        public string RequestedBy { get; set; }
 
         [NotMapped]
         public decimal RatingRate { get; set; }
@@ -76,6 +75,7 @@ namespace FSAWebSystem.Models
     public enum ApprovalStatus
     {
         Pending,
+        WaitingNextLevel,
         Approved,
         Rejected,
         Cancelled

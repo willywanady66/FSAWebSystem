@@ -18,5 +18,6 @@ namespace FSAWebSystem.Services.Interface
         public ProposalHistoryPagingData GetProposalHistoryPagination(DataTableParam param, Guid userId, int month, int year);
 
         public Task<Proposal> GetProposalById(Guid proposalId);
+        public Task<Proposal> GetProposalByApprovalId(Guid approvalId);
     }
 }

@@ -2,21 +2,20 @@
 
 namespace FSAWebSystem.Models
 {
-    public class ApprovalDetail
+    public class ProposalDetail
     {
+
         public Guid Id { get; set; }
+        public Guid ProposalId { get; set; }
         public Guid ApprovalId { get; set; }
         public Guid WeeklyBucketId { get; set; }
         public decimal ProposeAdditional { get; set; }
-
-        public Approval Approval { get; set; }
+        [NotMapped]
+        public string BannerName { get; set; }
         [NotMapped]
         public string CDM { get; set; }
         [NotMapped]
         public string KAM { get; set; }
-
-        [NotMapped]
-        public string BannerName { get; set; }
         [NotMapped]
         public string PlantCode { get; set; }
         [NotMapped]
@@ -38,7 +37,5 @@ namespace FSAWebSystem.Models
         public decimal ValidBJ { get; set; }
         [NotMapped]
         public decimal RemFSA { get; set; }
-        [NotMapped]
-        public ProposalType? ProposalType { get; set; }
     }
 }

@@ -46,12 +46,30 @@ namespace FSAWebSystem.Services
             return uliCalendar;
         }
 
+        public IQueryable<ULICalendar> GetULICalendars()
+        {
+            return _db.ULICalendars.AsQueryable();
+        }
+
+
+
+        public IQueryable<ULICalendarDetail> GetULICalendarDetails()
+        {
+            return _db.ULICalendarDetails.AsQueryable();
+        }
+
+
         public async Task<FSACalendarHeader> GetFSACalendarById(Guid id)
         {
             var fsaCalendar = await _db.FSACalendarHeaders.Include(x => x.FSACalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Id == id);
             return fsaCalendar;
         }
 
+        public async Task<ULICalendar> GetULICalendarById(Guid id)
+        {
+            var uliCalendar = await _db.ULICalendars.Include(x => x.ULICalendarDetails.OrderBy(x => x.Week)).SingleOrDefaultAsync(x => x.Id == id);
+            return uliCalendar;
+        }
 
         public List<SelectListItem> GetListMonth()
         {

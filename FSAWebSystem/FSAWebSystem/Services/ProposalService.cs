@@ -210,7 +210,6 @@ namespace FSAWebSystem.Services
                                                           DescriptionMap = weeklyBucket.DescriptionMap,
                                                           ProposeAdditional = proposal.ProposeAdditional,
                                                           Rephase = proposal.Rephase,
-                                                          Reallocate = proposal.Reallocate,
                                                           Remark = proposal.Remark,
                                                           ApprovedRephase = 0,
                                                           ApprovedProposeAdditional = 0,
@@ -221,8 +220,13 @@ namespace FSAWebSystem.Services
                                     select new ProposalHistory
                                     {
                                         Proposal = proposal,
-                                        SubmittedAt = proposal.SubmittedAt.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-                                        ApprovedBy = String.Join(',', approval.ApprovedBy.Select(x => x.Name)),
+                                        Week = proposalHistory.Week,
+                                        Month = proposalHistory.Month,
+                                        SubmittedAt = proposalHistory.SubmittedAt,
+                                        Remark = proposalHistory.Remark,
+                                        ProposeAdditional = proposalHistory.ProposeAdditional,
+                                        Rephase = proposalHistory.Rephase,
+                                        ApprovedBy = approval.ApprovedBy,
                                         RejectionReason = approval.RejectionReason,
                                         ApprovalStatus = approval.ApprovalStatus.ToString()
                                     });
@@ -301,6 +305,12 @@ namespace FSAWebSystem.Services
         public async Task<Proposal> GetProposalById(Guid proposalId)
         {
             var proposal = await _db.Proposals.SingleOrDefaultAsync(x => x.Id == proposalId);
+            return proposal;
+        }
+
+        public async Task<Proposal> GetProposalByApprovalId(Guid approvalId)
+        {
+            var proposal = await _db.Proposals.Include(x => x.ProposalDetails).SingleOrDefaultAsync(x => x.ApprovalId == approvalId);
             return proposal;
         }
 

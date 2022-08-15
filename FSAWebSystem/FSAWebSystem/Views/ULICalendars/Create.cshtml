@@ -7,6 +7,7 @@
 	List<SelectListItem> listYears = ViewData["listYear"] as List<SelectListItem>;
 }
 
+<script src="~/js/ULICalendar/uliCalendar.js"></script>
 <h1>Create</h1>
 
 <h4>ULICalendar</h4>
@@ -46,9 +47,9 @@
 							{
 								<tr>
 									<td><span>@Html.EditorFor(Model => Model.ULICalendarDetails[i].Week, new {htmlAttributes = new { @class = "form-control" }})</span></td>
-									<td>@Html.EditorFor(Model => Model.ULICalendarDetails[i].StartDate, new {htmlAttributes = new { @class = "form-control" } }) </td>
+									<td>@Html.EditorFor(Model => Model.ULICalendarDetails[i].StartDate, new {htmlAttributes = new { @class = "form-control datePicker" } }) </td>
 									<td>To</td>
-									<td>@Html.EditorFor(Model => Model.ULICalendarDetails[i].EndDate, new {htmlAttributes = new { @class = "form-control" } }) </td>
+									<td>@Html.EditorFor(Model => Model.ULICalendarDetails[i].EndDate, new {htmlAttributes = new { @class = "form-control datePicker" } }) </td>
 									@Html.HiddenFor(Model => Model.ULICalendarDetails[i].Week)
 									@Html.HiddenFor(Model => Model.ULICalendarDetails[i].Id)
 								</tr>

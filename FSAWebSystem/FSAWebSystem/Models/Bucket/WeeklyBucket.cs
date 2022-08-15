@@ -24,6 +24,10 @@ namespace FSAWebSystem.Models.Bucket
         public string? CreatedBy { get; set; }
 
         [NotMapped]
+        public string CDM { get; set; }
+        [NotMapped]
+        public string KAM { get; set; }
+        [NotMapped]
         public string BannerName { get; set; }
         [NotMapped]
         public string PlantCode { get; set; }

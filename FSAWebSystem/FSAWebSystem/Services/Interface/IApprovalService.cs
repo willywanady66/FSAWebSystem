@@ -8,9 +8,9 @@ namespace FSAWebSystem.Services.Interface
         public  Task SaveApprovals(List<Approval> listApproval);
 
         public IQueryable<Approval> GetPendingApprovals();
-        public Task<ApprovalPagingData> GetApprovalPagination(DataTableParam param, int month, int year);
-        public Task<ApprovalPagingData> GetApprovalReallocatePagination(DataTableParam param, int month, int year);
+        public Task<ApprovalPagingData> GetApprovalPagination(DataTableParam param, int month, int year, UserUnilever user);
+        //public Task<ApprovalPagingData> GetApprovalReallocatePagination(DataTableParam param, int month, int year);
         public Task<Approval> GetApprovalById(Guid approvalId);
-        public Task<List<ApprovalDetail>> GetApprovalDetails(Guid approvalId);
+        public Task<Approval> GetApprovalDetails(Guid approvalId);
     }
 }

@@ -71,6 +71,7 @@ namespace FSAWebSystem.Controllers
         [HttpGet]
         public async Task<ActionResult> GetFSACalendar(string month, string year)
         {
+
             FSACalendarHeader fsaCalendar = await _calendarService.GetFSACalendarHeader(Convert.ToInt32(month), Convert.ToInt32(year));
             if (fsaCalendar != null)
             {
@@ -98,9 +99,45 @@ namespace FSAWebSystem.Controllers
                     data = listData
                 }) ;
             }
-
-
         }
+
+
+        [HttpGet]
+        public async Task<ActionResult> GetULICalendar(string month, string year)
+        {
+            try
+            {
+                ULICalendar uliCalendar = await _calendarService.GetULICalendar(Convert.ToInt32(month), Convert.ToInt32(year));
+                if (uliCalendar != null)
+                {
+                    var uliCalendarDetail = (from calendar in uliCalendar.ULICalendarDetails.Where(x => x.StartDate.HasValue && x.EndDate.HasValue && x.Week != 0)
+                                             select new
+                                             {
+                                                 StartDate = calendar.StartDate.Value.ToString("dd/MM/yyyy"),
+                                                 EndDate = calendar.EndDate.Value.ToString("dd/MM/yyyy"),
+                                                 Week = calendar.Week,
+                                                 Year = year,
+                                                 Month = month,
+                                                 Id = uliCalendar.Id
+                                             }).ToList();
+
+                    return Json(new
+                    {
+                        data = uliCalendarDetail
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+            var listData = new List<FSACalendarDetail>();
+            return Json(new
+            {
+                data = listData
+            });
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> GetUserPagination(DataTableParam param)

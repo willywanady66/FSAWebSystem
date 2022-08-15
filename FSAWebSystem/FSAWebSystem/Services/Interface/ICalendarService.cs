@@ -7,7 +7,10 @@ namespace FSAWebSystem.Services.Interface
     {
         public Task<FSACalendarHeader> GetFSACalendarHeader(int month, int year);
         public Task<ULICalendar> GetULICalendar(int month, int year);
+        public IQueryable<ULICalendar> GetULICalendars();
+        IQueryable<ULICalendarDetail> GetULICalendarDetails();
         public Task<FSACalendarHeader> GetFSACalendarById(Guid id);
+        public Task<ULICalendar> GetULICalendarById(Guid id);
         public Task<FSACalendarDetail> GetCalendarDetail(DateTime date); 
         public List<SelectListItem> GetListMonth();
 		public List<SelectListItem> GetListYear();

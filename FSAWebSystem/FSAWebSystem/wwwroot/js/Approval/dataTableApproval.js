@@ -8,35 +8,32 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "Approvals/GetApprovalPagination",
+            url: "/Approvals/GetApprovalPagination",
             type: "POST"
         },
         "columns": [
-            { "data": "submitDate" },  //0
-            { "data": "level1" }, //1
-            { "data": "level2" }, //2
-            { "data": "bannerName" }, //3
-            { "data": "pcMap" },       //4
-            { "data": "descriptionMap" }, //5
-            { "data": "proposeAdditional" },      //6
-            { "data": "rephase" }, //7
-            { "data": "remark" }, //8
-            { "data": "id" }, //9
-            { "data": "proposalId" } //10
-            //{ "data": "remark" }, //6
+            { "data": "proposalSubmitDate" },  //0
+            { "data": "bannerName" }, //1
+            { "data": "pcMap" },       //2
+            { "data": "descriptionMap" }, //3
+            { "data": "proposeAdditional" },      //4
+            { "data": "rephase" }, //5
+            { "data": "remark" }, //6
+            { "data": "id" }, //7
+           
         ],
        columnDefs: [
            {
-               "targets": [10],
+               "targets": [6],
                "className": "hide_column"
            },
             {
-                targets: 9,
+                targets: 7,
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
                     
-                    return `<a href="./ApprovalDetails/Index/${full.id}">
+                    return `<a href="/Approvals/Details/${full.id}">
                                 <i class="fas fa-eye"></i>
                             <a/>`;
                 }
@@ -52,25 +49,72 @@
         ],
     });
 
-    $("#dataTableApproval tbody").on('click', '#approveBtn', function () {
-        var data = approvalTable.row($(this).parents('tr')).data();
-        var proposalId = data.proposalId;
-        var approvalId = data.id;
-        var type = data.proposal.type;
+
+    var approvalDetailTable = $('#dataTableApprovalDetails').DataTable({
+        searching: false,
+        lengthChange: false,
+        ordering: false,
+        columnDefs: [
+            {
+                "targets": [10],
+                "render": function (data) {
+                    if (data < 0) {
+                        var val = '(' + data.toString().substring(1) + ')';
+                        data = '<p style="color:red">' + val + '</p>';
+                    }
+                    else {
+                        data = '<p>' + data + '</p>' 
+                    }
+                    return data;
+                }
+            },
+            {
+                "targets": [5, 6, 7, 8, 9],
+                "render": function (data) {
+                    if (data < 0) {
+                        data = '(' + data.toString().substring(1) + ')';
+                    }
+                    return data;
+                }
+            },
+        ]
+    });
+
+    $("#approveProposalBtn").click(function () {
+        
+        var approvalId = $('.approvalId').attr('value');
+
         $.ajax({
             type: "POST",
-            url: "Approvals/ApproveProposal",
-            data: { "proposalId": proposalId, "approvalId": approvalId, "type" : type },
+            url: "/Approvals/ApproveProposal",
+            data: { "approvalId": approvalId },
             success: function (data) {
-                var ul = document.getElementById('error-messages');
-                ul.innerHTML = '';
-                approvalTable.draw();
+                setTimeout(
+                    function () {
+                        window.location.href = "/Approvals/";
+                    }, 1500)
             }
         })
     });
 
 
+    $("#rejectProposalBtn").click(function () {
 
+        var approvalId = $('.approvalId').val();
+        var rejectionReason = $('#rejectionReason').val();
+        $.ajax({
+            type: "POST",
+            url: "/Approvals/RejectProposal",
+            data: { "approvalId": approvalId, "rejectionReason" : rejectionReason },
+            success: function (data) {
+                setTimeout(
+                function() {
+                    window.location.href = "/Approvals/";
+                }, 1500)
+                
+            }
+        })
+    });
 
     //var approvalReallocateTable = $('#dataTableApprovalReallocate').DataTable({
     //    "processing": true,

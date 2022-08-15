@@ -10,17 +10,13 @@ namespace FSAWebSystem.Models
         public int Year { get; set; }
         public Guid WeeklyBucketId { get; set; }    
         public decimal Rephase { get; set; }
-        [NotMapped]
-        public decimal ApprovedRephase { get; set; }
-        public decimal ProposeAdditional { get; set; }
-        [NotMapped]
-        public decimal ApprovedProposeAdditional { get; set; }
-        public decimal Reallocate { get; set; }
-        public Guid BannerTargetId { get; set; }
-        public string? Remark { get; set; }
 
+        public decimal ProposeAdditional { get; set; }
+
+        public string? Remark { get; set; }
         public ProposalType? Type { get; set; }
         public Guid ApprovalId { get; set; }
+        public List<ProposalDetail>? ProposalDetails { get; set; }
         public bool IsWaitingApproval { get; set; }
 
         public DateTime SubmittedAt { get; set; }
@@ -29,7 +25,15 @@ namespace FSAWebSystem.Models
 
 
         [NotMapped]
+        public decimal ApprovedRephase { get; set; }
+        [NotMapped]
+        public decimal ApprovedProposeAdditional { get; set; }
+        [NotMapped]
         public string BannerName { get; set; }
+        [NotMapped]
+        public string CDM { get; set; }
+        [NotMapped]
+        public string KAM { get; set; }
         [NotMapped]
         public Guid BannerId { get; set; }
         [NotMapped]
@@ -78,7 +82,10 @@ namespace FSAWebSystem.Models
 	{
         Rephase,
         ProposeAdditional,
-        Reallocate
-	}
+        ReallocateAcrossKAM,
+        ReallocateAcrossCDM,
+        ReallocateAcrossMT,
+        
+    }
 
  }

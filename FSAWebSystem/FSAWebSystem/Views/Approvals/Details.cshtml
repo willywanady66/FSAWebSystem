@@ -1,0 +1,161 @@
+﻿@model FSAWebSystem.Models.Approval
+
+@{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var bannerTarget = ViewData["BannerTarget"];
+	var bannerSource = ViewData["BannerSource"];
+	var type = ViewData["Type"];
+}
+
+
+<script src="~/js/Approval/dataTableApproval.js"></script>
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+	<h1 class="h3 mb-0 text-gray-800">Approval Details</h1>
+</div>
+<div class="text-danger">
+		@if (TempData["ErrorMessages"] != null)
+	{
+		<ul>
+			@foreach (var error in TempData["ErrorMessages"] as IEnumerable<string>)
+				{
+				<li>@Html.DisplayFor(Model => error)</li>
+				}
+		</ul>
+	}
+</div>
+<div class="card shadow mb-4 pt-4 pl-2">
+	<div class="card-header py-3">
+	</div>
+	<div class="card-body">
+		<div class="col-sm-12 col-md-8 col-lg-6">
+			<div>
+				<label>Week : </label>
+			<label>@Model.Week</label>
+			</div>
+			<div>
+				<label>Requested By: </label>
+				<label>@Model.RequestedBy </label>
+			</div>
+			<input type="hidden" class="approvalId" asp-for="Id" />
+
+		</div>
+		<div class="table-responsive">
+			<table class="table table-bordered" id="dataTableApprovalDetails" width="100%" cellspacing="0">
+				<thead>
+					<tr>
+						<th>CDM</th>
+						<th>KAM</th>
+						<th>Banner</th>
+						<th>PC Map</th>
+						<th>Description</th>
+						<th>Rating Rate</th>
+						<th>Monthly Bucket</th>
+						<th>Current Bucket</th>
+						<th>Next Week Bucket</th>
+						<th>Valid + BJ</th>
+						<th>REM FSA</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.ApprovalDetails)
+					{
+						<tr>
+							<td>@Html.DisplayFor(modelItem => item.CDM)</td>
+							<td>@Html.DisplayFor(modelItem => item.KAM)</td>
+							<td>@Html.DisplayFor(modelItem => item.BannerName)</td>
+							<td>@Html.DisplayFor(modelItem => item.PCMap)</td>
+							<td>@Html.DisplayFor(modelItem => item.DescriptionMap)</td>
+							<td>@Html.DisplayFor(modelItem => item.RatingRate)</td>
+							<td>@Html.DisplayFor(modelItem => item.MonthlyBucket)</td>
+							<td>@Html.DisplayFor(modelItem => item.CurrentBucket)</td>
+							<td>@Html.DisplayFor(modelItem => item.NextBucket)</td>
+							<td>@Html.DisplayFor(modelItem => item.ValidBJ)</td>
+							<td>
+								@Html.DisplayFor(modelItem => item.ProposeAdditional)	
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			@if(Model.ProposalType != ProposalType.ProposeAdditional)
+			{
+				<p class="pt-3">Note: This @type from <b>@bannerSource</b> Bucket to <b>@bannerTarget</b> Bucket  </p>
+			}
+			else
+			{
+				<p class="pt-3">Propose Additional</p>
+			}
+
+			<div>
+					<button id="openConfirmRejectModalBtn" class="btn btn-danger" data-toggle="modal" @(Model != null ? "" : "disabled")
+							data-target="#rejectProposalModal">
+						Reject
+					</button>
+					<button id="openConfirmApproveModalBtn" class="btn btn-primary float-right" data-toggle="modal" @(Model != null ? "" : "disabled")
+							data-target="#approveProposalModal">
+						Approve
+					</button>
+</div>
+				
+		</div>
+	</div>
+</div>
+
+
+
+<div class="modal fade" id="approveProposalModal" tabindex="-1" role="dialog"
+		 aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">
+						Approve Proposal?
+					</h5>
+					<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">Are you sure want to Approve Proposal?</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" id="approveProposalBtn"
+							data-dismiss="modal">
+						Approve
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+					<div class="modal fade" id="rejectProposalModal" tabindex="-1" role="dialog"
+		 aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">
+						Reject Proposal?
+					</h5>
+					<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p>Are you sure want to Reject this Proposal?</p>
+					<div>
+					<label>Rejection Reason: </label>
+				</div>
+				<div>
+					<textarea class="form-control" id="rejectionReason"></textarea>
+				</div>
+					</div>
+				
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-danger" id="rejectProposalBtn"
+							data-dismiss="modal">
+						Reject
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
