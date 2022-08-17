@@ -46,55 +46,50 @@ namespace FSAWebSystem.Models.Context
                 _db.SaveChanges();
             }
 
-
-           
             var user = Activator.CreateInstance<FSAWebSystemUser>();
-            user.Email = "admin@gmail.com";
-            user.UserName = user.Email;
-            user.UserUnileverId = Guid.NewGuid();
-            user.Role = "Administrator";
-            var res = await userManager.CreateAsync(user, "Administrator1*");
-            if(res.Succeeded)
+            user.Email = "admin@unilever.co.id";
+            var savedUser = await userManager.FindByEmailAsync(user.Email);
+            if(savedUser == null)
             {
-               
-                var userUnilever = new UserUnilever
+                user.UserName = user.Email;
+                user.UserUnileverId = Guid.NewGuid();
+                user.Role = "Administrator";
+                var res = await userManager.CreateAsync(user, "Administrator1*");
+                if (res.Succeeded)
                 {
-                    Id = (Guid)user.UserUnileverId,
-                    Password = "Administrator1*",
-                    Name = user.UserName,
-                    Email = user.Email,
-                    CreatedAt = DateTime.Now,
-                    CreatedBy = "System",
-                    RoleUnilever = await _roleService.GetRoleByName("Administrator")
-                };
+                    var userUnilever = new UserUnilever
+                    {
+                        Id = (Guid)user.UserUnileverId,
+                        Password = "Administrator1*",
+                        Name = user.UserName,
+                        Email = user.Email,
+                        CreatedAt = DateTime.Now,
+                        CreatedBy = "System",
+                        RoleUnilever = await _roleService.GetRoleByName("Administrator")
+                    };
 
-                await userManager.AddClaimAsync(user, new Claim("Menu", "Admin"));
-                await userManager.AddClaimAsync(user, new Claim("Menu", "Approval"));
-                await userManager.AddClaimAsync(user, new Claim("Menu", "Proposal"));
-                await userManager.AddClaimAsync(user, new Claim("Menu", "Report"));
-                if (!_db.UsersUnilever.Any())
-                {
-                    _db.UsersUnilever.Add(userUnilever);
+                    await userManager.AddClaimAsync(user, new Claim("Menu", "Admin"));
+                    await userManager.AddClaimAsync(user, new Claim("Menu", "Approval"));
+                    await userManager.AddClaimAsync(user, new Claim("Menu", "Proposal"));
+                    await userManager.AddClaimAsync(user, new Claim("Menu", "Report"));
+                    if (!_db.UsersUnilever.Any(x => x.Email == userUnilever.Email))
+                    {
+                        _db.UsersUnilever.Add(userUnilever);
+                    }
+                    try
+                    {
+                        _db.SaveChanges();
+                        Console.WriteLine("Success");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
-                try
-                {
-                    _db.SaveChanges();
-                    Console.WriteLine("Success");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-               
             }
-            else
-            {
-                var savedUser = await userManager.FindByEmailAsync(user.Email);
-                await userManager.AddClaimAsync(savedUser, new Claim("Menu", "Admin"));
-                await userManager.AddClaimAsync(savedUser, new Claim("Menu", "Approval"));
-                await userManager.AddClaimAsync(savedUser, new Claim("Menu", "Proposal"));
-                await userManager.AddClaimAsync(savedUser, new Claim("Menu", "Report"));
-            }
+       
+            
+          
 
             if(!_db.Menus.Any())
             {

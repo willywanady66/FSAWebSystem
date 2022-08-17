@@ -5,8 +5,16 @@
 	Layout = "~/Views/Shared/_Layout.cshtml";
 	List<SelectListItem> listMonths = ViewData["listMonth"] as List<SelectListItem>;
 	List<SelectListItem> listYears = ViewData["listYear"] as List<SelectListItem>;
+
 }
 
+<script>
+var submitProposalUrl = '@Url.Action("SaveProposal", "Proposals")';
+var getProposalPaginationUrl = '@Url.Action("GetProposalPagination", "Proposals")';
+var getProposalHistoryPaginationUrl = '@Url.Action("GetProposalHistoryPagination", "Proposals")';
+var getMonthlyHistoryUrl = '@Url.Action("GetMonthlyBucketHistoryPagination", "Proposals")';
+var getWeeklyHistoryUrl = '@Url.Action("GetWeeklyBucketHistoryPagination", "Proposals")';
+	</script>
 <script src="~/js/Proposal/dataTableProposal.js"></script>
 
 
@@ -25,113 +33,92 @@
 
 	<div class="row px-4 py-4">
 		<div class="col-4">
-			<label class="form-label d-inline">Month</label>
+			<label class="form-label d-inline">Month:</label>
 			<select class="form-control form-select" id="dropDownMonth" name="month"
 					asp-items="@listMonths"></select>
 		</div>
 		<div class="col-4"></div>
 		<div class="col-4">
-			<label class="form-label d-inline">Year</label>
+			<label class="form-label d-inline">Year:</label>
 			<select class="form-control form-select" id="dropDownYear" name="month"
 					asp-items="@listYears"></select>
 		</div>
 	</div>
-
-	<ul class="nav nav-tabs" id="myTab2" role="tablist">
-		<li class="nav-item waves-effect waves-light">
-			<a class="nav-link active" id="proposal-tab" data-toggle="tab" href="#proposal"
-			   role="tab" aria-controls="proposal" aria-selected="true">Proposal</a>
-		</li>
-@*		<li class="nav-item waves-effect waves-light">
-			<a class="nav-link" id="proposalReallocate-tab" data-toggle="tab"
-			   href="#proposalReallocate" role="tab" aria-control="proposalReallocate"
-			   aria-selected="false">Proposal Reallocate</a>
-		</li>*@
-	</ul>
-
-
-	<div class="tab-content" id="myTabContent2">
-		<div class="tab-pane fade active show" id="proposal" role="tabpanel"
-			 aria-labelledby="proposal-tab">
-			<div class="card-header py-3">
-				<h5 class="m-0 font-weight-bold text-primary d-inline">
-					Proposal
-				</h5>
-			</div>
-
-			<div class="card-body">
-				<div class="row" style="overflow-x:auto">
-					<table class="table table-bordered responsive" id="dataTableProposal" width="100%" cellspacing="0">
-						<thead>
-							<tr>
-								<th>Banner</th>
-								<th>Plant Name</th>
-								<th>PC Map</th>
-								<th>Description Map</th>
-								<th>RR</th>
-								<th>Monthly Bucket</th>
-								<th>Current Bucket</th>
-								<th>Next Week Bucket</th>
-								<th>Valid + BJ</th>
-								<th>REM FSA</th>
-								<th style="width:20%">Rephase</th>
-								<th style="width:20%">Propose Additional</th>
-								<th style="width:20%">Remark</th>
-								<th class="hide_column">WeeklyId</th>
-								<th class="hide_column">Id</th>
-								<th class="hide_column">ApprovalId</th>
-								<th class="hide_column">Waiting Approval</th>
-							</tr>
-						</thead>
-					</table>
-				</div>
-				<div class="row mt-5">
-					<button id="openConfirmSubmitModalBtn" class="btn btn-primary" data-toggle="modal"
-							data-target="#submitProposalModal">
-						Submit
-					</button>
-				</div>
-			</div>
+	<div class="row px-4 py-2">
+		<p id="week"></p>
+	</div>
+	<div class="card-body">
+		<div class="row" style="overflow-x:auto">
+			<table class="table table-bordered responsive" id="dataTableProposal" width="100%" cellspacing="0">
+				<thead>
+					<tr>
+						<th>Banner</th>
+						<th>Plant Name</th>
+						<th>PC Map</th>
+						<th>Description Map</th>
+						<th>RR</th>
+						<th>Monthly Bucket</th>
+						<th>Current Bucket</th>
+						<th>Next Week Bucket</th>
+						<th>Valid + BJ</th>
+						<th>REM FSA</th>
+						<th style="width:20%">Rephase</th>
+						<th style="width:20%">Propose Additional</th>
+						<th style="width:20%">Remark</th>
+						<th class="hide_column">WeeklyId</th>
+						<th class="hide_column">Id</th>
+						<th class="hide_column">ApprovalId</th>
+						<th class="hide_column">Waiting Approval</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+		<div class="row mt-5">
+			<button id="openConfirmSubmitModalBtn" class="btn btn-primary" data-toggle="modal"
+					data-target="#submitProposalModal">
+				Submit
+			</button>
 		</div>
 
+
 		@*<div class="tab-pane fade" id="proposalReallocate" role="tabpanel"
-			 aria-labelledby="proposalReallocate-tab">
-			<div class="card-header py-3">
-				<h5 class="m-0 font-weight-bold text-primary d-inline">
-					Proposal Reallocate
-				</h5>
-			</div>
-			<div class="card-body">
-				<div class="table-responsive">
-					<table class="table table-bordered" id="dataTableProposalReallocate" width="100%" cellspacing="0">
-						<thead>
-							<tr>
-								<th>Banner</th>
-								<th>Plant Code</th>
-								<th>Plant Name</th>
-								<th>PC Map</th>
-								<th>Category</th>
-								<th>Current Bucket</th>
-								<th style="width:20%">Reallocate Qty</th>
-				
-								<th style="width:20%">Banner Target</th>
-					
-								<th style="width:20%">Remark</th>
-								<th class="hide_column">Banner Id</th>
-								<th class="hide_column">WeeklyBucket Id</th>
-								<th class="hide_column">Proposal Id</th>
-								<th class="hide_column">Waiting Approval</th>
-							</tr>
-						</thead>
-					</table>
-				</div>
-				<div class="row mt-5">
-					<button class="btn btn-primary" data-toggle="modal"
-							data-target="#submitProposalReallocateModal">
-						Submit
-					</button>
-				</div>
-			</div>
+		aria-labelledby="proposalReallocate-tab">
+		<div class="card-header py-3">
+		<h5 class="m-0 font-weight-bold text-primary d-inline">
+		Proposal Reallocate
+		</h5>
+		</div>
+		<div class="card-body">
+		<div class="table-responsive">
+		<table class="table table-bordered" id="dataTableProposalReallocate" width="100%" cellspacing="0">
+		<thead>
+		<tr>
+		<th>Banner</th>
+		<th>Plant Code</th>
+		<th>Plant Name</th>
+		<th>PC Map</th>
+		<th>Category</th>
+		<th>Current Bucket</th>
+		<th style="width:20%">Reallocate Qty</th>
+
+		<th style="width:20%">Banner Target</th>
+
+		<th style="width:20%">Remark</th>
+		<th class="hide_column">Banner Id</th>
+		<th class="hide_column">WeeklyBucket Id</th>
+		<th class="hide_column">Proposal Id</th>
+		<th class="hide_column">Waiting Approval</th>
+		</tr>
+		</thead>
+		</table>
+		</div>
+		<div class="row mt-5">
+		<button class="btn btn-primary" data-toggle="modal"
+		data-target="#submitProposalReallocateModal">
+		Submit
+		</button>
+		</div>
+		</div>
 		</div>*@
 	</div>
 </div>
@@ -180,6 +167,7 @@
 							<tr>
 								<th>Submit Date</th>
 								<th>Week</th>
+								<th>ULI Week</th>
 								<th>Banner Name</th>
 								<th>Plant Name</th>
 								<th>PC Map</th>
@@ -246,6 +234,7 @@
 								<th>Year</th>
 								<th>Month</th>
 								<th>Week</th>
+								<th>ULI Week</th>
 								<th>Banner Name</th>
 								<th>Plant Name</th>
 								<th>PC Map</th>
@@ -284,26 +273,3 @@
 	</div>
 </div>
 
-
-<div class="modal fade" id="submitProposalReallocateModal" tabindex="-1" role="dialog"
-	 aria-labelledby="exampleModalLabel" aria-hidden="true">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="exampleModalLabel">
-					Submit Proposal Reallocate?
-				</h5>
-				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true">×</span>
-				</button>
-			</div>
-			<div class="modal-body">Are you sure want to Submit Proposal Reallocate?</div>
-			<div class="modal-footer">
-				<button type="submit" class="btn btn-primary" id="submitProposalReallocateBtn"
-						data-dismiss="modal">
-					Submit
-				</button>
-			</div>
-		</div>
-	</div>
-</div>

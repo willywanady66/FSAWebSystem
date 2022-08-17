@@ -16,6 +16,7 @@ namespace FSAWebSystem.Models.Bucket
 
         [NotMapped]
         public string UploadedDate { get; set; }
+        public string ULIWeek { get; set; }
         [NotMapped]
         public string PCMap { get; set; }
         [NotMapped]

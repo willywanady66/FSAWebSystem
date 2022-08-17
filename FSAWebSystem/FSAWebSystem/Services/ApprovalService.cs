@@ -209,6 +209,7 @@ namespace FSAWebSystem.Services
                 apprvl.Week = proposalThisApproval.Week;
                 apprvl.RequestedBy = (await _db.UsersUnilever.SingleAsync(x => x.Id == proposalThisApproval.SubmittedBy)).Email;
                 apprvl.ProposalType = proposalThisApproval.Type.Value;
+                apprvl.Remark = proposalThisApproval.Remark;
                 foreach (var detail in proposalThisApproval.ProposalDetails)
                 {
                     var approvalDetail = new ApprovalDetail();
@@ -227,6 +228,7 @@ namespace FSAWebSystem.Services
                     approvalDetail.ValidBJ = weeklyBucket.ValidBJ;
                     approvalDetail.RemFSA = weeklyBucket.RemFSA;
                     approvalDetail.ProposeAdditional = detail.ProposeAdditional;
+                    
                     apprvl.ApprovalDetails.Add(approvalDetail);
                 }
                 apprvl.ApprovalDetails = apprvl.ApprovalDetails.OrderByDescending(x => x.ProposeAdditional).ToList();

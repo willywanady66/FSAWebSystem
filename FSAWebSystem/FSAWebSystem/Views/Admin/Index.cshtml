@@ -9,18 +9,31 @@
 	List<SelectListItem> listYears = ViewData["listYear"] as List<SelectListItem>;
 }
 
+<script>
+	var getUsersUrl = '@Url.Action("GetUserPagination", "Admin")',
+	var getCategUrl = '@Url.Action("GetCategoryPagination", "Admin")',
+	var getWLUrl = '@Url.Action("GetWorkLevelPagination", "Admin")',
+	var getSKUUrl = '@Url.Action("GetSKUPagination", "Admin")',
+	var getFSACal = '@Url.Action("GetFSACalendar", "Admin")',
+	var getULICal = '@Url.Action("GetULICalendar", "Admin")',
+	var editUserUrl = '@Url.Action("Edit", "UserUnilevers")';
+	var editBannerUrl = '@Url.Action("Edit", "Banners")';
+	var editSKUUrl = '@Url.Action("Edit", "SKUs")';
+	var editFSACalUrl = '@Url.Action("Edit", "FSACalendarHeaders")';
+	var editULICalUrl = '@Url.Action("Edit", "ULICalendars")';
+</script>
 
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
 	<h1 class="h3 mb-0 text-gray-800">Admin</h1>
 </div>
 <div class="text-danger">
-		@if (TempData["ErrorMessages"] != null)
+	@if (TempData["ErrorMessages"] != null)
 	{
 		<ul>
 			@foreach (var error in TempData["ErrorMessages"] as IEnumerable<string>)
-				{
+			{
 				<li>@Html.DisplayFor(Model => error)</li>
-				}
+			}
 		</ul>
 	}
 </div>
@@ -141,7 +154,7 @@
 		<div class="tab-pane fade @(tab == "Calendar" || string.IsNullOrEmpty(tab) ? " active show" : "")" id="calendar" role="tabpanel" aria-labelledby="calendar-tab">
 			<div class="card-header py-3">
 				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-calendar"></i> Calendar</h5>
-				<a asp-area="" asp-controller="FSACalendarHeaders" asp-action="Create"><button class="btn btn-primary float-right m-0 "><i class="fas fa-plus"></i> Add FSA Calendar</button></a>
+				<a asp-controller="FSACalendarHeaders" asp-action="Create"><button class="btn btn-primary float-right m-0 "><i class="fas fa-plus"></i> Add FSA Calendar</button></a>
 			</div>
 			<div class="card-body">
 				<div class="row pb-2">
@@ -155,8 +168,8 @@
 						<select class="form-control form-select" id="dropDownYear" name="month" asp-items="@listYears"></select>
 					</div>
 				</div>
-				
-				
+
+
 				<div class="table-responsive">
 					<table class="table table-bordered" id="dataTableCalendar" width="100%" cellspacing="0">
 						<thead>
@@ -177,42 +190,42 @@
 		<div class="tab-pane fade @(tab == "ULI Calendar" ? " active show" : "")" id="uliCalendar" role="tabpanel" aria-labelledby="uliCalendar-tab">
 			<div class="card-header py-3">
 				<h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-file"></i> ULI Calendar</h5>
-				<a asp-area="" asp-controller="ULICalendars" asp-action="Create"><button class="btn btn-primary float-right m-0 "><i class="fas fa-plus"></i> Add ULI Calendar</button></a>
+				<a asp-controller="ULICalendars" asp-action="Create"><button class="btn btn-primary float-right m-0 "><i class="fas fa-plus"></i> Add ULI Calendar</button></a>
 			</div>
 			<div class="card-body">
 				<div class="row">
 					<div class="card-body">
-				<div class="row pb-2">
-					<div class="col-4">
-						<label class="form-label d-inline">Month</label>
-						<select class="form-control form-select" id="dropDownMonthULI" name="monthULI" asp-items="@listMonths"></select>
+						<div class="row pb-2">
+							<div class="col-4">
+								<label class="form-label d-inline">Month</label>
+								<select class="form-control form-select" id="dropDownMonthULI" name="monthULI" asp-items="@listMonths"></select>
+							</div>
+							<div class="col-4"></div>
+							<div class="col-4">
+								<label class="form-label d-inline">Year</label>
+								<select class="form-control form-select" id="dropDownYearULI" name="yearULI" asp-items="@listYears"></select>
+							</div>
+						</div>
+
+
+						<div class="table-responsive">
+							<table class="table table-bordered" id="dataTableUliCalendar" width="100%" cellspacing="0">
+								<thead>
+									<tr>
+										<th>Week</th>
+										<th>Start Date</th>
+										<th>End Date</th>
+										<th>Year</th>
+										<th>Month</th>
+										<th width="10px">Action</th>
+									</tr>
+								</thead>
+							</table>
+						</div>
 					</div>
-					<div class="col-4"></div>
-					<div class="col-4">
-						<label class="form-label d-inline">Year</label>
-						<select class="form-control form-select" id="dropDownYearULI" name="yearULI" asp-items="@listYears"></select>
-					</div>
-				</div>
-				
-				
-				<div class="table-responsive">
-					<table class="table table-bordered" id="dataTableUliCalendar" width="100%" cellspacing="0">
-						<thead>
-							<tr>
-								<th>Week</th>
-								<th>Start Date</th>
-								<th>End Date</th>
-								<th>Year</th>
-								<th>Month</th>
-								<th width="10px">Action</th>
-							</tr>
-						</thead>
-					</table>
-				</div>
-				</div>
 				</div>
 			</div>
-			</div>
+		</div>
 
 
 		<div class="tab-pane fade @(tab == "UploadDoc" ? " active show" : "")" id="uploadDoc" role="tabpanel" aria-labelledby="uploadDoc-tab">
@@ -238,7 +251,7 @@
 								<input class="col-9 file-input form-control" id="excelDocument" name="excelDocument" type="file" />
 							</div>
 							<div class="form-group">
-								<input class="btn btn-primary" type="submit" value="Upload" />
+								<input class="btn btn-primary uploadDoc" type="submit" value="Upload" />
 								@*<button value="Upload" class="btn btn-primary" asp-controller="UploadDocument" asp-action="UploadFile">Upload</button>*@
 							</div>
 						</form>
@@ -283,18 +296,6 @@
 								<th class="text-center">Action</th>
 							</tr>
 						</thead>
-@*						<tbody>
-							@foreach (var banner in Model.Banners)
-							{
-								<tr>
-									<td>@Html.DisplayFor(Model => banner.Trade)</td>
-									<td>@Html.DisplayFor(Model => banner.BannerName)</td>
-									<td>@Html.DisplayFor(Model => banner.PlantName)</td>
-									<td>@Html.DisplayFor(Model => banner.PlantCode)</td>
-									<td class="text-center"><a asp-action="Delete" asp-controller="Banners" asp-route-id="@banner.Id"><i class="fas fa-trash"></i></a></td>
-								</tr>
-							}
-						</tbody>*@
 					</table>
 				</div>
 			</div>
@@ -317,18 +318,18 @@
 								<th>Action</th>
 							</tr>
 						</thead>
-					@*	<tbody>
-							@if (Model.SKUs != null)
-							{
-								@foreach (var sku in Model.SKUs)
-								{
-									<tr>
-										<td>@Html.DisplayFor(Model => sku.PCMap)</td>
-										<td>@Html.DisplayFor(Model => sku.DescriptionMap)</td>
-										<td>@Html.DisplayFor(Model => sku.ProductCategory.CategoryProduct)</td>
-									</tr>
-								}
-							}
+						@*	<tbody>
+						@if (Model.SKUs != null)
+						{
+						@foreach (var sku in Model.SKUs)
+						{
+						<tr>
+						<td>@Html.DisplayFor(Model => sku.PCMap)</td>
+						<td>@Html.DisplayFor(Model => sku.DescriptionMap)</td>
+						<td>@Html.DisplayFor(Model => sku.ProductCategory.CategoryProduct)</td>
+						</tr>
+						}
+						}
 						</tbody>*@
 					</table>
 				</div>
@@ -351,18 +352,6 @@
 								<th>Category</th>
 							</tr>
 						</thead>
-@*						<tbody>
-							@if (Model.Categories != null)
-							{
-								@foreach (var category in Model.Categories.Select((categ, index) => new { categ.CategoryProduct, Index = index + 1 }))
-								{
-									<tr>
-										<td>@Html.DisplayFor(categories => category.Index)</td>
-										<td>@Html.DisplayFor(categories => category.CategoryProduct)</td>
-									</tr>
-								}
-							}
-						</tbody>*@
 					</table>
 				</div>
 			</div>
@@ -370,6 +359,21 @@
 
 	</div>
 </div>
+
+<script>
+	$('.uploadDoc').click(function() {
+        Swal.fire({
+            title: 'Loading...',
+            html: 'Uploading Document',
+            timerProgressBar: true,
+			allowOutsideClick: false,
+			showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading()
+            },
+        });
+	})
+</script>
 
 
 

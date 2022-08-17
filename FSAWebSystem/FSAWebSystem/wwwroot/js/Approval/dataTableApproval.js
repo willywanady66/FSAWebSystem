@@ -8,7 +8,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "/Approvals/GetApprovalPagination",
+            url: approvalPaginationUrl,
             type: "POST"
         },
         "columns": [
@@ -33,20 +33,15 @@
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
                     
-                    return `<a href="/Approvals/Details/${full.id}">
+                    return `<a href="${approvalDetailUrl}/${full.id}">
                                 <i class="fas fa-eye"></i>
                             <a/>`;
                 }
             }
-            //{
-            //    targets: 10,
-            //    orderable: false,
-            //    className: 'text-center',
-            //    "render": function (data, type, full, meta) {
-            //        return `<button class="btn btn-danger">Reject</button>`
-            //    }
-            //}
-        ],
+       ],
+       error: {
+
+       }
     });
 
 
@@ -86,12 +81,12 @@
 
         $.ajax({
             type: "POST",
-            url: "/Approvals/ApproveProposal",
+            url: approveUrl,
             data: { "approvalId": approvalId },
             success: function (data) {
                 setTimeout(
                     function () {
-                        window.location.href = "/Approvals/";
+                        window.location.href = indexUrl;
                     }, 1500)
             }
         })
@@ -104,12 +99,12 @@
         var rejectionReason = $('#rejectionReason').val();
         $.ajax({
             type: "POST",
-            url: "/Approvals/RejectProposal",
+            url: rejectUrl,
             data: { "approvalId": approvalId, "rejectionReason" : rejectionReason },
             success: function (data) {
                 setTimeout(
                 function() {
-                    window.location.href = "/Approvals/";
+                    window.location.href = index;
                 }, 1500)
                 
             }

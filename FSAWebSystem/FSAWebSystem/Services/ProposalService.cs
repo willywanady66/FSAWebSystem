@@ -57,7 +57,7 @@ namespace FSAWebSystem.Services
                                  ApprovalId = p != null ? p.ApprovalId : Guid.Empty
                              }) ;
 
-            var proposal2 = (from proposal in proposals.Where(x => x.SubmittedBy == userId || x.SubmittedBy == Guid.Empty)
+            var proposal2 = (from proposal in proposals
                              join approval in _db.Approvals.Where(x => x.ApprovalStatus == ApprovalStatus.Pending) on proposal.ApprovalId equals approval.Id into approvalGroup
                              from apprvl in approvalGroup.DefaultIfEmpty()
                              select new Proposal
@@ -277,6 +277,12 @@ namespace FSAWebSystem.Services
             //}
             var totalCount = proposalHistories.Count();
             var listProposalHistory = proposalHistories.Skip(param.start).Take(param.length).ToList();
+            foreach(var proposalHistory in listProposalHistory)
+            {
+                var submitDate = DateTime.Parse(proposalHistory.SubmittedAt);
+                var uliCalendarDetail = _db.ULICalendarDetails.SingleOrDefault(x => submitDate.Date >= x.StartDate.Value.Date && submitDate.Date <= x.EndDate);
+                proposalHistory.ULIWeek = uliCalendarDetail != null ? uliCalendarDetail.Week.ToString() : string.Empty;
+            }
             return new ProposalHistoryPagingData
             {
                 totalRecord = totalCount,

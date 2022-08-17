@@ -48,41 +48,76 @@ namespace FSAWebSystem.Controllers
         // GET: Approvals/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {
+            var canApprove = true;
             if (id == null || _context.ApprovalDetail == null)
             {
                 return NotFound();
             }
 
-            var approval = await _approvalService.GetApprovalDetails((Guid)id);
-
-            if(approval != null)
+            try
             {
-                var bannerTarget = approval.ApprovalDetails.SingleOrDefault(x => x.ProposeAdditional > 0).BannerName;
-                ViewData["BannerSource"] = approval.ApprovalDetails.SingleOrDefault(x => x.ProposeAdditional < 0).BannerName;
+                var approval = await _approvalService.GetApprovalDetails((Guid)id);
+                if (approval != null)
+                {
+                    var user = await _userManager.GetUserAsync(User);
+                    var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
+                    var bannerTarget = approval.ApprovalDetails.SingleOrDefault(x => x.ProposeAdditional > 0).BannerName;
+                    var workLevel = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
+                    ViewData["BannerSource"] = approval.ApprovalDetails.SingleOrDefault(x => x.ProposeAdditional < 0).BannerName;
 
+                    if (workLevel == "KAM WL 2" || workLevel == "CDM WL 3" || workLevel == "VP MTDA" || workLevel == "CORE VP")
+                    {
+                        if (approval.Level != 2)
+                        {
+                            canApprove = false;
+                        }
+                    }
+                    else if (workLevel == "SOM MT WL 1" || workLevel == "SOM MT WL 2" || workLevel == "CD DIRECTOR")
+                    {
+                        if (approval.Level != 1)
+                        {
+                            canApprove = false;
+                        }
+                    }
+                    else if (workLevel == "CCD")
+                    {
+                        if (approval.Level != 3)
+                        {
+                            canApprove = false;
+                        }
+                    }
 
-                if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
-                {
-                    ViewData["Type"] = "Reallocate Across KAM";
+                    if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
+                    {
+                        ViewData["Type"] = "Reallocate Across KAM";
+                    }
+                    else if (approval.ProposalType == ProposalType.ReallocateAcrossCDM)
+                    {
+                        ViewData["Type"] = "Reallocate Across CDM";
+                    }
+                    else if (approval.ProposalType == ProposalType.ReallocateAcrossMT)
+                    {
+                        ViewData["Type"] = "Reallocate Across MT";
+                    }
+                    else
+                    {
+                        ViewData["Type"] = "Propose Additional";
+                    }
+                    ViewData["CanApprove"] = canApprove;
+                    return View(approval);
                 }
-                else if (approval.ProposalType == ProposalType.ReallocateAcrossCDM)
-                {
-                    ViewData["Type"] = "Reallocate Across CDM";
-                }
-                else if (approval.ProposalType == ProposalType.ReallocateAcrossMT)
-                {
-                    ViewData["Type"] = "Reallocate Across MT";
-                }
-                else
-                {
-                    ViewData["Type"] = "Propose Additional";
-                }
-                return View(approval);
             }
+            catch (Exception ex)
+            {
 
-            return NotFound();
-            
+            }
+            return View();
+                
         }
+
+
+ 
+   
 
         [Authorize(Policy = ("ApprovalPage"))]
         [HttpPost]
@@ -107,34 +142,15 @@ namespace FSAWebSystem.Controllers
             }
             catch (Exception ex)
             {
-
+                listData = Json(new
+                {
+                    error = ex.Message
+                });
             }
             return listData;
         }
 
-		//[HttpPost]
-  //      public async Task<IActionResult> GetApprovalReallocatePagination(DataTableParam param)
-		//{
-  //          var listData = Json(new { });
-  //          try
-  //          {
 
-  //              var currentDate = DateTime.Now;
-  //              var data = await _approvalService.GetApprovalReallocatePagination(param, currentDate.Month, currentDate.Year);
-  //              listData = Json(new
-  //              {
-  //                  draw = param.draw,
-  //                  recordsTotal = data.totalRecord,
-  //                  recordsFiltered = data.totalRecord,
-  //                  data = data.approvals
-  //              });
-  //          }
-  //          catch (Exception ex)
-  //          {
-
-  //          }
-  //          return listData;
-  //      }
         // GET: Approvals/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
@@ -151,50 +167,14 @@ namespace FSAWebSystem.Controllers
             return View(approval);
         }
 
-        // POST: Approvals/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,ProposalId,SubmittedBy,SubmittedAt,ApprovalStatus,RejectionReason,ApprovedBy,ApprovedAt")] Approval approval)
-        {
-            if (id != approval.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(approval);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ApprovalExists(approval.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(approval);
-        }
+      
 
         [Authorize(Policy = ("ApprovalPage"))]
-
         [HttpPost]
         public async Task<IActionResult> ApproveProposal(Guid approvalId)
         {
             try
             {
-                
-
                 var user = await _userManager.GetUserAsync(User);
                 var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
                 var currDate = DateTime.Now;

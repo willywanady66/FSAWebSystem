@@ -10,14 +10,14 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
 	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-	
-		<script src="~/lib/jquery/dist/jquery.min.js"></script>
 
-@*<script src="http://cdn.datatables.net/1.10.7/js/jquery.dataTables.js"></script>*@
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+	@*<script src="http://cdn.datatables.net/1.10.7/js/jquery.dataTables.js"></script>*@
 	<script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
 	<script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
-<script src="~/js/Admin/datatables-rowsgroup.js"></script>
+	<script src="~/js/Admin/datatables-rowsgroup.js"></script>
 
 	<link href="~/css/sb-admin-2.css" rel="stylesheet">
 	<link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
@@ -27,12 +27,12 @@
 	<script src="~/js/ULICalendar/uliCalendar.js"></script>
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
-
+	<script src="~/vendor/swal/sweetalert2.all.min.js"></script>
 </head>
 
 <style>
 	.hide_column {
-		display : none;
+		display: none;
 	}</style>
 
 
@@ -60,53 +60,52 @@
 
 				<!-- Heading -->
 				<!-- Nav Item - Dashboard -->
-		
-					@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Report"))
-					{
-						<li class="nav-item active ">
-							<a class="nav-link text-center" asp-area="" asp-controller="Home" asp-action="Privacy">
-						<h5 class="font-weight-bold">REPORT</h5>
-					</a>
-				</li>
-				<hr class="sidebar-divider"> </hr>
-					}
+				@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Report"))
+				{
+					<li class="nav-item active ">
+						<a class="nav-link text-center" asp-area="" asp-controller="Home" asp-action="Privacy">
+							<h5 class="font-weight-bold">REPORT</h5>
+						</a>
+					</li>
+					<hr class="sidebar-divider"> </hr>
+				}
 
 
-				
-
-					@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Proposal"))
-					{
-						<li class="nav-item active">
-							<a class="nav-link text-center" asp-area="" asp-controller="Proposals" asp-action="Index">
-								<h5 class="font-weight-bold">PROPOSAL</h5>
-							</a>
-						</li>
-
-						<hr class="sidebar-divider"> </hr>
-					}
-				
 
 
-					@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Approval"))
-					{
-						<li class="nav-item active">
-							<a class="nav-link text-center" asp-area="" asp-controller="Approvals" asp-action="Index">
-								<h5 class="font-weight-bold">APPROVAL</h5>
-							</a>
-						</li>
-						<hr class="sidebar-divider"> </hr>
-					}
-				
-					@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Admin"))
-					{
-						<li class="nav-item active">
-							<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
-								<h5 class="font-weight-bold">ADMIN</h5>
-							</a>
-						</li>
-						<hr class="sidebar-divider"> </hr>
-					}
-				
+				@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Proposal"))
+				{
+					<li class="nav-item active">
+						<a class="nav-link text-center" asp-area="" asp-controller="Proposals" asp-action="Index">
+							<h5 class="font-weight-bold">PROPOSAL</h5>
+						</a>
+					</li>
+
+					<hr class="sidebar-divider"> </hr>
+				}
+
+
+
+				@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Approval"))
+				{
+					<li class="nav-item active">
+						<a class="nav-link text-center" asp-area="" asp-controller="Approvals" asp-action="Index">
+							<h5 class="font-weight-bold">APPROVAL</h5>
+						</a>
+					</li>
+					<hr class="sidebar-divider"> </hr>
+				}
+
+				@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Admin"))
+				{
+					<li class="nav-item active">
+						<a class="nav-link text-center" asp-area="" asp-controller="Admin" asp-action="Index">
+							<h5 class="font-weight-bold">ADMIN</h5>
+						</a>
+					</li>
+					<hr class="sidebar-divider"> </hr>
+				}
+
 			</ul>
 		}
 
@@ -185,12 +184,7 @@
 	<script src="~/js/bootstrap-multiselect.js"></script>
 	<script src="~/js/bootstrap-multiselect.min.js"></script>
 
-	<!-- Page level plugins -->
-	<!-- Page level plugins -->
 
-
-	<!-- Page level custom scripts -->
-	<!-- Page level custom scripts -->
 	@await Component.InvokeAsync("Notyf")
 	@await RenderSectionAsync("Scripts", required: false)
 

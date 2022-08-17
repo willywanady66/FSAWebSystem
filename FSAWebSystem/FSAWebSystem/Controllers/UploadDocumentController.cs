@@ -250,6 +250,8 @@ namespace FSAWebSystem.Controllers
             }
             else
             {
+                errorMessages.Add("Please Select File.");
+                TempData["ErrorMessages"] = errorMessages;
                 _notyfService.Error("Please Select File.");
             }
 

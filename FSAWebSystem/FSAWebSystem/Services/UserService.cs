@@ -86,7 +86,7 @@ namespace FSAWebSystem.Services
 
         public async Task<UserUnilever> GetUser(Guid id)
         {
-            var userUnilever = await _db.UsersUnilever.Include(x => x.Banners).Include(x => x.RoleUnilever).SingleOrDefaultAsync(x => x.Id == id);
+            var userUnilever = await _db.UsersUnilever.Include(x => x.Banners).Include(x => x.RoleUnilever.Menus).SingleOrDefaultAsync(x => x.Id == id);
             return userUnilever;
         }
 

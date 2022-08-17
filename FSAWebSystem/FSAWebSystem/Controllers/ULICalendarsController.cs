@@ -280,7 +280,7 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Year,CreatedAt,CreatedBy,ModifiedAt,ModifiedBy")] ULICalendar uLICalendar, List<ULICalendarDetail> uLICalendarDetails)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Month,Year,CreatedAt,CreatedBy,ModifiedAt,ModifiedBy")] ULICalendar uLICalendar, List<ULICalendarDetail> uLICalendarDetails)
         {
             ViewData["ListMonth"] = _calendarService.GetListMonth();
             ViewData["ListYear"] = _calendarService.GetListYear();

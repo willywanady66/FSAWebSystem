@@ -49,6 +49,7 @@ namespace FSAWebSystem.Services
 
             var totalCount = monthlyBucketHistories.Count();
             var listMonthlyBucketHistory = await monthlyBucketHistories.Skip(param.start).Take(param.length).ToListAsync();
+
             return new MonthlyBucketHistoryPagingData
             {
                 totalRecord = totalCount,
@@ -89,6 +90,13 @@ namespace FSAWebSystem.Services
 
             var totalCount = weeklyBucketHistories.Count();
             var listWeeklyBucketHistory = await weeklyBucketHistories.Skip(param.start).Take(param.length).ToListAsync();
+           
+            foreach (var weeklyBucketHistory in listWeeklyBucketHistory)
+            {
+                var uploadDate = DateTime.Parse(weeklyBucketHistory.UploadedDate);
+                var uliCalendarDetail = _db.ULICalendarDetails.SingleOrDefault(x => uploadDate.Date >= x.StartDate.Value.Date && uploadDate.Date <= x.EndDate);
+                weeklyBucketHistory.ULIWeek = uliCalendarDetail != null ? uliCalendarDetail.Week.ToString() : string.Empty;
+            }
             return new WeeklyBucketHistoryPagingData
             {
                 totalRecord = totalCount,

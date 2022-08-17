@@ -5,7 +5,13 @@
 	Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-
+<script type="text/javascript">
+	var approvalPaginationUrl = '@Url.Action("GetApprovalPagination", "Approvals")';
+	var approveUrl = '@Url.Action("ApproveProposal", "Approvals")';
+	var rejectUrl = '@Url.Action("RejectProposal", "Approvals")';
+	var indexUrl = '@Url.Action("Index", "Approvals")';
+	var approvalDetailUrl = '@Url.Action("Details", "Approvals")';
+</script>
 <script src="~/js/Approval/dataTableApproval.js"></script>
 
 <div class="text-danger">
@@ -25,12 +31,12 @@
 					<tr class="text-center">
 						<th class="align-middle">Submit Date</th>
 						<th class="align-middle">Banner</th>
-						<th  class="align-middle">PC Map</th>
-						<th  class="align-middle">Description</th>
-						<th  class="align-middle">Propose Additional FSA</th>
-						<th  class="align-middle">Rephase</th>
-						<th  class="align-middle">Remark</th>
-						<th  class="align-middle">View</th>
+						<th class="align-middle">PC Map</th>
+						<th class="align-middle">Description</th>
+						<th class="align-middle">Propose Additional FSA</th>
+						<th class="align-middle">Rephase</th>
+						<th class="align-middle">Remark</th>
+						<th class="align-middle">View</th>
 					</tr>
 				</thead>
 			</table>

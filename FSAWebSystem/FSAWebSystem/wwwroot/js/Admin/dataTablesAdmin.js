@@ -4,7 +4,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "Admin/GetUserPagination",
+            url: getUsersUrl,
             type: "POST"
         },
         "columns": [
@@ -29,15 +29,13 @@
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
 
-                    return `<a href="./UserUnilevers/Edit/${full.userId}">
+                    return `<a href="${editUserUrl}/${full.userId}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
 
                     return null;
 
                 }
-
-
             }
         ],
         "rowCallback": function (row, data, index) {
@@ -123,7 +121,7 @@
             orderable: false,
             className: 'text-center',
             "render": function (data, type, full, meta) {
-                return `<a href="./SKUs/Edit/${full.id}">
+                return `<a href="{editSKUUrl}/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
             }
@@ -143,7 +141,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "Admin/GetWorkLevelPagination",
+            url: getWLUrl,
             type: "POST"
         },
         "columns": [
@@ -211,7 +209,7 @@
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    return `<a href="./FSACalendarHeaders/Edit/${full.id}">
+                    return `<a href="${editFSACalUrl}/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
                 }
@@ -279,7 +277,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "Admin/GetULICalendar",
+            url: getULICal,
             type: "GET",
             data: function (d) {
                 return $.extend(d, { "month": monthUli, "year": yearUli });
@@ -299,7 +297,7 @@
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    return `<a href="./ULICalendars/Edit/${full.id}">
+                    return `<a href="${editULICalUrl}/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
                 }

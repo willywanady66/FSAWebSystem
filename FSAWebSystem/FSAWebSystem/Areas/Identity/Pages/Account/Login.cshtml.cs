@@ -109,10 +109,10 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync()
         {
-            string returnUrl = Url.Content("~/");
+            string returnUrl = Url.Content("~/Home");
+            Console.WriteLine(returnUrl);
 
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
+         
             if (ModelState.IsValid)
             {
                 var userUnilever = await _userService.GetUserByEmail(Input.Email);

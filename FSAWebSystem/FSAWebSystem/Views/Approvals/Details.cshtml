@@ -6,21 +6,28 @@
 	var bannerTarget = ViewData["BannerTarget"];
 	var bannerSource = ViewData["BannerSource"];
 	var type = ViewData["Type"];
+	bool canApprove = (bool)ViewData["CanApprove"];
 }
 
-
+<script type="text/javascript">
+		var approvalPaginationUrl = '@Url.Action("GetApprovalPagination", "Approvals")';
+	var approveUrl = '@Url.Action("ApproveProposal", "Approvals")';
+	var rejectUrl = '@Url.Action("RejectProposal", "Approvals")';
+	var indexUrl = '@Url.Action("Index", "Approvals")';
+	var approvalDetailUrl = '@Url.Action("Details", "Approvals")';
+	</script>
 <script src="~/js/Approval/dataTableApproval.js"></script>
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
 	<h1 class="h3 mb-0 text-gray-800">Approval Details</h1>
 </div>
 <div class="text-danger">
-		@if (TempData["ErrorMessages"] != null)
+	@if (TempData["ErrorMessages"] != null)
 	{
 		<ul>
 			@foreach (var error in TempData["ErrorMessages"] as IEnumerable<string>)
-				{
+			{
 				<li>@Html.DisplayFor(Model => error)</li>
-				}
+			}
 		</ul>
 	}
 </div>
@@ -29,16 +36,26 @@
 	</div>
 	<div class="card-body">
 		<div class="col-sm-12 col-md-8 col-lg-6">
+			@if(!canApprove)
+			{
+				<div>
+				<h3 style="color:green">Approved!</h3>
+			</div>
+			}
+			
 			<div>
 				<label>Week : </label>
-			<label>@Model.Week</label>
+				<label>@Model.Week</label>
+			</div>
+			<div>
+				<label>Remark: </label>
+				<label>@Model.Remark </label>
 			</div>
 			<div>
 				<label>Requested By: </label>
 				<label>@Model.RequestedBy </label>
 			</div>
 			<input type="hidden" class="approvalId" asp-for="Id" />
-
 		</div>
 		<div class="table-responsive">
 			<table class="table table-bordered" id="dataTableApprovalDetails" width="100%" cellspacing="0">
@@ -72,13 +89,13 @@
 							<td>@Html.DisplayFor(modelItem => item.NextBucket)</td>
 							<td>@Html.DisplayFor(modelItem => item.ValidBJ)</td>
 							<td>
-								@Html.DisplayFor(modelItem => item.ProposeAdditional)	
+								@Html.DisplayFor(modelItem => item.ProposeAdditional)
 							</td>
 						</tr>
 					}
 				</tbody>
 			</table>
-			@if(Model.ProposalType != ProposalType.ProposeAdditional)
+			@if (Model.ProposalType != ProposalType.ProposeAdditional)
 			{
 				<p class="pt-3">Note: This @type from <b>@bannerSource</b> Bucket to <b>@bannerTarget</b> Bucket  </p>
 			}
@@ -88,16 +105,15 @@
 			}
 
 			<div>
-					<button id="openConfirmRejectModalBtn" class="btn btn-danger" data-toggle="modal" @(Model != null ? "" : "disabled")
-							data-target="#rejectProposalModal">
-						Reject
-					</button>
-					<button id="openConfirmApproveModalBtn" class="btn btn-primary float-right" data-toggle="modal" @(Model != null ? "" : "disabled")
-							data-target="#approveProposalModal">
-						Approve
-					</button>
-</div>
-				
+				<button id="openConfirmRejectModalBtn" class="btn btn-danger" data-toggle="modal" @(Model != null && canApprove ? "" : "disabled")
+						data-target="#rejectProposalModal">
+					Reject
+				</button>
+				<button id="openConfirmApproveModalBtn" class="btn btn-primary float-right" data-toggle="modal" @(Model != null && canApprove ? "" : "disabled")
+						data-target="#approveProposalModal">
+					Approve
+				</button>
+			</div>
 		</div>
 	</div>
 </div>
@@ -105,57 +121,57 @@
 
 
 <div class="modal fade" id="approveProposalModal" tabindex="-1" role="dialog"
-		 aria-labelledby="exampleModalLabel" aria-hidden="true">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">
-						Approve Proposal?
-					</h5>
-					<button class="close" type="button" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">×</span>
-					</button>
-				</div>
-				<div class="modal-body">Are you sure want to Approve Proposal?</div>
-				<div class="modal-footer">
-					<button type="submit" class="btn btn-primary" id="approveProposalBtn"
-							data-dismiss="modal">
-						Approve
-					</button>
-				</div>
+	 aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">
+					Approve Proposal?
+				</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">Are you sure want to Approve Proposal?</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-primary" id="approveProposalBtn"
+						data-dismiss="modal">
+					Approve
+				</button>
 			</div>
 		</div>
 	</div>
+</div>
 
 
-					<div class="modal fade" id="rejectProposalModal" tabindex="-1" role="dialog"
-		 aria-labelledby="exampleModalLabel" aria-hidden="true">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">
-						Reject Proposal?
-					</h5>
-					<button class="close" type="button" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">×</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<p>Are you sure want to Reject this Proposal?</p>
-					<div>
+<div class="modal fade" id="rejectProposalModal" tabindex="-1" role="dialog"
+	 aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">
+					Reject Proposal?
+				</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p>Are you sure want to Reject this Proposal?</p>
+				<div>
 					<label>Rejection Reason: </label>
 				</div>
 				<div>
 					<textarea class="form-control" id="rejectionReason"></textarea>
 				</div>
-					</div>
-				
-				<div class="modal-footer">
-					<button type="submit" class="btn btn-danger" id="rejectProposalBtn"
-							data-dismiss="modal">
-						Reject
-					</button>
-				</div>
+			</div>
+
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-danger" id="rejectProposalBtn"
+						data-dismiss="modal">
+					Reject
+				</button>
 			</div>
 		</div>
 	</div>
+</div>
