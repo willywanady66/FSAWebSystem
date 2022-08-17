@@ -493,7 +493,7 @@ namespace FSAWebSystem.Controllers
                 {
                     if(currDate.DayOfWeek >= DayOfWeek.Friday && currDate.DayOfWeek <= DayOfWeek.Sunday && fSACalendarDetail.Week == 4)
                     {
-                        errorMessages.Add(string.Format("Cannot request Propose Additional on Week 4 after Friday"));
+                        errorMessages.Add(string.Format("Cannot request Propose Additional after Thursday on Week 4"));
                     }
                 }
             }

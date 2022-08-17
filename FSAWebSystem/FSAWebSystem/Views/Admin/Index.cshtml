@@ -10,12 +10,13 @@
 }
 
 <script>
-	var getUsersUrl = '@Url.Action("GetUserPagination", "Admin")',
-	var getCategUrl = '@Url.Action("GetCategoryPagination", "Admin")',
-	var getWLUrl = '@Url.Action("GetWorkLevelPagination", "Admin")',
-	var getSKUUrl = '@Url.Action("GetSKUPagination", "Admin")',
-	var getFSACal = '@Url.Action("GetFSACalendar", "Admin")',
-	var getULICal = '@Url.Action("GetULICalendar", "Admin")',
+var getUsersUrl = '@Url.Action("GetUserPagination", "Admin")';
+var getCategUrl = '@Url.Action("GetCategoryPagination", "Admin")';
+var getWLUrl = '@Url.Action("GetWorkLevelPagination", "Admin")';
+var getSKUUrl = '@Url.Action("GetSKUPagination", "Admin")';
+var getCategUrl = '@Url.Action("GetCategoryPagination", "Admin")';
+var getFSACal = '@Url.Action("GetFSACalendar", "Admin")';
+var getULICal = '@Url.Action("GetULICalendar", "Admin")';
 	var editUserUrl = '@Url.Action("Edit", "UserUnilevers")';
 	var editBannerUrl = '@Url.Action("Edit", "Banners")';
 	var editSKUUrl = '@Url.Action("Edit", "SKUs")';
@@ -23,6 +24,7 @@
 	var editULICalUrl = '@Url.Action("Edit", "ULICalendars")';
 </script>
 
+<script src="~/js/Admin/dataTablesAdmin.js"></script>
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
 	<h1 class="h3 mb-0 text-gray-800">Admin</h1>
 </div>
@@ -81,7 +83,7 @@
 		<div class="tab-pane fade" id="worklevels" role="tabpanel" aria-labelledby="wl-tab">
 			<div class="card-header py-3">
 				<h5 class="m-0 font-weight-bold text-primary d-inline">Work Level</h5>
-				<a asp-controller="WorkLevels" asp-action="Create"><button class="btn btn-primary float-right m-0"><i class="fas fa-plus"></i> Add Work Level</button></a>
+				@*<a asp-controller="WorkLevels" asp-action="Create"><button class="btn btn-primary float-right m-0"><i class="fas fa-plus"></i> Add Work Level</button></a>*@
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">
@@ -90,8 +92,7 @@
 							<tr>
 								<th>No.</th>
 								<th>Work Level</th>
-								<th>Status</th>
-								<th>Action</th>
+								@*<th>Status</th>*@
 							</tr>
 						</thead>
 					</table>

@@ -83,7 +83,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "Admin/GetCategoryPagination",
+            url: getCategUrl,
             type: "POST"
         },
         "columns": [
@@ -106,7 +106,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "Admin/GetSKUPagination",
+            url: getSKUUrl,
             type: "POST"
         },
         "columns": [
@@ -147,8 +147,8 @@
         "columns": [
             { "data": "id" }, //0
             { "data": "wl" },  //1
-            { "data": "status" },  //2
-            { "data": "id" }  //3
+            //{ "data": "status" },  //2
+            //{ "data": "id" }  //3
 
         ],
         columnDefs: [
@@ -160,16 +160,16 @@
                     return meta.row + 1 + meta.settings._iDisplayStart;
                 }
             },
-            {
-                targets: 3,
-                orderable: false,
-                className: 'text-center',
-                "render": function (data, type, full, meta) {
-                    return `<a href="./WorkLevels/Edit/${full.id}">
-                                <i class="fas fa-pen"></i>
-                            <a/>`
-                }
-            }
+            //{
+            //    targets: 3,
+            //    orderable: false,
+            //    className: 'text-center',
+            //    "render": function (data, type, full, meta) {
+            //        return `<a href="./WorkLevels/Edit/${full.id}">
+            //                    <i class="fas fa-pen"></i>
+            //                <a/>`
+            //    }
+            //}
         ],
         "rowCallback": function (row, data, index) {
             if (data.status == "Active") {

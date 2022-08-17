@@ -340,22 +340,7 @@ namespace FSAWebSystem.Controllers
                 var usersToAdd = new List<UserUnilever>();
 
                 var savedWorkLevels = _userService.GetAllWorkLevel() as IEnumerable<WorkLevel>;
-                var worklevelFromExcel = listUser.Select(x => x.WLName).Distinct().ToList();
-                var worklevelToAdd = worklevelFromExcel.Where(x => !savedWorkLevels.Select(y => y.WL).ToList().Contains(x)).ToList();
-
-
-                IEnumerable<WorkLevel> listWorkLevel = (from worklevel in worklevelToAdd
-                                                        select worklevel).Select(x => new WorkLevel { Id = Guid.NewGuid(), WL = x, CreatedAt = DateTime.Now, CreatedBy = loggedUser, FSADocumentId = fSADocument.Id }).AsEnumerable();
-
-                listWorkLevel = !listWorkLevel.Any() ? savedWorkLevels : listWorkLevel;
-
-                if (worklevelToAdd.Any())
-                {
-                    _userService.SaveWorkLevels(listWorkLevel.ToList());
-                }
-                _db.SaveChanges();
-
-                savedWorkLevels = _userService.GetAllWorkLevel() as IEnumerable<WorkLevel>;
+  
                 var savedBanners = _bannerService.GetAllActiveBanner();
                 var groupUser = listUser.GroupBy(x => x.Email);
                 foreach (var group in groupUser)
@@ -415,7 +400,6 @@ namespace FSAWebSystem.Controllers
                         await _userManager.AddPasswordAsync(savedUserLogin, group.First().Password);
                         await _userManager.UpdateAsync(savedUserLogin);
                     }
-
                 }
 
 
@@ -975,6 +959,7 @@ namespace FSAWebSystem.Controllers
             List<string> columnToCheck = new List<string>();
             var savedBanners = _bannerService.GetAllActiveBanner();
             var savedRoles = _roleService.GetAllRoles();
+            var savedWLs = _userService.GetAllWorkLevel();
             columnToCheck.Add("Name");
             columnToCheck.Add("WLName");
             columnToCheck.Add("Role");
@@ -1017,6 +1002,11 @@ namespace FSAWebSystem.Controllers
                 {
                     errorMessages.Add("There are more than 1 WL Name on Email: " + grp.Key);
                 }
+                if (!savedWLs.Any(x => x.WL == groupWl.First().Key))
+                {
+                    errorMessages.Add("Work Level: " + groupWl.First().Key + " on Email: " + grp.Key + " doesnt exist in database!");
+                }
+
 
 
                 var groupRole = grp.GroupBy(x => x.Role);

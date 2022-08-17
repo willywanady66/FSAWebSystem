@@ -249,7 +249,7 @@ namespace FSAWebSystem.Controllers
                 uLICalendar.CreatedAt = DateTime.Now;
                 _context.Add(uLICalendar);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Admin");
             }
             return View(uLICalendar);
         }
@@ -387,7 +387,7 @@ namespace FSAWebSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Admin");
             }
             return View(uLICalendar);
         }
