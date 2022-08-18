@@ -5,7 +5,6 @@
 
     function redrawTable() {
         tableProposals.draw();
-        tableProposalsReallocate.draw();
         tableHistory.draw();
         tableMonthlyBucketHistory.draw();
         tableWeeklyBucketHistory.draw();

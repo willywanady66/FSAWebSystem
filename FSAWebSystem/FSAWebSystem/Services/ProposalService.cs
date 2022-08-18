@@ -210,7 +210,7 @@ namespace FSAWebSystem.Services
             var listProposalHistory = proposalHistories.Skip(param.start).Take(param.length).ToList();
             foreach(var proposalHistory in listProposalHistory)
             {
-                var submitDate = DateTime.Parse(proposalHistory.SubmittedAt);
+                var submitDate = DateTime.ParseExact(proposalHistory.SubmittedAt, "dd/MM/yyyy", CultureInfo.InvariantCulture);
                 var uliCalendarDetail = _db.ULICalendarDetails.SingleOrDefault(x => submitDate.Date >= x.StartDate.Value.Date && submitDate.Date <= x.EndDate);
                 proposalHistory.ULIWeek = uliCalendarDetail != null ? uliCalendarDetail.Week.ToString() : string.Empty;
             }
