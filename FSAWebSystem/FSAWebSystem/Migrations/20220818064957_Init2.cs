@@ -4,20 +4,20 @@
 
 namespace FSAWebSystem.Migrations
 {
-    public partial class Init53 : Migration
+    public partial class Init2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<decimal>(
-                name: "ApprovedProposeAdditional",
-                table: "Proposals",
+                name: "Rephase",
+                table: "ProposalDetails",
                 type: "decimal(18,2)",
                 nullable: false,
                 defaultValue: 0m);
 
             migrationBuilder.AddColumn<decimal>(
-                name: "ApprovedRephase",
-                table: "Proposals",
+                name: "Rephase",
+                table: "ApprovalDetail",
                 type: "decimal(18,2)",
                 nullable: false,
                 defaultValue: 0m);
@@ -26,12 +26,12 @@ namespace FSAWebSystem.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "ApprovedProposeAdditional",
-                table: "Proposals");
+                name: "Rephase",
+                table: "ProposalDetails");
 
             migrationBuilder.DropColumn(
-                name: "ApprovedRephase",
-                table: "Proposals");
+                name: "Rephase",
+                table: "ApprovalDetail");
         }
     }
 }

@@ -84,7 +84,7 @@ namespace FSAWebSystem.Services
             var userBannerIds = user.Banners.Select(x => x.Id).ToList();
             if(workLevel == "KAM WL 2")
             {
-                approvals = approvals.Where(x => x.ProposalType == ProposalType.Rephase || x.ProposalType == ProposalType.ReallocateAcrossKAM && x.Level == 2 && userBannerIds.Contains(x.BannerId));
+                approvals = approvals.Where(x => (x.ProposalType == ProposalType.Rephase || x.ProposalType == ProposalType.ReallocateAcrossKAM) && x.Level == 2 && userBannerIds.Contains(x.BannerId));
             }
             else if(workLevel == "SOM MT WL 1")
             {
@@ -129,74 +129,7 @@ namespace FSAWebSystem.Services
             };
 
         }
-         
-  //      public async Task<ApprovalPagingData> GetApprovalReallocatePagination(DataTableParam param, int month, int year)
-		//{
-  //          var approvals = (from approval in _db.Approvals
-  //                           join proposal in (from proposal in _db.Proposals
-  //                                             join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
-  //                                                                   //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
-  //                                                                   join banner in _db.Banners on weeklyBucket.BannerId equals banner.Id
-  //                                                                   join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
-  //                                                                   select new WeeklyBucket
-  //                                                                   {
-  //                                                                       Id = weeklyBucket.Id,
-  //                                                                       BannerName = banner.BannerName,
-  //                                                                       PlantName = banner.PlantName,
-  //                                                                       PCMap = sku.PCMap,
-  //                                                                       DescriptionMap = sku.DescriptionMap,
-  //                                                                   }) on proposal.WeeklyBucketId equals weeklyBucket.Id
-  //                                                                   join bannerTarget in _db.Banners on proposal.BannerTargetId equals bannerTarget.Id
-  //                                             select new Proposal
-  //                                             {
-  //                                                 Id = proposal.Id,
-  //                                                 BannerName = weeklyBucket.BannerName,
-  //                                                 PlantName = weeklyBucket.PlantName,
-  //                                                 PCMap = weeklyBucket.PCMap,
-  //                                                 DescriptionMap = weeklyBucket.DescriptionMap,
-  //                                                 ProposeAdditional = proposal.ProposeAdditional,
-  //                                                 Rephase = proposal.Rephase,
-  //                                                 Reallocate = proposal.Reallocate,
-  //                                                 Remark = proposal.Remark,
-  //                                                 BannerNameTarget = bannerTarget.BannerName,
-  //                                                 PlantCodeTarget = bannerTarget.PlantCode,
-  //                                                 PlantNameTarget = bannerTarget.PlantName,
-  //                                                 Type = proposal.Type,
-  //                                                 //Year = proposal.Year,
-  //                                                 //Month = proposal.Month,
-  //                                                 Week = proposal.Week
-  //                                             }) on approval.Id equals proposal.ApprovalId
-  //                                             where approval.ApprovalStatus == ApprovalStatus.Pending
-  //                                             && approval.ProposalType == ProposalType.Reallocate
-  //                           select new Approval
-  //                           {
-  //                               ProposalId = proposal.Id,
-  //                               Proposal = proposal,
-  //                               Id= approval.Id,
-  //                               SubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
-  //                               BannerName = proposal.BannerName,
-  //                               PCMap = proposal.PCMap,
-  //                               DescriptionMap = proposal.DescriptionMap,
-  //                               Remark = proposal.Remark,
-  //                               Week = proposal.Week,
-  //                               Level1 = "",
-  //                               Level2 = ""
-  //                           });
 
-
-  //          if (!string.IsNullOrEmpty(param.search.value))
-  //          {
-  //              var search = param.search.value.ToLower();
-  //              approvals = approvals.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search));
-  //          }
-  //          var totalCount = approvals.Count();
-  //          var listApproval = approvals.Skip(param.start).Take(param.length).ToList();
-  //          return new ApprovalPagingData
-  //          {
-  //              totalRecord = totalCount,
-  //              approvals = listApproval
-  //          };
-		//}
 
         public async Task<Approval> GetApprovalDetails(Guid approvalId)
         {
@@ -210,6 +143,7 @@ namespace FSAWebSystem.Services
                 apprvl.RequestedBy = (await _db.UsersUnilever.SingleAsync(x => x.Id == proposalThisApproval.SubmittedBy)).Email;
                 apprvl.ProposalType = proposalThisApproval.Type.Value;
                 apprvl.Remark = proposalThisApproval.Remark;
+
                 foreach (var detail in proposalThisApproval.ProposalDetails)
                 {
                     var approvalDetail = new ApprovalDetail();
@@ -227,8 +161,15 @@ namespace FSAWebSystem.Services
                     approvalDetail.NextBucket = apprvl.Week <= 4 ? Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (apprvl.Week + 1).ToString()).GetValue(weeklyBucket, null)) : 0;
                     approvalDetail.ValidBJ = weeklyBucket.ValidBJ;
                     approvalDetail.RemFSA = weeklyBucket.RemFSA;
-                    approvalDetail.ProposeAdditional = detail.ProposeAdditional;
-                    
+                    if (proposalThisApproval.Type == ProposalType.Rephase)
+                    {
+                        approvalDetail.Rephase = detail.Rephase;
+                    }
+                    else
+                    {
+                        approvalDetail.ProposeAdditional = detail.ProposeAdditional;  
+                    }
+
                     apprvl.ApprovalDetails.Add(approvalDetail);
                 }
                 apprvl.ApprovalDetails = apprvl.ApprovalDetails.OrderByDescending(x => x.ProposeAdditional).ToList();

@@ -12,14 +12,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    [Migration("20220722041645_Init44")]
-    partial class Init44
+    [Migration("20220818064957_Init2")]
+    partial class Init2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.7")
+                .HasAnnotation("ProductVersion", "6.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -110,6 +110,66 @@ namespace FSAWebSystem.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("FSAWebSystem.Models.Approval", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProposalType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("UserUnileverId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserUnileverId");
+
+                    b.ToTable("Approvals");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.ApprovalDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApprovalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ProposeAdditional")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Rephase")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("WeeklyBucketId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovalId");
+
+                    b.ToTable("ApprovalDetail");
+                });
+
             modelBuilder.Entity("FSAWebSystem.Models.Banner", b =>
                 {
                     b.Property<Guid>("Id")
@@ -117,6 +177,10 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("BannerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CDM")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -133,6 +197,10 @@ namespace FSAWebSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
+
+                    b.Property<string>("KAM")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
@@ -165,6 +233,13 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<Guid>("BannerId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("FSADocumentId")
                         .HasColumnType("uniqueidentifier");
@@ -268,6 +343,45 @@ namespace FSAWebSystem.Migrations
                     b.ToTable("WeeklyBuckets");
                 });
 
+            modelBuilder.Entity("FSAWebSystem.Models.Bucket.WeeklyBucketHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BannerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("DispatchConsume")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SKUId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ULIWeek")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Week")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WeeklyBucketHistories");
+                });
+
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarDetail", b =>
                 {
                     b.Property<Guid>("Id")
@@ -296,7 +410,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("FSACalendarHeaderId");
 
-                    b.ToTable("FSACalendarDetail");
+                    b.ToTable("FSACalendarDetails");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarHeader", b =>
@@ -325,7 +439,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FSACalendarHeader");
+                    b.ToTable("FSACalendarHeaders");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.FSADocument", b =>
@@ -352,6 +466,21 @@ namespace FSAWebSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FSADocuments");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.Menu", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Menus");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.ProductCategory", b =>
@@ -390,11 +519,11 @@ namespace FSAWebSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ApprovalStatus")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ApprovalId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ApprovedBy")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool>("IsWaitingApproval")
+                        .HasColumnType("bit");
 
                     b.Property<int>("Month")
                         .HasColumnType("int");
@@ -402,11 +531,7 @@ namespace FSAWebSystem.Migrations
                     b.Property<decimal>("ProposeAdditional")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("RejectionReason")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Remark")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Rephase")
@@ -415,9 +540,11 @@ namespace FSAWebSystem.Migrations
                     b.Property<DateTime>("SubmittedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("SubmittedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("SubmittedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("Type")
+                        .HasColumnType("int");
 
                     b.Property<int>("Week")
                         .HasColumnType("int");
@@ -433,32 +560,75 @@ namespace FSAWebSystem.Migrations
                     b.ToTable("Proposals");
                 });
 
-            modelBuilder.Entity("FSAWebSystem.Models.RoleAccess", b =>
+            modelBuilder.Entity("FSAWebSystem.Models.ProposalDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("AccessActivity")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Menu")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("RoleUnileverId")
+                    b.Property<Guid>("ApprovalId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("SubMenu")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("ProposalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ProposeAdditional")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Rephase")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("WeeklyBucketId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoleUnileverId");
+                    b.HasIndex("ProposalId");
 
-                    b.ToTable("RoleAccesses");
+                    b.ToTable("ProposalDetails");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.ProposalHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApprovalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ProposalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ProposeAdditional")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Remark")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Rephase")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("SubmittedAt")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("SubmittedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Week")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProposalHistories");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.RoleUnilever", b =>
@@ -466,6 +636,19 @@ namespace FSAWebSystem.Migrations
                     b.Property<Guid>("RoleUnileverId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
@@ -520,6 +703,66 @@ namespace FSAWebSystem.Migrations
                     b.ToTable("SKUs");
                 });
 
+            modelBuilder.Entity("FSAWebSystem.Models.ULICalendar", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ULICalendars");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.ULICalendarDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ULICalendarId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Week")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ULICalendarId");
+
+                    b.ToTable("ULICalendarDetails");
+                });
+
             modelBuilder.Entity("FSAWebSystem.Models.UserUnilever", b =>
                 {
                     b.Property<Guid>("Id")
@@ -554,7 +797,14 @@ namespace FSAWebSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("RoleUnileverId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("WLId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -577,10 +827,19 @@ namespace FSAWebSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("FSADocumentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WL")
                         .IsRequired()
@@ -589,6 +848,21 @@ namespace FSAWebSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("WorkLevels");
+                });
+
+            modelBuilder.Entity("MenuRoleUnilever", b =>
+                {
+                    b.Property<Guid>("MenusId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoleUnileversRoleUnileverId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("MenusId", "RoleUnileversRoleUnileverId");
+
+                    b.HasIndex("RoleUnileversRoleUnileverId");
+
+                    b.ToTable("MenuRoleUnilever");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -743,6 +1017,24 @@ namespace FSAWebSystem.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("FSAWebSystem.Models.Approval", b =>
+                {
+                    b.HasOne("FSAWebSystem.Models.UserUnilever", null)
+                        .WithMany("Approvals")
+                        .HasForeignKey("UserUnileverId");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.ApprovalDetail", b =>
+                {
+                    b.HasOne("FSAWebSystem.Models.Approval", "Approval")
+                        .WithMany("ApprovalDetails")
+                        .HasForeignKey("ApprovalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Approval");
+                });
+
             modelBuilder.Entity("FSAWebSystem.Models.Bucket.MonthlyBucket", b =>
                 {
                     b.HasOne("FSAWebSystem.Models.FSADocument", "FSADocument")
@@ -761,15 +1053,13 @@ namespace FSAWebSystem.Migrations
                         .HasForeignKey("FSACalendarHeaderId");
                 });
 
-            modelBuilder.Entity("FSAWebSystem.Models.RoleAccess", b =>
+            modelBuilder.Entity("FSAWebSystem.Models.ProposalDetail", b =>
                 {
-                    b.HasOne("FSAWebSystem.Models.RoleUnilever", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleUnileverId")
+                    b.HasOne("FSAWebSystem.Models.Proposal", null)
+                        .WithMany("ProposalDetails")
+                        .HasForeignKey("ProposalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.SKU", b =>
@@ -783,6 +1073,15 @@ namespace FSAWebSystem.Migrations
                     b.Navigation("ProductCategory");
                 });
 
+            modelBuilder.Entity("FSAWebSystem.Models.ULICalendarDetail", b =>
+                {
+                    b.HasOne("FSAWebSystem.Models.ULICalendar", null)
+                        .WithMany("ULICalendarDetails")
+                        .HasForeignKey("ULICalendarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("FSAWebSystem.Models.UserUnilever", b =>
                 {
                     b.HasOne("FSAWebSystem.Models.RoleUnilever", "RoleUnilever")
@@ -792,6 +1091,21 @@ namespace FSAWebSystem.Migrations
                         .IsRequired();
 
                     b.Navigation("RoleUnilever");
+                });
+
+            modelBuilder.Entity("MenuRoleUnilever", b =>
+                {
+                    b.HasOne("FSAWebSystem.Models.Menu", null)
+                        .WithMany()
+                        .HasForeignKey("MenusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FSAWebSystem.Models.RoleUnilever", null)
+                        .WithMany()
+                        .HasForeignKey("RoleUnileversRoleUnileverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -845,9 +1159,29 @@ namespace FSAWebSystem.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("FSAWebSystem.Models.Approval", b =>
+                {
+                    b.Navigation("ApprovalDetails");
+                });
+
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarHeader", b =>
                 {
                     b.Navigation("FSACalendarDetails");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.Proposal", b =>
+                {
+                    b.Navigation("ProposalDetails");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.ULICalendar", b =>
+                {
+                    b.Navigation("ULICalendarDetails");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.UserUnilever", b =>
+                {
+                    b.Navigation("Approvals");
                 });
 #pragma warning restore 612, 618
         }

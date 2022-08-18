@@ -4,20 +4,20 @@
 
 namespace FSAWebSystem.Migrations
 {
-    public partial class Init40 : Migration
+    public partial class Init3 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Test",
-                table: "WorkLevels");
+                name: "ULIWeek",
+                table: "WeeklyBucketHistories");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "Test",
-                table: "WorkLevels",
+                name: "ULIWeek",
+                table: "WeeklyBucketHistories",
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "");

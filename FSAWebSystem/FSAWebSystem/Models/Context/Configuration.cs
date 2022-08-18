@@ -9,6 +9,42 @@ namespace FSAWebSystem.Models.Context
     {
         public static async void Initialize(FSAWebSystemDbContext _db, UserManager<FSAWebSystemUser> userManager, IRoleService _roleService)
         {
+
+            if (!_db.Menus.Any())
+            {
+                var listMenus = new List<Menu>
+                {
+                    //new Menu
+                    //{
+                    //    Id = Guid.NewGuid(),
+                    //    Name = "Dashboard"
+                    //},
+                    new Menu
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Report"
+                    },
+                    new Menu
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Proposal"
+                    },
+                    new Menu
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Approval"
+                    },
+                    new Menu
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Admin"
+                    }
+                };
+                _db.AddRange(listMenus);
+                _db.SaveChanges();
+            }
+
+
             if (!_db.RoleUnilevers.Any())
             {
                 var listRole = new List<RoleUnilever>
@@ -18,21 +54,25 @@ namespace FSAWebSystem.Models.Context
                         RoleUnileverId = Guid.NewGuid(),
                         RoleName = "Administrator",
                         CreatedAt = DateTime.Now,
-                        CreatedBy = "System"
+                        CreatedBy = "System",
+                        Menus = _db.Menus.ToList()
+
                     },
                     new RoleUnilever
                     {
                         RoleUnileverId = Guid.NewGuid(),
                         RoleName = "Approver",
                         CreatedAt = DateTime.Now,
-                        CreatedBy = "System"
+                        CreatedBy = "System",
+                        Menus = _db.Menus.Where(x => x.Name == "Approval").ToList()
                     },
                     new RoleUnilever
                     {
                         RoleUnileverId = Guid.NewGuid(),
                         RoleName = "Requestor",
                         CreatedAt = DateTime.Now,
-                        CreatedBy = "System"
+                        CreatedBy = "System",
+                        Menus = _db.Menus.Where(x => x.Name == "Proposal").ToList()
                     },
                     new RoleUnilever
                     {
@@ -45,6 +85,53 @@ namespace FSAWebSystem.Models.Context
                 _db.RoleUnilevers.AddRange(listRole);
                 _db.SaveChanges();
             }
+
+            var listWL = new List<WorkLevel>();
+            var wls = new List<string>()
+            {
+                "KAM WL 1",
+                "KAM WL 2",
+                "SOM MT WL 1",
+                "SOM MT WL 2",
+                "CDM WL 3",
+                "VP MTDA",
+                "CCD",
+                "CORE VP",
+            };
+            if(_db.WorkLevels.Any())
+            {
+                var wlInDb = _db.WorkLevels.Where(x => wls.Contains(x.WL)).Select(x => x.WL).ToList();
+                var wlToInsert = wls.Except(wlInDb);
+                foreach(var wl in wlToInsert)
+                {
+                    var worklevel = new WorkLevel();
+                    worklevel.IsActive = true;
+                    worklevel.Id = Guid.NewGuid();
+                    worklevel.WL = wl;
+                    worklevel.CreatedAt = DateTime.Now;
+                    worklevel.CreatedBy = "System";
+                    listWL.Add(worklevel);
+                }
+
+            }
+            else
+            {
+                var workLevels = wls.Select(x => new WorkLevel
+                {
+                    Id = Guid.NewGuid(),
+                    IsActive = true,
+                    WL = x,
+                    CreatedAt = DateTime.Now,
+                    CreatedBy = "System"
+                });
+
+                listWL.AddRange(workLevels);
+            }
+
+            _db.WorkLevels.AddRange(listWL);
+            _db.SaveChanges();
+
+            
 
             var user = Activator.CreateInstance<FSAWebSystemUser>();
             user.Email = "admin@unilever.co.id";
@@ -91,39 +178,7 @@ namespace FSAWebSystem.Models.Context
             
           
 
-            if(!_db.Menus.Any())
-            {
-                var listMenus = new List<Menu>
-                {
-                    //new Menu
-                    //{
-                    //    Id = Guid.NewGuid(),
-                    //    Name = "Dashboard"
-                    //},
-                    new Menu
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Report"
-                    },
-                    new Menu
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Proposal"
-                    },
-                    new Menu
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Approval"
-                    },
-                    new Menu
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Admin"
-                    }   
-                };
-                _db.AddRange(listMenus);
-                _db.SaveChanges();
-            }
+           
         }
 
         

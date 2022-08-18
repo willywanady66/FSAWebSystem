@@ -241,6 +241,9 @@
             else if (data.approvalStatus == "Rejected") {
                 $('td:eq(10)', row).css({ color: "red" });
             }
+        },
+        error: function(error){
+            var zz = error;
         }
     });
 

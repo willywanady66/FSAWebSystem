@@ -4,6 +4,10 @@ namespace FSAWebSystem.Models
 {
     public class Proposal
     {
+        public Proposal()
+        {
+            ProposalDetails = new List<ProposalDetail>();
+        }          
         public Guid Id { get; set; }
         public int Week { get; set; }
         public int Month { get; set; }
