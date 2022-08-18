@@ -9,50 +9,6 @@ namespace FSAWebSystem.Models.Context
     {
         public static async void Initialize(FSAWebSystemDbContext _db, UserManager<FSAWebSystemUser> userManager, IRoleService _roleService)
         {
-            var wls = new List<string>
-            {
-                "KAM WL 1",
-                "KAM WL 2",
-                "SOM WL 1",
-                "SOM WL 2",
-                "CDM WL 3",
-                "VP MTDA",
-                "CCD",
-                "CORE VP"
-            };
-            var listWorklevel = new List<WorkLevel>();
-            if (_db.WorkLevels.Any())
-            {
-                var existedWL = _db.WorkLevels.Where(p => wls.Contains(p.WL)).Select(p => p.WL).ToList();
-
-                var nonExistedWLs = wls.Except(existedWL)
-                    .Select(wl => new WorkLevel
-                    {
-                        Id = Guid.NewGuid(),
-                        WL = wl,
-                        CreatedAt = DateTime.Now,
-                        CreatedBy = "System",
-                        IsActive = true
-                    });
-
-                listWorklevel.AddRange(nonExistedWLs);
-            }
-            else
-            {
-                var workLevels = wls.Select(wl => new WorkLevel
-                {
-                    Id = Guid.NewGuid(),
-                    WL = wl,
-                    CreatedAt = DateTime.Now,
-                    CreatedBy = "System",
-                    IsActive = true
-                });
-                listWorklevel.AddRange(workLevels);
-            }
-            _db.WorkLevels.AddRange(listWorklevel);
-            _db.SaveChanges();
-
-
             if (!_db.RoleUnilevers.Any())
             {
                 var listRole = new List<RoleUnilever>
@@ -109,8 +65,7 @@ namespace FSAWebSystem.Models.Context
                         Email = user.Email,
                         CreatedAt = DateTime.Now,
                         CreatedBy = "System",
-                        RoleUnilever = await _roleService.GetRoleByName("Administrator"),
-                        WLId = listWorklevel.Any() ? listWorklevel.First().Id : Guid.Empty,
+                        RoleUnilever = await _roleService.GetRoleByName("Administrator")
                     };
 
                     await userManager.AddClaimAsync(user, new Claim("Menu", "Admin"));
