@@ -48,6 +48,19 @@
 				<label>@Model.Week</label>
 			</div>
 			<div>
+				<label>Type :</label>
+				@if(Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
+				{
+					<label>Rephase</label>
+				}
+				else if(Model.ProposalType == FSAWebSystem.Models.ProposalType.ProposeAdditional){
+					<label>Propose Additional</label>
+				}
+				else{
+					<label>Reallocate</label>
+				}
+			</div>
+			<div>
 				<label>Remark: </label>
 				<label>@Model.Remark </label>
 			</div>
@@ -72,6 +85,16 @@
 						<th>Next Week Bucket</th>
 						<th>Valid + BJ</th>
 						<th>REM FSA</th>
+						
+						@if(Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
+						{
+							<th>Rephase</th>
+						}
+						else
+						{
+							<th>Propose Additional</th>
+						}
+
 					</tr>
 				</thead>
 				<tbody>
@@ -88,18 +111,30 @@
 							<td>@Html.DisplayFor(modelItem => item.CurrentBucket)</td>
 							<td>@Html.DisplayFor(modelItem => item.NextBucket)</td>
 							<td>@Html.DisplayFor(modelItem => item.ValidBJ)</td>
-							<td>
+							<td>@Html.DisplayFor(modelItem => item.RemFSA)</td>
+							@if(Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
+							{
+									<td>
+								@Html.DisplayFor(modelItem => item.Rephase)
+							</td>
+							}
+							else
+							{
+									<td>
 								@Html.DisplayFor(modelItem => item.ProposeAdditional)
 							</td>
+							}
+							
+						
 						</tr>
 					}
 				</tbody>
 			</table>
-			@if (Model.ProposalType != ProposalType.ProposeAdditional)
+			@if (Model.ProposalType != FSAWebSystem.Models.ProposalType.ProposeAdditional && Model.ProposalType != FSAWebSystem.Models.ProposalType.Rephase)
 			{
 				<p class="pt-3">Note: This @type from <b>@bannerSource</b> Bucket to <b>@bannerTarget</b> Bucket  </p>
 			}
-			else
+			else if(Model.ProposalType == FSAWebSystem.Models.ProposalType.ProposeAdditional)
 			{
 				<p class="pt-3">Propose Additional</p>
 			}

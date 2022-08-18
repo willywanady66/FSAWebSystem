@@ -61,48 +61,67 @@ namespace FSAWebSystem.Controllers
                 {
                     var user = await _userManager.GetUserAsync(User);
                     var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
-                    var bannerTarget = approval.ApprovalDetails.SingleOrDefault(x => x.ProposeAdditional > 0).BannerName;
-                    var workLevel = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
-                    ViewData["BannerSource"] = approval.ApprovalDetails.SingleOrDefault(x => x.ProposeAdditional < 0).BannerName;
 
-                    if (workLevel == "KAM WL 2" || workLevel == "CDM WL 3" || workLevel == "VP MTDA" || workLevel == "CORE VP")
+                    if(approval.ProposalType != ProposalType.Rephase)
                     {
-                        if (approval.Level != 2)
+                        var appovaldetailTarget = approval.ApprovalDetails.SingleOrDefault(x => x.ProposeAdditional > 0);
+                        if (appovaldetailTarget != null)
                         {
-                            canApprove = false;
+                            ViewData["BannerTarget"] = appovaldetailTarget.BannerName;
                         }
-                    }
-                    else if (workLevel == "SOM MT WL 1" || workLevel == "SOM MT WL 2" || workLevel == "CD DIRECTOR")
-                    {
-                        if (approval.Level != 1)
-                        {
-                            canApprove = false;
-                        }
-                    }
-                    else if (workLevel == "CCD")
-                    {
-                        if (approval.Level != 3)
-                        {
-                            canApprove = false;
-                        }
-                    }
 
-                    if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
-                    {
-                        ViewData["Type"] = "Reallocate Across KAM";
-                    }
-                    else if (approval.ProposalType == ProposalType.ReallocateAcrossCDM)
-                    {
-                        ViewData["Type"] = "Reallocate Across CDM";
-                    }
-                    else if (approval.ProposalType == ProposalType.ReallocateAcrossMT)
-                    {
-                        ViewData["Type"] = "Reallocate Across MT";
+                        var appovaldetailSource = approval.ApprovalDetails.SingleOrDefault(x => x.ProposeAdditional < 0);
+                        if (appovaldetailSource != null)
+                        {
+                            ViewData["BannerSource"] = appovaldetailSource.BannerName;
+                        }
+
+                        var workLevel = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
+
+                        if (workLevel == "KAM WL 2" || workLevel == "CDM WL 3" || workLevel == "VP MTDA" || workLevel == "CORE VP")
+                        {
+                            if (approval.Level != 2)
+                            {
+                                canApprove = false;
+                            }
+                        }
+                        else if (workLevel == "SOM MT WL 1" || workLevel == "SOM MT WL 2" || workLevel == "CD DIRECTOR")
+                        {
+                            if (approval.Level != 1)
+                            {
+                                canApprove = false;
+                            }
+                        }
+                        else if (workLevel == "CCD")
+                        {
+                            if (approval.Level != 3)
+                            {
+                                canApprove = false;
+                            }
+                        }
+
+                        if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
+                        {
+                            ViewData["Type"] = "Reallocate Across KAM";
+                        }
+                        else if (approval.ProposalType == ProposalType.ReallocateAcrossCDM)
+                        {
+                            ViewData["Type"] = "Reallocate Across CDM";
+                        }
+                        else if (approval.ProposalType == ProposalType.ReallocateAcrossMT)
+                        {
+                            ViewData["Type"] = "Reallocate Across MT";
+                        }
+                        else
+                        {
+                            ViewData["Type"] = "Propose Additional";
+                        }
                     }
                     else
                     {
-                        ViewData["Type"] = "Propose Additional";
+
                     }
+                    
                     ViewData["CanApprove"] = canApprove;
                     return View(approval);
                 }
@@ -185,6 +204,7 @@ namespace FSAWebSystem.Controllers
                     errorMessages.Add("You already approve this proposal");
                     _notyfService.Warning("Proposal Already Approved");
                     TempData["ErrorMessages"] = errorMessages;
+                    return Ok();
                 }
 
                 var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
@@ -207,7 +227,7 @@ namespace FSAWebSystem.Controllers
                 {
                     approval.ApprovalStatus = ApprovalStatus.Approved;
                     proposal.IsWaitingApproval = false;
-                    await UpdateWeeklyBuckets(proposal.ProposalDetails);
+                    await UpdateWeeklyBuckets(proposal.ProposalDetails, proposal.Type.Value, proposal.Week);
                 }
 
                
@@ -222,12 +242,20 @@ namespace FSAWebSystem.Controllers
             return Ok();
         }
 
-        public async Task UpdateWeeklyBuckets(List<ProposalDetail> proposalDetails)
+        public async Task UpdateWeeklyBuckets(List<ProposalDetail> proposalDetails, ProposalType type, int week)
         {
             foreach(var detail in proposalDetails)
             {
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(detail.WeeklyBucketId);
-                weeklyBucket.MonthlyBucket = weeklyBucket.MonthlyBucket + detail.ProposeAdditional;  
+                if (type == ProposalType.Rephase)
+                {
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).SetValue(weeklyBucket, weeklyBucket.CurrentBucket + detail.Rephase);
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, weeklyBucket.CurrentBucket - detail.Rephase);
+                }
+                else
+                {
+                    weeklyBucket.MonthlyBucket = weeklyBucket.MonthlyBucket + detail.ProposeAdditional;
+                }
             }
         }
 
