@@ -7,6 +7,8 @@
 	var bannerSource = ViewData["BannerSource"];
 	var type = ViewData["Type"];
 	bool canApprove = (bool)ViewData["CanApprove"];
+	bool isApproved = (bool)ViewData["IsApproved"];
+	int i = -1;
 }
 
 <script type="text/javascript">
@@ -35,15 +37,23 @@
 	<div class="card-header py-3">
 	</div>
 	<div class="card-body">
-		<div class="col-sm-12 col-md-8 col-lg-6">
-			@if(!canApprove)
+		
+			@if(Model != null)
 			{
-				<div>
-				<h3 style="color:green">Approved!</h3>
-			</div>
-			}
-			
-			<div>
+				<div class="col-sm-12 col-md-8 col-lg-6">
+				@if(isApproved)
+				{
+					<div>
+						<h3 style="color:green">Approved!</h3>
+					</div>
+				}
+				else if(!canApprove)
+				{
+					<div>
+						<h3 style="color:red">You Are Not Authorized to Approve!</h3>
+					</div>
+				}
+					<div>
 				<label>Week : </label>
 				<label>@Model.Week</label>
 			</div>
@@ -68,9 +78,9 @@
 				<label>Requested By: </label>
 				<label>@Model.RequestedBy </label>
 			</div>
+			</div>
 			<input type="hidden" class="approvalId" asp-for="Id" />
-		</div>
-		<div class="table-responsive">
+				<div class="table-responsive">
 			<table class="table table-bordered" id="dataTableApprovalDetails" width="100%" cellspacing="0">
 				<thead>
 					<tr>
@@ -114,15 +124,23 @@
 							<td>@Html.DisplayFor(modelItem => item.RemFSA)</td>
 							@if(Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
 							{
-									<td>
+							<td>
 								@Html.DisplayFor(modelItem => item.Rephase)
 							</td>
 							}
 							else
-							{
-									<td>
-								@Html.DisplayFor(modelItem => item.ProposeAdditional)
-							</td>
+							{	<td>
+								@if(item.ProposeAdditional > 0)
+								{
+									<span style="color:green">@Html.DisplayFor(modelItem => item.ProposeAdditional)</span>
+								}
+									else
+									{
+										
+										<span style="color:red">(@(@item.ProposeAdditional * @i))</span>
+									}
+									
+							</td>	
 							}
 							
 						
@@ -150,6 +168,14 @@
 				</button>
 			</div>
 		</div>
+		
+			}
+			
+			
+		
+			
+		
+		
 	</div>
 </div>
 

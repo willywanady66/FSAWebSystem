@@ -15,6 +15,8 @@ using static FSAWebSystem.Models.ViewModels.ProposalViewModel;
 using Microsoft.AspNetCore.Authorization;
 using AspNetCoreHero.ToastNotification.Abstractions;
 using FSAWebSystem.Models.Bucket;
+using FSAWebSystem.Services;
+using System.Text.Encodings.Web;
 
 namespace FSAWebSystem.Controllers
 {
@@ -29,10 +31,11 @@ namespace FSAWebSystem.Controllers
         private readonly IApprovalService _approvalService;
         private readonly IBannerService _bannerService;
         private readonly ISKUService _skuService;
+        private readonly IEmailService _emailService;
         private readonly UserManager<FSAWebSystemUser> _userManager;
 
         public ProposalsController(FSAWebSystemDbContext db, IProposalService proposalService, IBucketService bucketService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager, IUserService userService, INotyfService notyfService,
-            IBannerService bannerService, IApprovalService approvalService, ISKUService skuService)
+            IBannerService bannerService, IApprovalService approvalService, ISKUService skuService, IEmailService emailService)
         {
             _db = db;
             _proposalService = proposalService;
@@ -44,6 +47,7 @@ namespace FSAWebSystem.Controllers
             _approvalService = approvalService;
             _bannerService = bannerService;
             _skuService = skuService;
+            _emailService = emailService;
         }
 
         // GET: Proposals
@@ -94,7 +98,10 @@ namespace FSAWebSystem.Controllers
             }
             catch (Exception ex)
             {
-
+                listData = Json(new
+                {
+                    error = ex.Message
+                });
             }
             return listData;
 
@@ -116,13 +123,13 @@ namespace FSAWebSystem.Controllers
                     data = listProposalHistory.proposalsHistory
                 }) ;
 
-                return Ok(listData);
+                return listData;
             }
             catch (Exception ex)
             {
                 listData = Json(new
                 {
-                    error = "AAA"
+                    error = ex.Message
                 });
             }
             return listData;
@@ -186,6 +193,7 @@ namespace FSAWebSystem.Controllers
             List<Proposal> listProposal = new List<Proposal>();
             List<Approval> listApproval = new List<Approval>();
             List<ProposalHistory> listProposalHistory = new List<ProposalHistory>();
+            var listEmail = new List<EmailApproval>();
             if (!errorMessages.Any() && !proposals.Any(x => string.IsNullOrEmpty(x.weeklyBucketId)))
             {
                 try
@@ -211,11 +219,10 @@ namespace FSAWebSystem.Controllers
                             }
                             else if (proposalInput.proposeAdditional > 0)
                             {
-                                //approval = await CreateApprovalProposeAdditional(proposalInput.proposeAdditional, approval.Id, Guid.Parse(proposalInput.weeklyBucketId), fsaDetail, banners, skus);
                                 proposal = await CreateProposalProposeAdditional(proposalInput, fsaDetail, (Guid)user.UserUnileverId, approvalId, banners, skus);
                                 approval = CreateApproval(approvalId, proposal.Type.Value);
                             }
-                            proposalHistory = CrateProposalHistory(approval, proposal, fsaDetail);
+                            proposalHistory = await CrateProposalHistory(approval, proposal, fsaDetail);
                             listProposal.Add(proposal);
                             await _proposalService.SaveProposals(listProposal);
                         }
@@ -262,18 +269,29 @@ namespace FSAWebSystem.Controllers
                             savedProposal.SubmittedAt = DateTime.Now;
                             savedProposal.ApprovalId = approvalId;
 
-                            proposalHistory = CrateProposalHistory(approval, savedProposal, fsaDetail);
+                            proposalHistory = await CrateProposalHistory(approval, savedProposal, fsaDetail);
                         }
 
                         listApproval.Add(approval);
 
                         listProposalHistory.Add(proposalHistory);
+                        var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new {id = approval.Id});
+                        var email = await _approvalService.GenerateEmailProposal(approval, page, user.Email, Guid.Parse(proposalInput.bannerId));
+                        listEmail.AddRange(email);
                     }
 
+                  
+                  
                     await _proposalService.SaveProposalHistories(listProposalHistory);
                     await _approvalService.SaveApprovals(listApproval);
 
                     await _db.SaveChangesAsync();
+
+                    foreach (var email in listEmail)
+                    {
+                        await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body) ;
+                    }
+                    //await _emailService.SendEmailAsync();
 
                     message = "Your Proposal has been submitted!";
                     _notyfService.Success(message);
@@ -434,13 +452,6 @@ namespace FSAWebSystem.Controllers
             return proposal;
         }
 
-        //public async Task<List<ProposalDetail>> CreateProposalProposeAdditionalDetails(decimal proposeAdditional, Guid approvalId, Guid weeklyBucketId, FSACalendarDetail fsaDetail, IQueryable<Banner> banners, IQueryable<SKU> skus)
-        //{
-
-        //    approval.ApprovalDetails = list
-        //}
-
-
         public Approval CreateApproval(Guid id, ProposalType proposalType)
         {
             var approval = new Approval
@@ -452,24 +463,28 @@ namespace FSAWebSystem.Controllers
                 ApprovedBy = string.Empty
             };
 
+            approval.ApproverWL = _approvalService.GetWLApprover(approval);
+
             return approval;
         }
 
-        public ProposalHistory CrateProposalHistory(Approval approval, Proposal proposal, FSACalendarDetail fsaDetail)
+        public async Task<ProposalHistory> CrateProposalHistory(Approval approval, Proposal proposal, FSACalendarDetail fsaDetail)
         {
+            var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
             var propHistory = new ProposalHistory
             {
                 Id = Guid.NewGuid(),
+                ApprovalId = approval.Id,
+                SKUId = weeklyBucket.SKUId,
+                BannerId = weeklyBucket.BannerId,
                 Week = fsaDetail.Week,
                 Month = fsaDetail.Month,
                 Year = fsaDetail.Year,
-                ApprovalId = approval.Id,
-                ProposalId = proposal.Id,
                 Rephase = proposal.Rephase,
                 ProposeAdditional = proposal.ProposeAdditional,
                 Remark = proposal.Remark,
                 SubmittedAt = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
-                SubmittedBy = proposal.SubmittedBy
+                SubmittedBy = proposal.SubmittedBy,
             };
             return propHistory;
         }
@@ -494,7 +509,7 @@ namespace FSAWebSystem.Controllers
                 {
                     if(currDate.DayOfWeek >= DayOfWeek.Friday && currDate.DayOfWeek <= DayOfWeek.Sunday && fSACalendarDetail.Week == 4)
                     {
-                        errorMessages.Add(string.Format("Cannot request Propose Additional on Week 4 after Friday"));
+                        errorMessages.Add(string.Format("Cannot request Propose Additional after Friday on Week 4 "));
                     }
                 }
             }

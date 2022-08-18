@@ -249,7 +249,7 @@ namespace FSAWebSystem.Controllers
                 uLICalendar.CreatedAt = DateTime.Now;
                 _context.Add(uLICalendar);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Admin");
             }
             return View(uLICalendar);
         }
@@ -387,46 +387,9 @@ namespace FSAWebSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Admin");
             }
             return View(uLICalendar);
-        }
-
-        // GET: ULICalendars/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
-        {
-            if (id == null || _context.ULICalendars == null)
-            {
-                return NotFound();
-            }
-
-            var uLICalendar = await _context.ULICalendars
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (uLICalendar == null)
-            {
-                return NotFound();
-            }
-
-            return View(uLICalendar);
-        }
-
-        // POST: ULICalendars/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            if (_context.ULICalendars == null)
-            {
-                return Problem("Entity set 'FSAWebSystemDbContext.ULICalendars'  is null.");
-            }
-            var uLICalendar = await _context.ULICalendars.FindAsync(id);
-            if (uLICalendar != null)
-            {
-                _context.ULICalendars.Remove(uLICalendar);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
         }
 
         private bool ULICalendarExists(Guid id)

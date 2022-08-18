@@ -13,6 +13,8 @@ using AspNetCoreHero.ToastNotification.Abstractions;
 using FSAWebSystem.Areas.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using FSAWebSystem.Services;
+using System.Text.Encodings.Web;
 
 namespace FSAWebSystem.Controllers
 {
@@ -25,8 +27,9 @@ namespace FSAWebSystem.Controllers
         private readonly UserManager<FSAWebSystemUser> _userManager;
         private readonly INotyfService _notyfService;
         private readonly IUserService _userService;
+        private readonly IEmailService _emailService;
         
-        public ApprovalsController(FSAWebSystemDbContext context, IApprovalService approvalService, IProposalService proposalService, IBucketService bucketService, INotyfService notyfService, UserManager<FSAWebSystemUser> userManager, IUserService userService)
+        public ApprovalsController(FSAWebSystemDbContext context, IApprovalService approvalService, IProposalService proposalService, IBucketService bucketService, INotyfService notyfService, UserManager<FSAWebSystemUser> userManager, IUserService userService, IEmailService emailService)
         {
             _context = context;
             _approvalService = approvalService;
@@ -35,6 +38,7 @@ namespace FSAWebSystem.Controllers
             _notyfService = notyfService;
             _userManager = userManager;
             _userService = userService;
+            _emailService = emailService;
         }
 
         [Authorize(Policy = ("ApprovalPage"))]
@@ -49,6 +53,8 @@ namespace FSAWebSystem.Controllers
         public async Task<IActionResult> Details(Guid? id)
         {
             var canApprove = true;
+            ViewData["CanApprove"] = false;
+            var isApproved = false;
             if (id == null || _context.ApprovalDetail == null)
             {
                 return NotFound();
@@ -78,27 +84,32 @@ namespace FSAWebSystem.Controllers
 
                         var workLevel = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
 
-                        if (workLevel == "KAM WL 2" || workLevel == "CDM WL 3" || workLevel == "VP MTDA" || workLevel == "CORE VP")
-                        {
-                            if (approval.Level != 2)
-                            {
-                                canApprove = false;
-                            }
-                        }
-                        else if (workLevel == "SOM MT WL 1" || workLevel == "SOM MT WL 2" || workLevel == "CD DIRECTOR")
-                        {
-                            if (approval.Level != 1)
-                            {
-                                canApprove = false;
-                            }
-                        }
-                        else if (workLevel == "CCD")
-                        {
-                            if (approval.Level != 3)
-                            {
-                                canApprove = false;
-                            }
-                        }
+                 
+                        canApprove = approval.ApproverWL == workLevel;
+
+                        isApproved = approval.ApprovedBy.Contains(userUnilever.Email);
+
+                        //if (workLevel == "KAM WL 2" || workLevel == "CDM WL 3" || workLevel == "VP MTDA" || workLevel == "CORE VP")
+                        //{
+                        //    if (approval.Level != 2)
+                        //    {
+                        //        canApprove = false;
+                        //    }
+                        //}
+                        //else if (workLevel == "SOM MT WL 1" || workLevel == "SOM MT WL 2" || workLevel == "CD DIRECTOR")
+                        //{
+                        //    if (approval.Level != 1)
+                        //    {
+                        //        canApprove = false;
+                        //    }
+                        //}
+                        //else if (workLevel == "CCD")
+                        //{
+                        //    if (approval.Level != 3)
+                        //    {
+                        //        canApprove = false;
+                        //    }
+                        //}
 
                         if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
                         {
@@ -123,6 +134,7 @@ namespace FSAWebSystem.Controllers
                     }
                     
                     ViewData["CanApprove"] = canApprove;
+                    ViewData["IsApproved"] = isApproved;
                     return View(approval);
                 }
             }
@@ -194,10 +206,13 @@ namespace FSAWebSystem.Controllers
         {
             try
             {
+                
+                var listEmail = new List<EmailApproval>();
                 var user = await _userManager.GetUserAsync(User);
                 var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
                 var currDate = DateTime.Now;
                 var approval = await _approvalService.GetApprovalById(approvalId);
+             
                 var errorMessages = new List<string>();
                 if(approval.ApprovedBy.Contains(User.Identity.Name))
                 {
@@ -208,7 +223,7 @@ namespace FSAWebSystem.Controllers
                 }
 
                 var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
-
+                var userRequestor = await _userService.GetUser(proposal.SubmittedBy);
                 approval.ApprovedAt = currDate;
                 approval.ApprovalStatus = ApprovalStatus.WaitingNextLevel;
                 if(string.IsNullOrEmpty(approval.ApprovedBy))
@@ -221,9 +236,16 @@ namespace FSAWebSystem.Controllers
                 }
 
                 approval.Level -= 1;
+                var nextApproverWL = _approvalService.GetWLApprover(approval);
+                approval.ApproverWL = nextApproverWL;
+
+                var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
+
+                var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email);
+                listEmail.AddRange(emails);
 
                 //Update Weekly & Approval Done
-                if(approval.Level == 0)
+                if (approval.Level == 0)
                 {
                     approval.ApprovalStatus = ApprovalStatus.Approved;
                     proposal.IsWaitingApproval = false;
@@ -233,11 +255,19 @@ namespace FSAWebSystem.Controllers
                
                 await _context.SaveChangesAsync();
                 _notyfService.Success("Proposal Approved");
-                
+
+                if(approval.Level != 0)
+                {
+                    foreach (var email in listEmail)
+                    {
+                        await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
+                    }
+                }
             }
             catch (Exception ex)
             {
-
+                TempData["ErrorMessage"] = ex.Message;
+                return BadRequest();
             }
             return Ok();
         }

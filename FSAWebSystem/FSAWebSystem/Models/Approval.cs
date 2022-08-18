@@ -17,6 +17,7 @@ namespace FSAWebSystem.Models
         public DateTime? ApprovedAt { get; set; }
 
         public int Level { get; set; }
+        public string ApproverWL { get; set; }
 
         [NotMapped]
         public string Level1 { get; set; }

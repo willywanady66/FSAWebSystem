@@ -12,5 +12,8 @@ namespace FSAWebSystem.Services.Interface
         //public Task<ApprovalPagingData> GetApprovalReallocatePagination(DataTableParam param, int month, int year);
         public Task<Approval> GetApprovalById(Guid approvalId);
         public Task<Approval> GetApprovalDetails(Guid approvalId);
+        public Task<List<string>> GetRecipientEmail(string wlApproval, Guid bannerId = new Guid());
+        public string GetWLApprover(Approval approval);
+        public Task<List<EmailApproval>> GenerateEmailProposal(Approval approval, string url, string requestor, Guid bannerId = new Guid());
     }
 }

@@ -1,7 +1,8 @@
-﻿using FSAWebSystem.Models.Context;
+﻿using FSAWebSystem.Models;
+using FSAWebSystem.Models.Context;
+using FSAWebSystem.Services.Interface;
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
 using MimeKit;
 

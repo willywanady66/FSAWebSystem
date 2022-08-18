@@ -222,5 +222,13 @@ namespace FSAWebSystem.Services
             var users = await _db.UsersUnilever.Include(x => x.RoleUnilever).Where(x => x.RoleUnilever.RoleUnileverId == roleId).ToListAsync();
             return users;
         }
+
+        public async Task<List<UserUnilever>> GetUserByWL(string workLevelName)
+        {
+            var worklevel = await _db.WorkLevels.SingleAsync(x => x.WL == workLevelName);
+            var users = await _db.UsersUnilever.Where(x => x.WLId == worklevel.Id).ToListAsync();
+            return users;
+            
+        }
     }
 }

@@ -54,7 +54,7 @@ namespace FSAWebSystem.Services
                                  ApprovedProposeAdditional = p != null ? p.ApprovedProposeAdditional : decimal.Zero,
                                  IsWaitingApproval = p != null ? p.IsWaitingApproval : false,
                                  SubmittedBy = p != null ? p.SubmittedBy : Guid.Empty,
-                                 ApprovalId = p != null ? p.ApprovalId : Guid.Empty
+                                 ApprovalId = p != null ? p.ApprovalId : Guid.Empty,
                              }) ;
 
             var proposal2 = (from proposal in proposals
@@ -185,42 +185,16 @@ namespace FSAWebSystem.Services
         {
 
             var proposalHistories = (from proposalHistory in _db.ProposalHistories
-                                    join approval in _db.Approvals on proposalHistory.ApprovalId equals approval.Id
-                                    join proposal in (from proposal in _db.Proposals
-                                                      join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
-                                                                            join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
-                                                                            join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
-                                                                            select new Proposal
-                                                                            {
-                                                                                Id = weeklyBucket.Id,
-                                                                                BannerName = banner.BannerName,
-                                                                                PlantName = banner.PlantName,
-                                                                                PCMap = sku.PCMap,
-                                                                                DescriptionMap = sku.DescriptionMap,
-                                                                            }) on proposal.WeeklyBucketId equals weeklyBucket.Id
-                                                      where proposal.Month == month && proposal.Year == year
-                                                      select new Proposal
-                                                      {
-                                                          Id = proposal.Id,
-                                                          SubmittedBy = proposal.SubmittedBy,
-                                                          SubmittedAt = proposal.SubmittedAt,
-                                                          BannerName = weeklyBucket.BannerName,
-                                                          PlantName = weeklyBucket.PlantName,
-                                                          PCMap = weeklyBucket.PCMap,
-                                                          DescriptionMap = weeklyBucket.DescriptionMap,
-                                                          ProposeAdditional = proposal.ProposeAdditional,
-                                                          Rephase = proposal.Rephase,
-                                                          Remark = proposal.Remark,
-                                                          ApprovedRephase = 0,
-                                                          ApprovedProposeAdditional = 0,
-                                                          //Year = proposal.Year,
-                                                          //Month = proposal.Month,
-                                                          Week = proposal.Week
-                                                      }) on proposalHistory.ProposalId equals proposal.Id
+                                     join sku in _db.SKUs on proposalHistory.SKUId equals sku.Id
+                                     join banner in _db.Banners on proposalHistory.BannerId equals banner.Id
+                                     join approval in _db.Approvals on proposalHistory.ApprovalId equals approval.Id
                                     select new ProposalHistory
                                     {
-                                        Proposal = proposal,
                                         Week = proposalHistory.Week,
+                                        BannerName = banner.BannerName,
+                                        PlantName = banner.PlantName,
+                                        PCMap = sku.PCMap,
+                                        DescriptionMap = sku.DescriptionMap,
                                         Month = proposalHistory.Month,
                                         SubmittedAt = proposalHistory.SubmittedAt,
                                         Remark = proposalHistory.Remark,
@@ -231,50 +205,7 @@ namespace FSAWebSystem.Services
                                         ApprovalStatus = approval.ApprovalStatus.ToString()
                                     });
 
-            //var proposalsHistory = (from approval in _db.Approvals
-            //                        join userUnilever in _db.UsersUnilever.Where(x => x.Id == userId) on proposal.SubmittedBy equals userUnilever.Id
-            //                        join proposal in ( from proposal in _db.Proposals
-            //                                            join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
-            //                                                                join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
-            //                                                                join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
-            //                                                                  select new 
-            //                                                                {
-            //                                                                    Id = weeklyBucket.Id,
-            //                                                                    BannerName = banner.BannerName,
-            //                                                                    PlantName = banner.PlantName,
-            //                                                                    PCMap = sku.PCMap,
-            //                                                                    DescriptionMap = sku.DescriptionMap,
-            //                                                                }) on proposal.WeeklyBucketId equals weeklyBucket.Id
-            //                                           where proposal.Month == month && proposal.Year == year
-            //                                           select new Proposal
-            //                                           {
-            //                                               Id = proposal.Id,
-            //                                               SubmittedBy = proposal.SubmittedBy,
-            //                                               SubmittedAt = proposal.SubmittedAt,
-            //                                               BannerName = weeklyBucket.BannerName,
-            //                                               PlantName = weeklyBucket.PlantName,
-            //                                               PCMap = weeklyBucket.PCMap,
-            //                                               DescriptionMap = weeklyBucket.DescriptionMap,
-            //                                               ProposeAdditional = proposal.ProposeAdditional,
-            //                                               Rephase = proposal.Rephase,
-            //                                               Reallocate = proposal.Reallocate,
-            //                                               Remark = proposal.Remark,
-            //                                               //Year = proposal.Year,
-            //                                               //Month = proposal.Month,
-            //                                               Week = proposal.Week
-            //                                           }) on approval.ProposalId equals proposal.Id
-
-            //                        select new ProposalHistory
-            //                        {
-            //                            Proposal = proposal,
-            //                            ApprovedBy = approval.ApprovedBy
-            //                        });
-
-            //if (!string.IsNullOrEmpty(param.search.value))
-            //{
-            //    var search = param.search.value.ToLower();
-            //    proposalsHistory = proposalsHistory.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search));
-            //}
+        
             var totalCount = proposalHistories.Count();
             var listProposalHistory = proposalHistories.Skip(param.start).Take(param.length).ToList();
             foreach(var proposalHistory in listProposalHistory)

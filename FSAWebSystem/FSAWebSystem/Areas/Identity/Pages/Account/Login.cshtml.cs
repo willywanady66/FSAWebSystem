@@ -107,9 +107,9 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
 
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            string returnUrl = Url.Content("~/Home");
+            returnUrl ??= Url.Content("~/Home");
             Console.WriteLine(returnUrl);
 
          

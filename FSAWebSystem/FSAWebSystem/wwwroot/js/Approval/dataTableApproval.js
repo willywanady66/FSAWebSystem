@@ -49,6 +49,7 @@
         searching: false,
         lengthChange: false,
         ordering: false,
+        info: false,
         columnDefs: [
             {
                 "targets": [10],

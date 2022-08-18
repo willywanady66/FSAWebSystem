@@ -53,7 +53,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "Admin/GetBannerPagination",
+            url: getBannerUrl,
             type: "POST"
         },
         "columns": [
@@ -71,7 +71,7 @@
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    return `<a href="./Banners/Edit/${full.id}">
+                    return `<a href="${editBannerUrl}/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
                 }
@@ -83,7 +83,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "Admin/GetCategoryPagination",
+            url: getCategUrl,
             type: "POST"
         },
         "columns": [
@@ -106,7 +106,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "Admin/GetSKUPagination",
+            url: getSKUUrl,
             type: "POST"
         },
         "columns": [
@@ -121,7 +121,7 @@
             orderable: false,
             className: 'text-center',
             "render": function (data, type, full, meta) {
-                return `<a href="{editSKUUrl}/${full.id}">
+                return `<a href="${editSKUUrl}/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
             }
@@ -160,25 +160,7 @@
                     return meta.row + 1 + meta.settings._iDisplayStart;
                 }
             },
-            //{
-            //    targets: 3,
-            //    orderable: false,
-            //    className: 'text-center',
-            //    "render": function (data, type, full, meta) {
-            //        return `<a href="./WorkLevels/Edit/${full.id}">
-            //                    <i class="fas fa-pen"></i>
-            //                <a/>`
-            //    }
-            //}
-        ],
-        //"rowCallback": function (row, data, index) {
-        //    if (data.status == "Active") {
-        //        $('td:eq(2)', row).css({ color: "green" });
-        //    }
-        //    else {
-        //        $('td:eq(2)', row).css({ color: "red" });
-        //    }
-        //}
+            ]
     });
 
     var month = $('#dropDownMonth option:selected').val();
@@ -189,7 +171,7 @@
         "processing": true,
         "serverSide": true,
         "ajax": {
-            url: "Admin/GetFSACalendar",
+            url: getFSACal,
             type: "GET",
             data: function (d) {
                 return $.extend(d, { "month": month, "year": year });

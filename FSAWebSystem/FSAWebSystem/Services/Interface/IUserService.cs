@@ -25,5 +25,7 @@ namespace FSAWebSystem.Services.Interface
         public Task<WorkLevelPagingData> GetAllWorkLevelPagination(DataTableParam param);
         public Task FillWorkLevelDropdown(ViewDataDictionary viewData);
         public Task<List<UserUnilever>> GetUserByRole(Guid roleId);
+
+        public Task<List<UserUnilever>> GetUserByWL(string workLevelName);
     }
 }
