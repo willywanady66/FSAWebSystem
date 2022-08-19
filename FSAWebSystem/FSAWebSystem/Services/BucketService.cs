@@ -71,7 +71,8 @@ namespace FSAWebSystem.Services
                                           where weeklyBucketHistory.Year == Convert.ToInt32(param.year) && weeklyBucketHistory.Month == Convert.ToInt32(param.month)
                                           select new WeeklyBucketHistory
                                           {
-                                              UploadedDate = weeklyBucketHistory.CreatedAt.Value.ToString("dd/MM/yyyy"),
+                                              CreatedAt = weeklyBucketHistory.CreatedAt,
+                                              UploadedDate = weeklyBucketHistory.CreatedAt.Value.ToShortDateString(),
                                               BannerName = banner.BannerName,
                                               PCMap = sku.PCMap,
                                               DescriptionMap = sku.DescriptionMap,
@@ -93,8 +94,7 @@ namespace FSAWebSystem.Services
            
             foreach (var weeklyBucketHistory in listWeeklyBucketHistory)
             {
-                var uploadDate = DateTime.Parse(weeklyBucketHistory.UploadedDate);
-                var uliCalendarDetail = _db.ULICalendarDetails.SingleOrDefault(x => uploadDate.Date >= x.StartDate.Value.Date && uploadDate.Date <= x.EndDate);
+                var uliCalendarDetail = _db.ULICalendarDetails.SingleOrDefault(x => weeklyBucketHistory.CreatedAt >= x.StartDate.Value.Date && weeklyBucketHistory.CreatedAt <= x.EndDate);
                 weeklyBucketHistory.ULIWeek = uliCalendarDetail != null ? uliCalendarDetail.Week.ToString() : string.Empty;
             }
             return new WeeklyBucketHistoryPagingData

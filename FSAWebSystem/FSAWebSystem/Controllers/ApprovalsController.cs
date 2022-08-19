@@ -279,8 +279,8 @@ namespace FSAWebSystem.Controllers
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(detail.WeeklyBucketId);
                 if (type == ProposalType.Rephase)
                 {
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).SetValue(weeklyBucket, weeklyBucket.CurrentBucket + detail.Rephase);
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, weeklyBucket.CurrentBucket - detail.Rephase);
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).SetValue(weeklyBucket, weeklyBucket.CurrentBucket - detail.Rephase);
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, weeklyBucket.CurrentBucket + detail.Rephase);
                 }
                 else
                 {
