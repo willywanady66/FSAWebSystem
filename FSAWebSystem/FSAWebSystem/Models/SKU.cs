@@ -29,7 +29,7 @@ namespace FSAWebSystem.Models
         public string? ModifiedBy{ get; set; }
 
         public Guid FSADocumentId { get; set; }
-
+        public List<UserUnilever>? UserUnilevers { get; set; }
         //[NotMapped] public ProductCategory ProductCategory { get; set; }
         [NotMapped]
         public string Category { get; set; }

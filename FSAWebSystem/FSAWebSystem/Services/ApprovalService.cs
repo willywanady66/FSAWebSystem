@@ -34,10 +34,12 @@ namespace FSAWebSystem.Services
                                                join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
                                                                      //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
                                                                      join banner in _db.Banners on weeklyBucket.BannerId equals banner.Id
-                                                                     join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
+                                                                     join sku in _db.SKUs.Include(x => x.ProductCategory) on weeklyBucket.SKUId equals sku.Id
                                                                      select new WeeklyBucket
                                                                      {
                                                                          Id = weeklyBucket.Id,
+                                                                         SKUId = sku.Id,
+                                                                         ProductCategoryId = sku.ProductCategory.Id,
                                                                          BannerName = banner.BannerName,
                                                                          BannerId = banner.Id,
                                                                          PlantName = banner.PlantName,
@@ -57,6 +59,8 @@ namespace FSAWebSystem.Services
                                                    Rephase = proposal.Rephase,
                                                    Remark = proposal.Remark,
                                                    Type = proposal.Type,
+                                                   SKUId = weeklyBucket.SKUId,
+                                                   ProductCategoryId = weeklyBucket.ProductCategoryId,
                                                    //Year = proposal.Year,
                                                    //Month = proposal.Month,
                                                    Week = proposal.Week,
@@ -81,16 +85,23 @@ namespace FSAWebSystem.Services
                                  Level1 = "",
                                  Level2 = "",
                                  Level = approval.Level,
-                                 ApproverWL = approval.ApproverWL
+                                 ApproverWL = approval.ApproverWL,
+                                 ProductCategoryId = proposal.ProductCategoryId,
+                                 SKUId = proposal.SKUId
                              });
 
             var workLevel = user.WLName;
             var userBannerIds = user.Banners.Select(x => x.Id).ToList();
-
+            var userSkuIds = user.SKUs.Select(x => x.Id).ToList();
+            var userCategIds = user.ProductCategories.Select(x => x.Id).ToList();
             approvals = approvals.Where(x => x.ApproverWL == workLevel);
             if(workLevel == "KAM WL 2")
             {
                 approvals = approvals.Where(x => userBannerIds.Contains(x.BannerId));
+            }
+            else if(workLevel == "CCD")
+            {
+                approvals = approvals.Where(x => userSkuIds.Contains(x.SKUId) || userCategIds.Contains(x.ProductCategoryId));
             }
             //if (workLevel == "KAM WL 2")
             //{
@@ -200,7 +211,7 @@ namespace FSAWebSystem.Services
             {
                 wlApprover = "CCD";
             }
-            if (approval.Level == 2)
+            else if (approval.Level == 2)
             {
                 if (approval.ProposalType == ProposalType.Rephase || approval.ProposalType == ProposalType.ReallocateAcrossKAM)
                 {

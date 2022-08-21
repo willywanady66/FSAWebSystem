@@ -14,6 +14,8 @@ namespace FSAWebSystem.Models
 		public string Email { get; set; }
 		public string Password { get; set; }
 		public List<Banner>? Banners { get; set; }
+		public List<SKU>? SKUs { get; set; }
+		public List<ProductCategory>? ProductCategories{ get; set; }
 		public List<Approval>? Approvals { get; set; }
         public RoleUnilever RoleUnilever { get; set; }
         public DateTime? CreatedAt { get; set; }

@@ -79,6 +79,10 @@ namespace FSAWebSystem.Models
         public string PlantNameTarget { get; set; }
 		[NotMapped]
         public string PlantCodeTarget { get; set; }
+        [NotMapped]
+        public Guid ProductCategoryId { get; set; }
+        [NotMapped]
+        public Guid SKUId { get; set; }
     }
 
 

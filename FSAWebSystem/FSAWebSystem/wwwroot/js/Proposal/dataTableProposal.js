@@ -78,7 +78,7 @@
                 "targets": 10,
                 "render": function (data, type, full, meta) {
                     let input = "";
-                    if ((day > 4 && hour > 12 || day == 0) || full.isWaitingApproval) {
+                    if ((day > 4 || (day == 4 && hour > 12) || day == 0) || full.isWaitingApproval) {
                         input = `<input type="number" class="form-control" id="row-${meta.row}-rephase" name="row-${meta.row}-rephase" disabled min=0 value=${full.rephase} />`;
                     }
                     else {
@@ -289,6 +289,8 @@
                 }
             }
         ],
+        error: {
+        }
 
     });
 
@@ -316,7 +318,9 @@
             { "data": "pcMap" },
             { "data": "descriptionMap" },
             { "data": "dispatchConsume" },
-        ]
+        ],
+        error: {
+        }
     });
 
     $('#dropDownMonth').change(function () {

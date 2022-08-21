@@ -26,8 +26,9 @@ namespace FSAWebSystem.Controllers
         private readonly IUserService _userService;
         private readonly UserManager<FSAWebSystemUser> _userManager;
         private readonly INotyfService _notyfService;
+        private readonly ISKUService _skuService;
 
-        public UserUnileversController(FSAWebSystemDbContext context, IBannerService bannerService, IRoleService roleService, IUserService userService, UserManager<FSAWebSystemUser> userManager, INotyfService notyfService)
+        public UserUnileversController(FSAWebSystemDbContext context, IBannerService bannerService, IRoleService roleService, IUserService userService, UserManager<FSAWebSystemUser> userManager, INotyfService notyfService, ISKUService skuService)
         {
             _context = context;
             _bannerService = bannerService;
@@ -35,6 +36,7 @@ namespace FSAWebSystem.Controllers
             _userService = userService;
             _userManager = userManager;
             _notyfService = notyfService;
+            _skuService = skuService;
         }
 
         // GET: UserUnilevers/Details/5
@@ -70,6 +72,8 @@ namespace FSAWebSystem.Controllers
             var listBanner = (List<SelectListItem>)ViewData["ListBanner"];
             var listRole = (List<SelectListItem>)ViewData["ListRole"];
             var listWorkLevel = (List<SelectListItem>)ViewData["ListWorkLevel"];
+            var listSku = (List<SelectListItem>)ViewData["ListSku"];
+            var listCategory = (List<SelectListItem>)ViewData["ListCategory"];
             var userBanner = userUnilever.Banners.Select(x => x.Id).ToList();
 
             var selectedBanner = listBanner.Where(x => userBanner.Contains(Guid.Parse(x.Value))).ToList();
@@ -79,6 +83,20 @@ namespace FSAWebSystem.Controllers
                 selectedWorkLevel.Selected = true;
             }
             foreach (var item in selectedBanner)
+            {
+                item.Selected = true;
+            }
+
+            var userSkuIds = userUnilever.SKUs.Select(x => x.Id).ToList();
+            var selectedSku = listSku.Where(x => userSkuIds.Contains(Guid.Parse(x.Value))).ToList();
+            foreach(var item in selectedSku)
+            {
+                item.Selected = true;
+            }
+
+            var userProdCategIds = userUnilever.ProductCategories.Select(x => x.Id).ToList();
+            var selectedCateg = listCategory.Where(x => userProdCategIds.Contains(Guid.Parse(x.Value))).ToList();
+            foreach (var item in selectedCateg)
             {
                 item.Selected = true;
             }
@@ -94,7 +112,7 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind ("Id,Name,Email,IsActive,UserId,CreatedAt,CreatedBy")] UserUnilever userUnilever, string[] bannerIds, string roleUnileverId, string workLevelId)
+        public async Task<IActionResult> Edit(Guid id, [Bind ("Id,Name,Email,IsActive,UserId,CreatedAt,CreatedBy")] UserUnilever userUnilever, string[] bannerIds, string roleUnileverId, string workLevelId, string[] skuIds, string[] categoryIds)
         {
             if (id != userUnilever.Id)
             {
@@ -121,7 +139,12 @@ namespace FSAWebSystem.Controllers
 					List<Guid> selectedBannerId = (from bannerId in bannerIds select Guid.Parse(bannerId)).ToList();
                     var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerId.Contains(x.Id)).ToList();
                     var selectedWorkLevel = _userService.GetAllWorkLevel().Single(x => x.Id == Guid.Parse(workLevelId)).Id;
-        
+
+                    var selectedSkuIds = skuIds.Select(x => Guid.Parse(x)).ToList();
+                    var selectedSKUs = (_skuService.GetAllProducts().ToList()).Where(x => selectedSkuIds.Contains(x.Id)).ToList();
+
+                    var selectedCategoryIds = categoryIds.Select(x => Guid.Parse(x)).ToList();
+                    var selectedCategories = (_skuService.GetAllProductCategories().ToList()).Where(x => selectedCategoryIds.Contains(x.Id)).ToList();
 
                     user.UserName = userUnilever.Email;
                     user.NormalizedUserName = userUnilever.Email;
@@ -136,6 +159,8 @@ namespace FSAWebSystem.Controllers
                         await _userManager.RemoveClaimAsync(user, claim);
                     }
 
+                    savedUser.SKUs = selectedSKUs;
+                    savedUser.ProductCategories = selectedCategories;
                     savedUser.Banners = selectedBanners;
                     savedUser.Name = userUnilever.Name;
                     savedUser.Email = userUnilever.Email;
@@ -185,6 +210,8 @@ namespace FSAWebSystem.Controllers
             await _bannerService.FillBannerDropdown(viewData);
             await _roleService.FillRoleDropdown(viewData);
             await _userService.FillWorkLevelDropdown(viewData);
+            await _skuService.FillSKUDropdown(viewData);
+            await _skuService.FillCategoryDropdown(viewData);
         }
     }
 }

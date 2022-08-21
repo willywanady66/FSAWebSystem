@@ -19,14 +19,16 @@ namespace FSAWebSystem.Services
         //private readonly IUserEmailStore<FSAWebSystemUser> _emailStore;
         private readonly IBannerService _bannerService;
         private readonly IRoleService _roleService;
+        private readonly ISKUService _skuService;
 
 
-        public UserService(FSAWebSystemDbContext db, UserManager<FSAWebSystemUser> userManager, IBannerService bannerService, IRoleService roleService)
+        public UserService(FSAWebSystemDbContext db, UserManager<FSAWebSystemUser> userManager, IBannerService bannerService, IRoleService roleService, ISKUService skuService)
         {
             _db = db;
             _userManager = userManager;
             _bannerService = bannerService;
             _roleService = roleService;
+            _skuService = skuService;
 
         }
 
@@ -86,7 +88,7 @@ namespace FSAWebSystem.Services
 
         public async Task<UserUnilever> GetUser(Guid id)
         {
-            var userUnilever = await _db.UsersUnilever.Include(x => x.Banners).Include(x => x.RoleUnilever.Menus).SingleOrDefaultAsync(x => x.Id == id);
+            var userUnilever = await _db.UsersUnilever.Include(x => x.Banners).Include(x => x.RoleUnilever.Menus).Include(x => x.SKUs).Include(x => x.ProductCategories).SingleOrDefaultAsync(x => x.Id == id);
             return userUnilever;
         }
 
@@ -117,7 +119,7 @@ namespace FSAWebSystem.Services
         }
 
 
-        public async Task<UserUnilever> CreateUser(string name, string email, string password, string[] bannerIds, string roleId, string worklevelId, string loggedUser, IUserStore<FSAWebSystemUser> _userStore, IUserEmailStore<FSAWebSystemUser> _emailStore)
+        public async Task<UserUnilever> CreateUser(string name, string email, string password, string[] bannerIds, string roleId, string worklevelId, string loggedUser, IUserStore<FSAWebSystemUser> _userStore, IUserEmailStore<FSAWebSystemUser> _emailStore, string[] skuIds, string[] categoryIds)
         {
             var selectedBannerIds = bannerIds.Select(x => Guid.Parse(x)).ToList();
             var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerIds.Contains(x.Id)).ToList();
@@ -126,6 +128,13 @@ namespace FSAWebSystem.Services
             {
                 selectedWl = _db.WorkLevels.Single(x => x.Id == Guid.Parse(worklevelId));
             }
+
+            var selectedSkuIds = skuIds.Select(x => Guid.Parse(x)).ToList();
+            var selectedSKUs = (_skuService.GetAllProducts().ToList()).Where(x => selectedSkuIds.Contains(x.Id)).ToList();
+
+            var selectedCategoryIds = categoryIds.Select(x => Guid.Parse(x)).ToList();
+            var selectedCategories = (_skuService.GetAllProductCategories().ToList()).Where(x => selectedCategoryIds.Contains(x.Id)).ToList();
+           
 
             var userUnilever = new UserUnilever
             {
@@ -138,6 +147,8 @@ namespace FSAWebSystem.Services
                 RoleUnilever = await _roleService.GetRole(Guid.Parse(roleId)),
                 Banners = selectedBanners,
                 WLId = selectedWl.Id != Guid.Empty ? selectedWl.Id : null,
+                SKUs = selectedSKUs,
+                ProductCategories = selectedCategories
             };
 
             var user = Activator.CreateInstance<FSAWebSystemUser>();

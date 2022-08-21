@@ -2,6 +2,8 @@
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 
 namespace FSAWebSystem.Services
@@ -120,6 +122,22 @@ namespace FSAWebSystem.Services
                 totalRecord = totalCount,
                 categories = listCategory
             };
+        }
+
+        public async Task FillSKUDropdown(ViewDataDictionary viewData)
+        {
+            var skus = GetAllProducts().Where(x => x.IsActive).ToList();
+            List<SelectListItem> listSku = new List<SelectListItem>();
+            listSku = skus.Select(x => new SelectListItem { Text = x.PCMap + " (" + x.DescriptionMap + " )", Value = x.Id.ToString() }).ToList();
+            viewData["ListSku"] = listSku;
+        }
+
+        public async Task FillCategoryDropdown(ViewDataDictionary viewData)
+        {
+            var categories = GetAllProductCategories().ToList();
+            List<SelectListItem> listCategory = new List<SelectListItem>();
+            listCategory = categories.Select(x => new SelectListItem { Text = x.CategoryProduct, Value = x.Id.ToString() }).ToList();
+            viewData["ListCategory"] = listCategory;
         }
     }
 }

@@ -17,6 +17,7 @@ using AspNetCoreHero.ToastNotification.Abstractions;
 using FSAWebSystem.Models.Bucket;
 using FSAWebSystem.Services;
 using System.Text.Encodings.Web;
+using System.Globalization;
 
 namespace FSAWebSystem.Controllers
 {
@@ -153,7 +154,10 @@ namespace FSAWebSystem.Controllers
             }
             catch (Exception ex)
             {
-
+                listData = Json(new
+                {
+                    error = ex.Message
+                });
             }
             return listData;
         }
@@ -176,7 +180,10 @@ namespace FSAWebSystem.Controllers
             }
             catch (Exception ex)
             {
-
+                listData = Json(new
+                {
+                    error = ex.Message
+                });
             }
             return listData;
         }
@@ -207,7 +214,7 @@ namespace FSAWebSystem.Controllers
                     {
                         var approval = new Approval();
                         var proposal = new Proposal();
-                        var proposalHistory = new ProposalHistory();
+                        var proposalHistories = new List<ProposalHistory>();
                         var approvalId = Guid.NewGuid();
                         if (Guid.Parse(proposalInput.id) == Guid.Empty)
                         {
@@ -222,7 +229,7 @@ namespace FSAWebSystem.Controllers
                                 proposal = await CreateProposalProposeAdditional(proposalInput, fsaDetail, (Guid)user.UserUnileverId, approvalId, banners, skus);
                                 approval = CreateApproval(approvalId, proposal.Type.Value);
                             }
-                            proposalHistory = await CrateProposalHistory(approval, proposal, fsaDetail);
+                            proposalHistories = await CrateProposalHistory(approval, proposal, fsaDetail);
                             listProposal.Add(proposal);
                             await _proposalService.SaveProposals(listProposal);
                         }
@@ -269,12 +276,12 @@ namespace FSAWebSystem.Controllers
                             savedProposal.SubmittedAt = DateTime.Now;
                             savedProposal.ApprovalId = approvalId;
 
-                            proposalHistory = await CrateProposalHistory(approval, savedProposal, fsaDetail);
+                            proposalHistories = await CrateProposalHistory(approval, savedProposal, fsaDetail);
                         }
 
                         listApproval.Add(approval);
 
-                        listProposalHistory.Add(proposalHistory);
+                        listProposalHistory.AddRange(proposalHistories);
                         var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new {id = approval.Id});
                         var email = await _approvalService.GenerateEmailProposal(approval, page, user.Email, Guid.Parse(proposalInput.bannerId));
                         listEmail.AddRange(email);
@@ -384,6 +391,7 @@ namespace FSAWebSystem.Controllers
                 var weeklyBucketTargetByRemFSA = await weeklyBucketTargets.Where(x => x.RemFSA > proposeAdditional && x.Id != weeklyBucket.Id).OrderByDescending(x => x.RemFSA).FirstOrDefaultAsync();
                 if (weeklyBucketTargetByMonthly == null && weeklyBucketTargetByRemFSA == null)
                 {
+                    proposal.Type = ProposalType.ProposeAdditional;
                     i++;
                 }
                 else if (weeklyBucketTargetByMonthly != null && weeklyBucketTargetByRemFSA != null)
@@ -423,6 +431,7 @@ namespace FSAWebSystem.Controllers
             weeklyBucketTarget = await ValidateProposeAdditional(banners, skus, proposeAdditional, weeklyBucketId, proposal);
 
             var proposalDetailTarget = new ProposalDetail();
+ 
             if (proposal.Type != ProposalType.ProposeAdditional)
             {
                 proposalDetailTarget.WeeklyBucketId = weeklyBucketTarget.Id;
@@ -468,25 +477,32 @@ namespace FSAWebSystem.Controllers
             return approval;
         }
 
-        public async Task<ProposalHistory> CrateProposalHistory(Approval approval, Proposal proposal, FSACalendarDetail fsaDetail)
+        public async Task<List<ProposalHistory>> CrateProposalHistory(Approval approval, Proposal proposal, FSACalendarDetail fsaDetail)
         {
-            var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
-            var propHistory = new ProposalHistory
+            var listHistory = new List<ProposalHistory>();
+            foreach (var detail in proposal.ProposalDetails)
             {
-                Id = Guid.NewGuid(),
-                ApprovalId = approval.Id,
-                SKUId = weeklyBucket.SKUId,
-                BannerId = weeklyBucket.BannerId,
-                Week = fsaDetail.Week,
-                Month = fsaDetail.Month,
-                Year = fsaDetail.Year,
-                Rephase = proposal.Rephase,
-                ProposeAdditional = proposal.ProposeAdditional,
-                Remark = proposal.Remark,
-                SubmittedAt = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
-                SubmittedBy = proposal.SubmittedBy,
-            };
-            return propHistory;
+                var weeklyBucket = await _bucketService.GetWeeklyBucket(detail.WeeklyBucketId);
+                Thread.CurrentThread.CurrentCulture = new CultureInfo("id-ID");
+                var propHistory = new ProposalHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ApprovalId = approval.Id,
+                    SKUId = weeklyBucket.SKUId,
+                    BannerId = weeklyBucket.BannerId,
+                    Week = fsaDetail.Week,
+                    Month = fsaDetail.Month,
+                    Year = fsaDetail.Year,
+                    Rephase = detail.Rephase,
+                    ProposeAdditional = detail.ProposeAdditional,
+                    Remark = proposal.Remark,
+                    SubmittedAt = proposal.SubmittedAt.ToShortDateString(),
+                    SubmittedBy = proposal.SubmittedBy,
+                };
+                listHistory.Add(propHistory);
+            }
+           
+            return listHistory;
         }
 
         public void ValidateProposalInput(List<ProposalInput> proposalInputs, List<string> errorMessages, FSACalendarDetail fSACalendarDetail)

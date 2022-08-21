@@ -42,13 +42,14 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
         private readonly IRoleService _roleService;
         private readonly IUserService _userService;
         private readonly INotyfService _notyfService;
+        private readonly ISKUService _skuService;
         public RegisterModel(
             UserManager<FSAWebSystemUser> userManager,
             IUserStore<FSAWebSystemUser> userStore,
             SignInManager<FSAWebSystemUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            FSAWebSystemDbContext db, IBannerService bannerService, IRoleService roleService, IUserService userService, INotyfService notyfService)
+            FSAWebSystemDbContext db, IBannerService bannerService, IRoleService roleService, IUserService userService, INotyfService notyfService, ISKUService skuService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -61,6 +62,7 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             _roleService = roleService;
             _userService = userService;
             _notyfService = notyfService;
+            _skuService = skuService;
         }
 
         /// <summary>
@@ -138,7 +140,7 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             await FillDropdowns(ViewData);
         }
 
-        public async Task<IActionResult> OnPostAsync(string[] bannerIds, string roleId, string worklevelId, string returnUrl = null)
+        public async Task<IActionResult> OnPostAsync(string[] bannerIds, string roleId, string worklevelId, string[] skuIds, string[] categoryIds, string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
 
@@ -159,12 +161,12 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
 
                 if(savedUser == null && savedUserLogin == null)
                 {
-                    var userUnilever = await _userService.CreateUser(Input.Name, Input.Email, Input.Password, bannerIds, roleId, worklevelId, User.Identity.Name, _userStore, _emailStore);
+                    var userUnilever = await _userService.CreateUser(Input.Name, Input.Email, Input.Password, bannerIds, roleId, worklevelId, User.Identity.Name, _userStore, _emailStore, skuIds,categoryIds);
                     if (userUnilever.Message != null)
                     {
                         foreach (var error in userUnilever.Message)
-                        {
                             ModelState.AddModelError(string.Empty, error.Description);
+                        {
                             await FillDropdowns(ViewData);
                             return Page();
                         }
@@ -198,6 +200,8 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             await _bannerService.FillBannerDropdown(viewData);
             await _roleService.FillRoleDropdown(viewData);
             await _userService.FillWorkLevelDropdown(viewData);
+            await _skuService.FillSKUDropdown(viewData);
+            await _skuService.FillCategoryDropdown(viewData);
         }
     }
 }

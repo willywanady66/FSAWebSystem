@@ -14,6 +14,7 @@ namespace FSAWebSystem.Models
         public string? ModifiedBy { get; set; }
         public Guid FSADocumentId { get; set; }
 
+        public List<UserUnilever>? UserUnilevers { get; set; }
         //public List<SKU> SKUs { get; set; }
     }
 }

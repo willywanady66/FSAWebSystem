@@ -5,6 +5,8 @@
 	List<SelectListItem> listBanner = ViewData["ListBanner"] as List<SelectListItem>;
 	List<SelectListItem> listRole = ViewData["ListRole"] as List<SelectListItem>;
 	List<SelectListItem> listWorkLevels = ViewData["ListWorkLevel"] as List<SelectListItem>;
+	List<SelectListItem> listSku = ViewData["ListSku"] as List<SelectListItem>;
+	List<SelectListItem> listCategory = ViewData["ListCategory"] as List<SelectListItem>;
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -24,13 +26,13 @@
 			<div class="form-group">
 				<label asp-for="Input.Email"></label>
 				<input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
-				
+
 				<span asp-validation-for="Input.Email" class="text-danger"></span>
 			</div>
 			<div class="form-group">
 				<label asp-for="Input.Password"></label>
 				<input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" />
-				
+
 				<span asp-validation-for="Input.Password" class="text-danger"></span>
 			</div>
 			<div class="form-group">
@@ -41,13 +43,29 @@
 
 			<div class="form-group">
 				<label class="form-label">Work Level</label>
-				<select class="form-control form-select" id="dropDownListWorkLevels" name="workLevelId" asp-items="@listWorkLevels"></select>			
-             </div>
+				<select class="form-control form-select" id="dropDownListWorkLevels" name="workLevelId" asp-items="@listWorkLevels"></select>
+			</div>
 
 			<div class="form-group">
 				<label class="form-label">Banners</label>
-				<div class="row"> 
-				<select class="form-control" id="dropDownListBanners" name="bannerIds" asp-items=@listBanner class="form-control" multiple="multiple"></select>
+				<div class="row">
+					<select class="form-control" id="dropDownListBanners" name="bannerIds" asp-items=@listBanner class="form-control" multiple="multiple"></select>
+				</div>
+				@*<select multiple='multiple' id='test_dropdown'>*@
+			</div>
+
+			<div class="form-group" id="listSkuGroup">
+				<label class="form-label">SKU</label>
+				<div class="row">
+					<select class="form-control" id="dropDownListSku" name="skuIds" asp-items=@listSku class="form-control" multiple="multiple"></select>
+				</div>
+				@*<select multiple='multiple' id='test_dropdown'>*@
+			</div>
+
+			<div class="form-group" id="listCategoryGroup">
+				<label class="form-label">Category</label>
+				<div class="row">
+					<select class="form-control" id="dropDownListCategory" name="categoryIds" asp-items=@listCategory class="form-control" multiple="multiple"></select>
 				</div>
 				@*<select multiple='multiple' id='test_dropdown'>*@
 			</div>
@@ -63,7 +81,7 @@
 	</div>
 </div>
 
-<script src="~/js/User/multidropdown.js"></script>
+<script src="~/js/User/user.js"></script>
 @section Scripts {
-<partial name="_ValidationScriptsPartial" />
+	<partial name="_ValidationScriptsPartial" />
 }
