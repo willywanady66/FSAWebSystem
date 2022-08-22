@@ -10,6 +10,7 @@ namespace FSAWebSystem.Services.Interface
 		public Task<SKUPagingData> GetSKUPagination(DataTableParam param);
 			
 		public Task<SKU> GetSKU(string pcMap);
+		public Task<SKU> GetSKUById(Guid id);
 
 		public IQueryable<ProductCategory> GetAllProductCategories();
 		public Task<CategoryPagingData> GetCategoryPagination(DataTableParam param);

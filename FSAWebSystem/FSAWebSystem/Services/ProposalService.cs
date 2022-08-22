@@ -28,6 +28,7 @@ namespace FSAWebSystem.Services
                              join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
                              where weeklyBucket.Month == month && weeklyBucket.Year == year
+                           
                              select new Proposal
                              {
                                  Id = p != null ? p.Id : Guid.Empty,
@@ -53,13 +54,14 @@ namespace FSAWebSystem.Services
                                  ProposeAdditional = p != null ? p.ProposeAdditional : decimal.Zero,
                                  ApprovedProposeAdditional = p != null ? p.ApprovedProposeAdditional : decimal.Zero,
                                  IsWaitingApproval = p != null ? p.IsWaitingApproval : false,
-                                 SubmittedBy = p != null ? p.SubmittedBy : Guid.Empty,
+                                 SubmittedBy = p == null ? Guid.Empty : p.SubmittedBy.Value,
                                  ApprovalId = p != null ? p.ApprovalId : Guid.Empty,
                              }) ;
 
             var proposal2 = (from proposal in proposals
                              join approval in _db.Approvals.Where(x => x.ApprovalStatus == ApprovalStatus.Pending) on proposal.ApprovalId equals approval.Id into approvalGroup
                              from apprvl in approvalGroup.DefaultIfEmpty()
+                             
                              select new Proposal
                              {
                                  Id = proposal.Id,
@@ -186,28 +188,29 @@ namespace FSAWebSystem.Services
 
             var proposalHistories = (from proposalHistory in _db.ProposalHistories
                                      join sku in _db.SKUs on proposalHistory.SKUId equals sku.Id
-                                     join banner in _db.Banners on proposalHistory.BannerId equals banner.Id
+                                     join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on proposalHistory.BannerId equals banner.Id
                                      join approval in _db.Approvals on proposalHistory.ApprovalId equals approval.Id
-                                    select new ProposalHistory
-                                    {
-                                        Week = proposalHistory.Week,
-                                        BannerName = banner.BannerName,
-                                        PlantName = banner.PlantName,
-                                        PCMap = sku.PCMap,
-                                        DescriptionMap = sku.DescriptionMap,
-                                        Month = proposalHistory.Month,
-                                        SubmittedAt = proposalHistory.SubmittedAt,
-                                        Remark = proposalHistory.Remark,
-                                        ProposeAdditional = proposalHistory.ProposeAdditional,
-                                        Rephase = proposalHistory.Rephase,
-                                        ApprovedBy = approval.ApprovedBy,
-                                        RejectionReason = approval.RejectionReason,
-                                        ApprovalStatus = approval.ApprovalStatus.ToString()
-                                    });
+                                     select new ProposalHistory
+                                     {
+                                         Week = proposalHistory.Week,
+                                         BannerName = banner.BannerName,
+                                         PlantName = banner.PlantName,
+                                         PCMap = sku.PCMap,
+                                         DescriptionMap = sku.DescriptionMap,
+                                         Month = proposalHistory.Month,
+                                         SubmittedAt = proposalHistory.SubmittedAt,
+                                         Remark = proposalHistory.Remark,
+                                         ProposeAdditional = proposalHistory.ProposeAdditional,
+                                         Rephase = proposalHistory.Rephase,
+                                         ApprovedBy = approval.ApprovedBy,
+                                         RejectionReason = approval.RejectionReason,
+                                         ApprovalStatus = approval.ApprovalStatus.ToString(),
+                                         ApprovalId = approval.Id
+                                     });
 
         
             var totalCount = proposalHistories.Count();
-            var listProposalHistory = proposalHistories.Skip(param.start).Take(param.length).ToList();
+            var listProposalHistory = proposalHistories.Skip(param.start).Take(param.length).OrderByDescending(x => x.SubmittedAt).ThenBy(x => x.ApprovalId).ToList();
             Thread.CurrentThread.CurrentCulture = new CultureInfo("id-ID");
             foreach (var proposalHistory in listProposalHistory)
             {
@@ -220,8 +223,6 @@ namespace FSAWebSystem.Services
                 totalRecord = totalCount,
                 proposalsHistory = listProposalHistory
             };
-
-
         }
 
         public async Task<bool> IsProposalExist(FSACalendarDetail fsaDetail)
@@ -236,7 +237,7 @@ namespace FSAWebSystem.Services
 
         public IQueryable<Proposal> GetPendingProposals(FSACalendarDetail fsaDetail, Guid userId)
         {
-            var listProposals = _db.Proposals.Where(x => x.Week == fsaDetail.Week && x.Month == fsaDetail.Month && x.Year == fsaDetail.Year && x.SubmittedBy == userId);
+            var listProposals = _db.Proposals.Where(x => !x.IsWaitingApproval);
             return listProposals;
         }
           

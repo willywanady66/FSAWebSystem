@@ -25,7 +25,7 @@ namespace FSAWebSystem.Models
 
         public DateTime SubmittedAt { get; set; }
    
-        public Guid SubmittedBy { get; set; }
+        public Guid? SubmittedBy { get; set; }
 
 
         [NotMapped]

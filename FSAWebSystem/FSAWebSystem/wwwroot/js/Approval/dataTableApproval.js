@@ -105,7 +105,7 @@
             success: function (data) {
                 setTimeout(
                 function() {
-                    window.location.href = index;
+                        window.location.href = indexUrl;
                 }, 1500)
                 
             }

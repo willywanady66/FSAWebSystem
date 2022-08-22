@@ -28,11 +28,11 @@ namespace FSAWebSystem.Services
 
         public async Task<ApprovalPagingData> GetApprovalPagination(DataTableParam param, int month, int year, UserUnilever user)
         {
-    
+
             var approvals = (from approval in _db.Approvals
                              join proposal in (from proposal in _db.Proposals
                                                join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
-                                                                     //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
+                                                                         //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
                                                                      join banner in _db.Banners on weeklyBucket.BannerId equals banner.Id
                                                                      join sku in _db.SKUs.Include(x => x.ProductCategory) on weeklyBucket.SKUId equals sku.Id
                                                                      select new WeeklyBucket
@@ -66,7 +66,7 @@ namespace FSAWebSystem.Services
                                                    Week = proposal.Week,
                                                    SubmittedAt = proposal.SubmittedAt
                                                }) on approval.Id equals proposal.ApprovalId
-                                               where approval.ApprovalStatus == ApprovalStatus.Pending || approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel
+                             where approval.ApprovalStatus == ApprovalStatus.Pending || approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel
                              select new Approval
                              {
                                  ProposalId = proposal.Id,
@@ -95,11 +95,11 @@ namespace FSAWebSystem.Services
             var userSkuIds = user.SKUs.Select(x => x.Id).ToList();
             var userCategIds = user.ProductCategories.Select(x => x.Id).ToList();
             approvals = approvals.Where(x => x.ApproverWL == workLevel);
-            if(workLevel == "KAM WL 2")
+            if (workLevel == "KAM WL 2")
             {
                 approvals = approvals.Where(x => userBannerIds.Contains(x.BannerId));
             }
-            else if(workLevel == "CCD")
+            else if (workLevel == "CCD")
             {
                 approvals = approvals.Where(x => userSkuIds.Contains(x.SKUId) || userCategIds.Contains(x.ProductCategoryId));
             }
@@ -155,7 +155,7 @@ namespace FSAWebSystem.Services
         public async Task<Approval> GetApprovalDetails(Guid approvalId)
         {
             var apprvl = _db.Approvals.Where(x => x.ApprovalStatus == ApprovalStatus.Pending || x.ApprovalStatus == ApprovalStatus.WaitingNextLevel).Include(x => x.ApprovalDetails).SingleOrDefault(x => x.Id == approvalId);
-            if(apprvl != null)
+            if (apprvl != null)
             {
                 var proposalThisApproval = _db.Proposals.Include(x => x.ProposalDetails.Where(y => y.ApprovalId == approvalId)).SingleOrDefault(x => x.ApprovalId == apprvl.Id);
 
@@ -188,14 +188,14 @@ namespace FSAWebSystem.Services
                     }
                     else
                     {
-                        approvalDetail.ProposeAdditional = detail.ProposeAdditional;  
+                        approvalDetail.ProposeAdditional = detail.ProposeAdditional;
                     }
 
                     apprvl.ApprovalDetails.Add(approvalDetail);
                 }
                 apprvl.ApprovalDetails = apprvl.ApprovalDetails.OrderByDescending(x => x.ProposeAdditional).ToList();
             }
-            
+
             return apprvl;
         }
         public async Task<Approval> GetApprovalById(Guid approvalId)
@@ -232,7 +232,7 @@ namespace FSAWebSystem.Services
             }
             else
             {
-                if (approval.ProposalType == ProposalType.Rephase || approval.ProposalType == ProposalType.ReallocateAcrossKAM)
+                if (approval.ProposalType == ProposalType.Rephase)
                 {
                     wlApprover = "SOM MT WL 1";
                 }
@@ -253,7 +253,7 @@ namespace FSAWebSystem.Services
             {
                 users = users.Where(x => x.Banners.Select(x => x.Id).Contains(bannerId)).ToList();
             }
-            
+
             var usersEmail = users.Select(x => x.Email).ToList();
             return usersEmail;
         }
@@ -275,6 +275,10 @@ namespace FSAWebSystem.Services
             {
                 type = "Reallocate Across MT";
             }
+            else if (approval.ProposalType == ProposalType.Rephase)
+            {
+                type = "Rephase";
+            }
             else
             {
                 type = "Propose Additional";
@@ -287,11 +291,102 @@ namespace FSAWebSystem.Services
                 emailApproval.Name = email;
                 emailApproval.Requestor = requestor;
                 emailApproval.Subject = $"FSA {type} Approval Request";
-                emailApproval.Body = $"Hi, {email}, <br> Please approve proposal request from {requestor} by <a href='{HtmlEncoder.Default.Encode(url)}'>clicking here</a>.";
+                emailApproval.Body = $"Hi, {email}, <br> Please approve proposal request from {requestor} by <a href='{HtmlEncoder.Default.Encode(url)}'>clicking here</a>. <br><br><br> Thank You.";
                 listEmail.Add(emailApproval);
             }
-            
+
             return listEmail;
         }
+
+        public async Task<EmailApproval> GenerateEmailApproval(Approval approval, string userApproverEmail, string requestorEmail, string rejectionReason, Banner banner, SKU sku)
+        {
+            var emailApproval = new EmailApproval();
+            var type = string.Empty;
+
+            if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
+            {
+                type = "Reallocate Across KAM";
+            }
+            else if (approval.ProposalType == ProposalType.ReallocateAcrossCDM)
+            {
+                type = "Reallocate Across CDM";
+            }
+            else if (approval.ProposalType == ProposalType.ReallocateAcrossMT)
+            {
+                type = "Reallocate Across MT";
+            }
+            else if (approval.ProposalType == ProposalType.Rephase)
+            {
+                type = "Rephase";
+            }
+            else
+            {
+                type = "Propose Additional";
+            }
+
+            emailApproval.RecipientEmail = requestorEmail;
+            emailApproval.Name = requestorEmail;
+            emailApproval.Subject = $"FSA {type} Proposal Request";
+
+            if (approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel)
+            {
+                emailApproval.Body = $"Hi, {requestorEmail}, " +
+                                     $"<br> " +
+                                     $"Your Proposal Request on " +
+                                     $"<br> " +
+                                     $"Banner: {banner.BannerName} " +
+                                     $"<br> " +
+                                     $"Plant Code: {banner.PlantCode} " +
+                                        $"<br> " +
+                                     $"Plant Name: {banner.PlantName} " +
+                                        $"<br> " +
+                                        $"PC Code: {sku.PCMap}" +
+                                        $"<br>" +
+                                        $"Description Map: {sku.DescriptionMap}" +
+                                        $"<br>" +
+                                     $"has been approved by {userApproverEmail} and now waiting for next level approval. <br><br><br> Thank You";
+            }
+            else if (approval.ApprovalStatus == ApprovalStatus.Rejected)
+            {
+                emailApproval.Body = $"Hi, {requestorEmail}, " +
+                                    $"<br><br> " +
+                                    $"Your Proposal Request on " +
+                                    $"<br> " +
+                                    $"Banner: {banner.BannerName} " +
+                                    $"<br> " +
+                                    $"Plant Code: {banner.PlantCode} " +
+                                    $"<br> " +
+                                    $"Plant Name: {banner.PlantName} " +
+                                    $"<br> " +
+                                    $"PC Code: {sku.PCMap} " +
+                                    $"<br>" +
+                                    $"Description Map: {sku.DescriptionMap} " +
+                                    $"<br>" +
+                                    $"has been rejected by {userApproverEmail} because of {rejectionReason}. <br><br><br> Thank You";
+            }
+            else
+            {
+                emailApproval.Body = $"Hi, {requestorEmail}, " +
+                                    $"<br> " +
+                                    $"Your Proposal Request on " +
+                                    $"<br> " +
+                                    $"Banner: {banner.BannerName} " +
+                                    $"<br> " +
+                                    $"Plant Code: {banner.PlantCode} " +
+                                    $"<br> " +
+                                    $"Plant Name: {banner.PlantName} " +
+                                    $"<br> " +
+                                    $"PC Code: {sku.PCMap} " +
+                                    $"<br>" +
+                                    $"Description Map: {sku.DescriptionMap} " +
+                                    $"<br>" +
+                                    $"has been approved by {userApproverEmail}. <br><br><br> Thank You";
+            }
+
+
+            return emailApproval;
+        }
+
     }
 }
+

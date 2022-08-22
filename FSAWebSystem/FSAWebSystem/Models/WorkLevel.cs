@@ -16,7 +16,6 @@ namespace FSAWebSystem.Models
         public DateTime? ModifiedAt { get; set; }
         public string? ModifiedBy { get; set; }
         public Guid? FSADocumentId { get; set; }
-
         [NotMapped]
         public string Status { get; set; }
     }

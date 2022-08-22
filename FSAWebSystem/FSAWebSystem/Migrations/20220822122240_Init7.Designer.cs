@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220822122240_Init7")]
+    partial class Init7
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +36,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("UserUnileversId");
 
-                    b.ToTable("BannerUserUnilever", (string)null);
+                    b.ToTable("BannerUserUnilever");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Areas.Identity.Data.FSAWebSystemUser", b =>
@@ -144,7 +146,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("UserUnileverId");
 
-                    b.ToTable("Approvals", (string)null);
+                    b.ToTable("Approvals");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.ApprovalDetail", b =>
@@ -169,7 +171,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("ApprovalId");
 
-                    b.ToTable("ApprovalDetail", (string)null);
+                    b.ToTable("ApprovalDetail");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.Banner", b =>
@@ -224,7 +226,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Banners", (string)null);
+                    b.ToTable("Banners");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.Bucket.MonthlyBucket", b =>
@@ -280,7 +282,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("FSADocumentId");
 
-                    b.ToTable("MonthlyBuckets", (string)null);
+                    b.ToTable("MonthlyBuckets");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.Bucket.WeeklyBucket", b =>
@@ -342,7 +344,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WeeklyBuckets", (string)null);
+                    b.ToTable("WeeklyBuckets");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.Bucket.WeeklyBucketHistory", b =>
@@ -377,7 +379,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WeeklyBucketHistories", (string)null);
+                    b.ToTable("WeeklyBucketHistories");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarDetail", b =>
@@ -408,7 +410,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("FSACalendarHeaderId");
 
-                    b.ToTable("FSACalendarDetails", (string)null);
+                    b.ToTable("FSACalendarDetails");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarHeader", b =>
@@ -437,7 +439,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FSACalendarHeaders", (string)null);
+                    b.ToTable("FSACalendarHeaders");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.FSADocument", b =>
@@ -463,7 +465,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FSADocuments", (string)null);
+                    b.ToTable("FSADocuments");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.Menu", b =>
@@ -478,7 +480,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Menus", (string)null);
+                    b.ToTable("Menus");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.ProductCategory", b =>
@@ -508,7 +510,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductCategories", (string)null);
+                    b.ToTable("ProductCategories");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.Proposal", b =>
@@ -555,7 +557,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Proposals", (string)null);
+                    b.ToTable("Proposals");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.ProposalDetail", b =>
@@ -583,7 +585,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("ProposalId");
 
-                    b.ToTable("ProposalDetails", (string)null);
+                    b.ToTable("ProposalDetails");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.ProposalHistory", b =>
@@ -629,7 +631,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProposalHistories", (string)null);
+                    b.ToTable("ProposalHistories");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.RoleUnilever", b =>
@@ -657,7 +659,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("RoleUnileverId");
 
-                    b.ToTable("RoleUnilevers", (string)null);
+                    b.ToTable("RoleUnilevers");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.SKU", b =>
@@ -701,7 +703,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("ProductCategoryId");
 
-                    b.ToTable("SKUs", (string)null);
+                    b.ToTable("SKUs");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.ULICalendar", b =>
@@ -730,7 +732,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ULICalendars", (string)null);
+                    b.ToTable("ULICalendars");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.ULICalendarDetail", b =>
@@ -761,7 +763,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("ULICalendarId");
 
-                    b.ToTable("ULICalendarDetails", (string)null);
+                    b.ToTable("ULICalendarDetails");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.UserUnilever", b =>
@@ -812,7 +814,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("RoleUnileverId");
 
-                    b.ToTable("UsersUnilever", (string)null);
+                    b.ToTable("UsersUnilever");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.WorkLevel", b =>
@@ -848,7 +850,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WorkLevels", (string)null);
+                    b.ToTable("WorkLevels");
                 });
 
             modelBuilder.Entity("MenuRoleUnilever", b =>
@@ -863,7 +865,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("RoleUnileversRoleUnileverId");
 
-                    b.ToTable("MenuRoleUnilever", (string)null);
+                    b.ToTable("MenuRoleUnilever");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -1015,7 +1017,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("UserUnileversId");
 
-                    b.ToTable("ProductCategoryUserUnilever", (string)null);
+                    b.ToTable("ProductCategoryUserUnilever");
                 });
 
             modelBuilder.Entity("SKUUserUnilever", b =>
@@ -1030,7 +1032,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasIndex("UserUnileversId");
 
-                    b.ToTable("SKUUserUnilever", (string)null);
+                    b.ToTable("SKUUserUnilever");
                 });
 
             modelBuilder.Entity("BannerUserUnilever", b =>

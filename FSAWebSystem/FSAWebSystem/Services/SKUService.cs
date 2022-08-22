@@ -28,6 +28,11 @@ namespace FSAWebSystem.Services
             return await _db.SKUs.AnyAsync(x => x.PCMap == pcMap && x.Id != id);
         }
 
+        public async Task<SKU> GetSKUById(Guid id)
+        {
+            return await _db.SKUs.SingleOrDefaultAsync(x => x.Id == id);
+        }
+
 		public async Task<SKU> GetSKU(string pcMap)
         {
 			return await _db.SKUs.SingleOrDefaultAsync(x => x.PCMap == pcMap);

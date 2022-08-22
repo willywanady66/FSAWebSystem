@@ -194,21 +194,31 @@
             success: function (data) {
                 var ul = document.getElementById('error-messages');
                 ul.innerHTML = '';
-                redrawTable();
-            },
-            error: function (data) {
-                var errorMessages = data.responseJSON.value.errorMessages;
-                var ul = document.getElementById('error-messages');
-                ul.innerHTML = '';
-                for (var i = 0; i < errorMessages.length; i++) {
-                    var li = document.createElement('li');
-                    li.appendChild(document.createTextNode(errorMessages[i]));
-                    ul.appendChild(li);
+              
+                if (data.value) {
+                    if (data.value.errorMessages) {
+                        var errorMessages = data.value.errorMessages;
+                        var ul = document.getElementById('error-messages');
+                        ul.innerHTML = '';
+                        for (var i = 0; i < errorMessages.length; i++) {
+                            var li = document.createElement('li');
+                            li.appendChild(document.createTextNode(errorMessages[i]));
+                            ul.appendChild(li);
+                        }
+
+                        document.body.scrollTop = 0;
+                        document.documentElement.scrollTop = 0;
+                    }
+             
+                }
+                else {
+                    redrawTable();
                 }
 
-                document.body.scrollTop = 0;
-                document.documentElement.scrollTop = 0;
-
+               
+            },
+            error: function (data) {
+                
             }
         });
     });
