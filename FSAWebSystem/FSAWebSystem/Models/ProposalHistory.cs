@@ -32,7 +32,7 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public string ApprovedBy { get; set; }
         [NotMapped]
-        public string RejectionReason { get; set; }
+        public string ApprovalNote { get; set; }
         [NotMapped]
         public string ApprovalStatus { get; set; }
         [NotMapped]

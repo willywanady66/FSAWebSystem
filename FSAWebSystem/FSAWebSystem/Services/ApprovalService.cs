@@ -298,7 +298,7 @@ namespace FSAWebSystem.Services
             return listEmail;
         }
 
-        public async Task<EmailApproval> GenerateEmailApproval(Approval approval, string userApproverEmail, string requestorEmail, string rejectionReason, Banner banner, SKU sku)
+        public async Task<EmailApproval> GenerateEmailApproval(Approval approval, string userApproverEmail, string requestorEmail, string approvalNote, Banner banner, SKU sku)
         {
             var emailApproval = new EmailApproval();
             var type = string.Empty;
@@ -362,10 +362,11 @@ namespace FSAWebSystem.Services
                                     $"<br>" +
                                     $"Description Map: {sku.DescriptionMap} " +
                                     $"<br>" +
-                                    $"has been rejected by {userApproverEmail} because of {rejectionReason}. <br><br><br> Thank You";
+                                    $"has been rejected by {userApproverEmail} because of {approvalNote}. <br><br><br> Thank You";
             }
             else
             {
+                var note = !string.IsNullOrEmpty(approvalNote) ? $"Approval Note: {approvalNote} <br>" : string.Empty;
                 emailApproval.Body = $"Hi, {requestorEmail}, " +
                                     $"<br> " +
                                     $"Your Proposal Request on " +
@@ -380,6 +381,7 @@ namespace FSAWebSystem.Services
                                     $"<br>" +
                                     $"Description Map: {sku.DescriptionMap} " +
                                     $"<br>" +
+                                    note +
                                     $"has been approved by {userApproverEmail}. <br><br><br> Thank You";
             }
 

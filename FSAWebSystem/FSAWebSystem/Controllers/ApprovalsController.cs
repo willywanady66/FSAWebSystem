@@ -137,7 +137,27 @@ namespace FSAWebSystem.Controllers
                     {
 
                     }
-                    
+
+                    var approvalNoteList = new List<Tuple<string, string, string>>();
+
+                    if(!string.IsNullOrEmpty(approval.ApprovalNote))
+                    {
+                        var approvalNotes = approval.ApprovalNote.Split(';').ToList();
+                        var approvers = approval.ApprovedBy.Split(';').ToList();
+
+                        for (int i = 0; i < approvalNotes.Count; i++)
+                        {
+                            var approver = await _userService.GetUserByEmail(approvers[i]);
+                            var worklevel = _userService.GetAllWorkLevel().Single(x => x.Id == approver.WLId);
+                            var note = new Tuple<string, string, string>(approvers[i].ToString(), worklevel.WL, approvalNotes[i].ToString());
+                            approvalNoteList.Add(note);
+                        }
+                    }
+           
+                 
+
+                    ViewData["ApprovalNotes"] = approvalNoteList;
+
                     ViewData["CanApprove"] = canApprove;
                     ViewData["IsApproved"] = isApproved;
                     return View(approval);
@@ -207,7 +227,7 @@ namespace FSAWebSystem.Controllers
 
         [Authorize(Policy = ("ApprovalPage"))]
         [HttpPost]
-        public async Task<IActionResult> ApproveProposal(Guid approvalId)
+        public async Task<IActionResult> ApproveProposal(Guid approvalId, string approvalNote)
         {
             try
             {
@@ -243,6 +263,15 @@ namespace FSAWebSystem.Controllers
                     approval.ApprovedBy += ";" + User.Identity.Name;
                 }
 
+                if(string.IsNullOrEmpty(approval.ApprovalNote))
+                {
+                    approval.ApprovalNote = approvalNote;
+                }
+                else
+                {
+                    approval.ApprovalNote += ";" + approvalNote;
+                }
+
                 approval.Level -= 1;
                 var nextApproverWL = _approvalService.GetWLApprover(approval);
                 approval.ApproverWL = nextApproverWL;
@@ -252,7 +281,7 @@ namespace FSAWebSystem.Controllers
                 var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email);
                 listEmail.AddRange(emails);
 
-                var approvalEmail = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, string.Empty, banner, sku);
+                var approvalEmail = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);
                 await _emailService.SendEmailAsync(approvalEmail.RecipientEmail, approvalEmail.Subject, approvalEmail.Body);
                 //Update Weekly & Approval Done
                 if (approval.Level == 0)
@@ -262,7 +291,7 @@ namespace FSAWebSystem.Controllers
                     await UpdateWeeklyBuckets(proposal.ProposalDetails, proposal.Type.Value, proposal.Week);
                 }
 
-               
+
                 await _context.SaveChangesAsync();
                 _notyfService.Success("Proposal Approved");
 
@@ -293,18 +322,21 @@ namespace FSAWebSystem.Controllers
                     var nextBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null));
                     //NEXTWEEK
                     weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).SetValue(weeklyBucket, nextBucket - detail.Rephase);
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, weeklyBucket.CurrentBucket + detail.Rephase);
+
+                    var currentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).GetValue(weeklyBucket, null));
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, currentBucket + detail.Rephase);
                 }
                 else
                 {
                     weeklyBucket.MonthlyBucket = weeklyBucket.MonthlyBucket + detail.ProposeAdditional;
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, weeklyBucket.CurrentBucket + detail.ProposeAdditional);
+                    var currentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).GetValue(weeklyBucket, null));
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, currentBucket + detail.ProposeAdditional);
                 }
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> RejectProposal(Guid approvalId, string rejectionReason)
+        public async Task<IActionResult> RejectProposal(Guid approvalId, string approvalNote)
         {
             try
             {
@@ -316,7 +348,7 @@ namespace FSAWebSystem.Controllers
                 var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
 
                 approval.ApprovalStatus = ApprovalStatus.Rejected;
-                approval.RejectionReason = rejectionReason;
+                approval.ApprovalNote = approvalNote;
                 approval.ApprovedAt = DateTime.Now;
                 approval.ApprovedBy = User.Identity.Name;
 
@@ -324,7 +356,7 @@ namespace FSAWebSystem.Controllers
 
                 await _context.SaveChangesAsync();
 
-                var email = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, rejectionReason, banner, sku);
+                var email = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);
                 await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
             }
             catch(Exception ex)

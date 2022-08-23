@@ -79,11 +79,11 @@
     $("#approveProposalBtn").click(function () {
         
         var approvalId = $('.approvalId').attr('value');
-
+        var approvalNote = $('#approvalNote').val();
         $.ajax({
             type: "POST",
             url: approveUrl,
-            data: { "approvalId": approvalId },
+            data: { "approvalId": approvalId, "approvalNote": approvalNote },
             success: function (data) {
                 setTimeout(
                     function () {
@@ -97,11 +97,11 @@
     $("#rejectProposalBtn").click(function () {
 
         var approvalId = $('.approvalId').val();
-        var rejectionReason = $('#rejectionReason').val();
+        var approvalNote = $('#approvalNote').val();
         $.ajax({
             type: "POST",
             url: rejectUrl,
-            data: { "approvalId": approvalId, "rejectionReason" : rejectionReason },
+            data: { "approvalId": approvalId, "approvalNote": approvalNote },
             success: function (data) {
                 setTimeout(
                 function() {

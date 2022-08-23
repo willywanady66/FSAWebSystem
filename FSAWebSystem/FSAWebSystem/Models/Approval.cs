@@ -12,7 +12,7 @@ namespace FSAWebSystem.Models
 
         public List<ApprovalDetail> ApprovalDetails { get; set; }
    
-        public string? RejectionReason { get; set; }
+        public string? ApprovalNote { get; set; }
         public string ApprovedBy { get; set; }
         public DateTime? ApprovedAt { get; set; }
 

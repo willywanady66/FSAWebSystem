@@ -8,6 +8,7 @@
 	var type = ViewData["Type"];
 	bool canApprove = (bool)ViewData["CanApprove"];
 	bool isApproved = (bool)ViewData["IsApproved"];
+	List<Tuple<string, string, string>> approvalNotes = ViewData["ApprovalNotes"] as List<Tuple<string, string, string>>;
 	int i = -1;
 }
 
@@ -172,14 +173,33 @@
 			}
 			
 			
-		
-			
+
 		
 		
 	</div>
 </div>
 
-
+		<div class="row px-2">
+			@if(approvalNotes.Any())
+			{
+			<h3>Approval Note</h3>
+			@foreach(var item in approvalNotes)
+			{
+			<div class="card shadow pt-2">
+				<div class="card-body">
+					<p>From :  <b>@item.Item1</b> (<b>@item.Item2</b>)</p> 
+					<p>Note: <b>@item.Item3</b></p> 
+				</div>
+			</div>
+			
+			}
+	}
+		
+			
+			<hr />
+			
+		</div>
+			
 
 <div class="modal fade" id="approveProposalModal" tabindex="-1" role="dialog"
 	 aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -193,7 +213,15 @@
 					<span aria-hidden="true">×</span>
 				</button>
 			</div>
-			<div class="modal-body">Are you sure want to Approve Proposal?</div>
+			<div class="modal-body">
+				<p>Are you sure want to Approve Proposal?</p>
+				<div>
+					<label>Approval Note: </label>
+				</div>
+				<div>
+					<textarea class="form-control" id="approvalNote"></textarea>
+				</div>
+				</div>
 			<div class="modal-footer">
 				<button type="submit" class="btn btn-primary" id="approveProposalBtn"
 						data-dismiss="modal">
@@ -223,7 +251,7 @@
 					<label>Rejection Reason: </label>
 				</div>
 				<div>
-					<textarea class="form-control" id="rejectionReason"></textarea>
+					<textarea class="form-control" id="approvalNote"></textarea>
 				</div>
 			</div>
 

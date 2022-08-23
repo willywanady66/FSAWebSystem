@@ -15,6 +15,6 @@ namespace FSAWebSystem.Services.Interface
         public Task<List<string>> GetRecipientEmail(string wlApproval, Guid bannerId = new Guid());
         public string GetWLApprover(Approval approval);
         public Task<List<EmailApproval>> GenerateEmailProposal(Approval approval, string url, string requestor, Guid bannerId = new Guid());
-        public Task<EmailApproval> GenerateEmailApproval(Approval approval, string userApproverEmail, string requesterEmail, string rejectionReason, Banner banner, SKU sku);
+        public Task<EmailApproval> GenerateEmailApproval(Approval approval, string userApproverEmail, string requesterEmail, string approvalNote, Banner banner, SKU sku);
     }
 }

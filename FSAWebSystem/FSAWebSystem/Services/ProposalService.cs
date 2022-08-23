@@ -203,7 +203,7 @@ namespace FSAWebSystem.Services
                                          ProposeAdditional = proposalHistory.ProposeAdditional,
                                          Rephase = proposalHistory.Rephase,
                                          ApprovedBy = approval.ApprovedBy,
-                                         RejectionReason = approval.RejectionReason,
+                                         ApprovalNote = approval.ApprovalNote,
                                          ApprovalStatus = approval.ApprovalStatus.ToString(),
                                          ApprovalId = approval.Id
                                      });

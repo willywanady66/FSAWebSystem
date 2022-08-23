@@ -246,7 +246,7 @@
             { "data": "remark" },   //9
             { "data": "approvalStatus" },   //10
             { "data": "approvedBy" },   //11
-            { "data": "rejectionReason" },   //12
+            { "data": "approvalNote" },   //12
         ],
         "rowCallback": function (row, data, index) {
             if (data.approvalStatus == "Approved") {
