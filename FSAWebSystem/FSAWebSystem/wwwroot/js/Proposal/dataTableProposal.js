@@ -185,13 +185,24 @@
 
     $('#submitProposalBtn').click(function () {
         let proposals = getUserInput(proposalInputs);
-        //$('#submitProposalModal').modal('hide'); 
+        //$('#submitProposalModal').modal('hide');
         //$("#submitProposalModal").modal("hide");
+        Swal.fire({
+            title: 'Loading...',
+            html: 'Submitting Proposal',
+            timerProgressBar: true,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading()
+            },
+        });
         $.ajax({
             type: "POST",
             url: submitProposalUrl,
             data: { "proposals": proposals },
             success: function (data) {
+                Swal.close();
                 var ul = document.getElementById('error-messages');
                 ul.innerHTML = '';
               
@@ -214,8 +225,6 @@
                 else {
                     redrawTable();
                 }
-
-               
             },
             error: function (data) {
                 

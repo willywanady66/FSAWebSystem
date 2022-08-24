@@ -77,7 +77,16 @@
     });
 
     $("#approveProposalBtn").click(function () {
-        
+        Swal.fire({
+            title: 'Loading...',
+            html: 'Approving...',
+            timerProgressBar: true,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading()
+            },
+        });
         var approvalId = $('.approvalId').attr('value');
         var approvalNote = $('#approvalNote').val();
         $.ajax({
@@ -85,17 +94,27 @@
             url: approveUrl,
             data: { "approvalId": approvalId, "approvalNote": approvalNote },
             success: function (data) {
+                Swal.close();
                 setTimeout(
                     function () {
                         window.location.href = indexUrl;
-                    }, 1500)
+                    }, 500)
             }
         })
     });
 
 
     $("#rejectProposalBtn").click(function () {
-
+        Swal.fire({
+            title: 'Loading...',
+            html: 'Rejecting...',
+            timerProgressBar: true,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading()
+            },
+        });
         var approvalId = $('.approvalId').val();
         var approvalNote = $('#approvalNote').val();
         $.ajax({
@@ -103,10 +122,11 @@
             url: rejectUrl,
             data: { "approvalId": approvalId, "approvalNote": approvalNote },
             success: function (data) {
+                Swal.close();
                 setTimeout(
                 function() {
                         window.location.href = indexUrl;
-                }, 1500)
+                    }, 500)
                 
             }
         })

@@ -241,38 +241,41 @@ namespace FSAWebSystem.Controllers
                             var proposalDetail = new ProposalDetail();
                             var savedProposal = savedProposals.Single(x => x.Id == Guid.Parse(proposalInput.id));
 
-                            approval = CreateApproval(approvalId, savedProposal.Type.Value);
+                          
 
-
+                            var proposalDetailTarget = new ProposalDetail();
                             if (proposalInput.rephase > 0)
                             {
                                 savedProposal.Rephase = proposalInput.rephase;
                                 savedProposal.Type = ProposalType.Rephase;
+
+                                proposalDetail.WeeklyBucketId = savedProposal.WeeklyBucketId;
+                                proposalDetail.ProposeAdditional = proposalInput.proposeAdditional;
+                                proposalDetail.Rephase = proposalInput.rephase;
+                                proposalDetail.ApprovalId = approvalId;
+                                listProposalDetail.Add(proposalDetail);
                             }
 
                             if (proposalInput.proposeAdditional > 0)
                             {
                                 savedProposal.ProposeAdditional = proposalInput.proposeAdditional;
                                 savedProposal.Type = ProposalType.ProposeAdditional;
+                                var weeklyBucketTarget = await ValidateProposeAdditional(banners, skus, proposalInput.proposeAdditional, savedProposal.WeeklyBucketId, savedProposal);
+                                if (savedProposal.Type != ProposalType.ProposeAdditional)
+                                {
+                                    proposalDetailTarget.WeeklyBucketId = weeklyBucketTarget.Id;
+                                    proposalDetailTarget.ProposeAdditional = -1 * proposalInput.proposeAdditional;
+                                    proposalDetailTarget.ApprovalId = approvalId;
+                                    listProposalDetail.Add(proposalDetailTarget);
+                                }
+
+                                proposalDetail.WeeklyBucketId = Guid.Parse(proposalInput.weeklyBucketId);
+                                proposalDetail.ProposeAdditional = proposalInput.proposeAdditional;
+                                proposalDetail.ApprovalId = approvalId;
+                                listProposalDetail.Add(proposalDetail);
+
                             }
-
-                            var weeklyBucketTarget = await ValidateProposeAdditional(banners, skus, proposalInput.proposeAdditional, savedProposal.WeeklyBucketId, savedProposal);
-
-                            var proposalDetailTarget = new ProposalDetail();
-                            if (savedProposal.Type != ProposalType.ProposeAdditional)
-                            {
-                                proposalDetailTarget.WeeklyBucketId = weeklyBucketTarget.Id;
-                                proposalDetailTarget.ProposeAdditional = -1 * proposalInput.proposeAdditional;
-                                proposalDetailTarget.ApprovalId = approvalId;
-                                listProposalDetail.Add(proposalDetailTarget);
-                            }
-
-                            proposalDetail.WeeklyBucketId = savedProposal.WeeklyBucketId;
-                            proposalDetail.ProposeAdditional = proposalInput.proposeAdditional;
-                            proposalDetail.Rephase = proposalInput.rephase;
-                            proposalDetail.ApprovalId = approvalId;
-                            listProposalDetail.Add(proposalDetail);
-
+                            approval = CreateApproval(approvalId, savedProposal.Type.Value);
                             savedProposal.Week = fsaDetail.Week;
                             savedProposal.Month = fsaDetail.Month;
                             savedProposal.Year = fsaDetail.Year;
