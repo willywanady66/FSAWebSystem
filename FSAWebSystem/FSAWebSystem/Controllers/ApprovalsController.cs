@@ -351,7 +351,7 @@ namespace FSAWebSystem.Controllers
                 approval.ApprovalNote = approvalNote;
                 approval.ApprovedAt = DateTime.Now;
                 approval.ApprovedBy = User.Identity.Name;
-
+                approval.ApproverWL = string.Empty;
                 proposal.IsWaitingApproval = false;
 
                 await _context.SaveChangesAsync();

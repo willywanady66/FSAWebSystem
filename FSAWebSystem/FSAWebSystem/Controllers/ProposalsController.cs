@@ -229,7 +229,7 @@ namespace FSAWebSystem.Controllers
                                 proposal = await CreateProposalProposeAdditional(proposalInput, fsaDetail, (Guid)user.UserUnileverId, approvalId, banners, skus);
                                 approval = CreateApproval(approvalId, proposal.Type.Value);
                             }
-                            proposalHistories = await CrateProposalHistory(approval, proposal, fsaDetail);
+                            proposalHistories = await CreateProposalHistory(approval, proposal, fsaDetail);
                             listProposal.Add(proposal);
                             
                         }
@@ -269,6 +269,7 @@ namespace FSAWebSystem.Controllers
 
                             proposalDetail.WeeklyBucketId = savedProposal.WeeklyBucketId;
                             proposalDetail.ProposeAdditional = proposalInput.proposeAdditional;
+                            proposalDetail.Rephase = proposalInput.rephase;
                             proposalDetail.ApprovalId = approvalId;
                             listProposalDetail.Add(proposalDetail);
 
@@ -281,7 +282,7 @@ namespace FSAWebSystem.Controllers
                             savedProposal.SubmittedAt = DateTime.Now;
                             savedProposal.ApprovalId = approvalId;
 
-                            proposalHistories = await CrateProposalHistory(approval, savedProposal, fsaDetail);
+                            proposalHistories = await CreateProposalHistory(approval, savedProposal, fsaDetail);
                         }
 
                         listApproval.Add(approval);
@@ -350,7 +351,8 @@ namespace FSAWebSystem.Controllers
                 ProposalId = proposal.Id,
                 ApprovalId = proposal.ApprovalId,
                 WeeklyBucketId = proposal.WeeklyBucketId,
-                Rephase = proposal.Rephase,
+                Rephase = proposalInput.rephase,
+                ProposeAdditional = proposalInput.proposeAdditional
             };
 
             proposal.ProposalDetails.Add(proposalDetail);
@@ -483,7 +485,7 @@ namespace FSAWebSystem.Controllers
             return approval;
         }
 
-        public async Task<List<ProposalHistory>> CrateProposalHistory(Approval approval, Proposal proposal, FSACalendarDetail fsaDetail)
+        public async Task<List<ProposalHistory>> CreateProposalHistory(Approval approval, Proposal proposal, FSACalendarDetail fsaDetail)
         {
             var listHistory = new List<ProposalHistory>();
             foreach (var detail in proposal.ProposalDetails)
