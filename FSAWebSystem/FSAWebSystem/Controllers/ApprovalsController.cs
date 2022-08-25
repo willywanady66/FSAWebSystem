@@ -281,16 +281,17 @@ namespace FSAWebSystem.Controllers
                 var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email);
                 listEmail.AddRange(emails);
 
-                var approvalEmail = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);
-                await _emailService.SendEmailAsync(approvalEmail.RecipientEmail, approvalEmail.Subject, approvalEmail.Body);
+               
                 //Update Weekly & Approval Done
                 if (approval.Level == 0)
                 {
                     approval.ApprovalStatus = ApprovalStatus.Approved;
                     proposal.IsWaitingApproval = false;
-                    await UpdateWeeklyBuckets(proposal.ProposalDetails, proposal.Type.Value, proposal.Week);
+                    await UpdateWeeklyBuckets(proposal.ProposalDetails, proposal.Type.Value, proposal.Week, approval.Id);
                 }
 
+                var approvalEmail = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);
+                await _emailService.SendEmailAsync(approvalEmail.RecipientEmail, approvalEmail.Subject, approvalEmail.Body);
 
                 await _context.SaveChangesAsync();
                 _notyfService.Success("Proposal Approved");
@@ -311,9 +312,9 @@ namespace FSAWebSystem.Controllers
             return Ok();
         }
 
-        public async Task UpdateWeeklyBuckets(List<ProposalDetail> proposalDetails, ProposalType type, int week)
+        public async Task UpdateWeeklyBuckets(List<ProposalDetail> proposalDetails, ProposalType type, int week, Guid approvalId)
         {
-            foreach(var detail in proposalDetails)
+            foreach(var detail in proposalDetails.Where(x => x.ApprovalId == approvalId))
             {
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(detail.WeeklyBucketId);
                 if (type == ProposalType.Rephase)
@@ -348,7 +349,15 @@ namespace FSAWebSystem.Controllers
                 var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
 
                 approval.ApprovalStatus = ApprovalStatus.Rejected;
-                approval.ApprovalNote = approvalNote;
+                if (string.IsNullOrEmpty(approval.ApprovalNote))
+                {
+                    approval.ApprovalNote = approvalNote;
+                }
+                else
+                {
+                    approval.ApprovalNote += ";" + approvalNote;
+                }
+
                 approval.ApprovedAt = DateTime.Now;
                 approval.ApprovedBy = User.Identity.Name;
                 approval.ApproverWL = string.Empty;

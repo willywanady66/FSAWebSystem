@@ -116,6 +116,7 @@ namespace FSAWebSystem.Controllers
                     savedBanner.PlantCode = banner.PlantCode;
                     savedBanner.KAM = banner.KAM;
                     savedBanner.CDM = banner.CDM;
+                    savedBanner.IsActive = banner.IsActive;
                     await _bannerService.UpdateBanner(savedBanner, User.Identity.Name);
                     return RedirectToAction("Index", "Admin");
                 }

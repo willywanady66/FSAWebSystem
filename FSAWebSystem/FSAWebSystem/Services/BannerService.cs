@@ -56,7 +56,7 @@ namespace FSAWebSystem.Services
                 switch (order.column)
                 {
                     case 0:
-                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.Trade) : banners.OrderBy(x => x.Trade);
+                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.Trade) : banners.OrderByDescending(x => x.IsActive).ThenBy(x => x.Trade);
                         break;
                     case 1:
                         banners = order.dir == "desc" ? banners.OrderByDescending(x => x.CDM) : banners.OrderBy(x => x.CDM);

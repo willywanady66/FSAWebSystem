@@ -116,7 +116,7 @@
             },
         });
         var approvalId = $('.approvalId').val();
-        var approvalNote = $('#approvalNote').val();
+        var approvalNote = $('#approvalNoteReject').val();
         $.ajax({
             type: "POST",
             url: rejectUrl,

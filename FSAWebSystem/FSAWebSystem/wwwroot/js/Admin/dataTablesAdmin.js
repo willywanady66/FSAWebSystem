@@ -63,11 +63,12 @@
             { "data": "bannerName" },       //3
             { "data": "plantName" }, //4
             { "data": "plantCode" },      //5
-            { "data": "id" } //6
+            { "data": "isActive" },      //6
+            { "data": "id" } //7
         ],
         columnDefs: [
             {
-                targets: 6,
+                targets: 7,
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
@@ -75,8 +76,28 @@
                                 <i class="fas fa-pen"></i>
                             <a/>`
                 }
+            },
+                {
+                "targets": 6,
+                "render": function (data, type, full, meta) {
+                    if (full.isActive) {
+                        data = "Active";
+                    }
+                    else {
+                        data = "Non-Active";
+                    }
+                    return data;
+                }
+            },
+        ],
+        "rowCallback": function (row, data, index) {
+            if (data.isActive) {
+                $('td:eq(6)', row).css({ color: "green" });
             }
-        ]
+            else {
+                $('td:eq(6)', row).css({ color: "red" });
+            }
+        }
     });
 
     $('#dataTableProductCategory').DataTable({
@@ -158,7 +179,7 @@
                 orderable: false,
                 "render": function (data, type, full, meta) {
                     return meta.row + 1 + meta.settings._iDisplayStart;
-                }
+                },
             },
             ]
     });
