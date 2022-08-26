@@ -129,7 +129,7 @@ namespace FSAWebSystem.Services
                                          Rephase = proposalHistory.Rephase,
                                          ApprovedBy = approval.ApprovedBy,
                                          ApprovalNote = approval.ApprovalNote,
-                                         ApprovalStatus = approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel ? approval.ApprovalStatus.ToString() + '(' + approval.ApproverWL + ')' : approval.ApprovalStatus.ToString(),
+                                         ApprovalStatus = approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel || approval.ApprovalStatus == ApprovalStatus.Pending ? approval.ApprovalStatus.ToString() + '(' + approval.ApproverWL + ')' : approval.ApprovalStatus.ToString(),
                                          ApprovalId = approval.Id
                                      });
 
