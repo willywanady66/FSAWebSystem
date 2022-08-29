@@ -121,7 +121,7 @@ namespace FSAWebSystem.Controllers
                     recordsTotal = listProposalHistory.totalRecord,
                     recordsFiltered = listProposalHistory.totalRecord,
                     data = listProposalHistory.proposalsHistory
-                }) ;
+                });
 
                 return listData;
             }
@@ -201,21 +201,22 @@ namespace FSAWebSystem.Controllers
             List<ProposalHistory> listProposalHistory = new List<ProposalHistory>();
             var listEmail = new List<EmailApproval>();
 
-           
+
             if (!errorMessages.Any() && !proposals.Any(x => string.IsNullOrEmpty(x.weeklyBucketId)))
             {
                 try
                 {
                     var banners = _bannerService.GetAllActiveBanner();
                     var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
-                    
-                   
+
+
                     foreach (var proposalInput in proposals.Where(x => (x.proposeAdditional > 0 || x.rephase > 0) && !x.isWaitingApproval))
                     {
                         var approval = new Approval();
                         var proposal = new Proposal();
                         var proposalHistories = new List<ProposalHistory>();
                         var approvalId = Guid.NewGuid();
+
                         if (Guid.Parse(proposalInput.id) == Guid.Empty)
                         {
                             if (proposalInput.rephase > 0)
@@ -231,7 +232,7 @@ namespace FSAWebSystem.Controllers
                             }
                             proposalHistories = await CreateProposalHistory(approval, proposal, fsaDetail);
                             listProposal.Add(proposal);
-                            
+
                         }
                         else
                         {
@@ -241,7 +242,7 @@ namespace FSAWebSystem.Controllers
                             var proposalDetail = new ProposalDetail();
                             var savedProposal = savedProposals.Single(x => x.Id == Guid.Parse(proposalInput.id));
 
-                          
+
 
                             var proposalDetailTarget = new ProposalDetail();
                             if (proposalInput.rephase > 0)
@@ -291,25 +292,30 @@ namespace FSAWebSystem.Controllers
                         listApproval.Add(approval);
 
                         listProposalHistory.AddRange(proposalHistories);
-                        var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new {id = approval.Id});
-                        var email = await _approvalService.GenerateEmailProposal(approval, page, user.Email, Guid.Parse(proposalInput.bannerId));
+                        var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
+
+                        var weeklyBucket = await _bucketService.GetWeeklyBucket(Guid.Parse(proposalInput.weeklyBucketId));
+                        var banner = await _bannerService.GetBanner(Guid.Parse(proposalInput.bannerId));
+                        var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
+
+                        var email = await _approvalService.GenerateEmailProposal(approval, page, user.Email, banner, sku);
                         listEmail.AddRange(email);
                     }
 
- 
-                        await _proposalService.SaveProposals(listProposal);
-                        await _proposalService.SaveProposalHistories(listProposalHistory);
-                        await _approvalService.SaveApprovals(listApproval);
-                        await _db.SaveChangesAsync();
-                        foreach (var email in listEmail)
-                        {
-                            await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
-                        }
 
-                        message = "Your Proposal has been submitted!";
-                        _notyfService.Success(message);
+                    await _proposalService.SaveProposals(listProposal);
+                    await _proposalService.SaveProposalHistories(listProposalHistory);
+                    await _approvalService.SaveApprovals(listApproval);
+                    await _db.SaveChangesAsync();
+                    foreach (var email in listEmail)
+                    {
+                        await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
+                    }
 
-                   
+                    message = "Your Proposal has been submitted!";
+                    _notyfService.Success(message);
+
+
                     return Ok(proposals);
                 }
                 catch (Exception ex)
@@ -326,7 +332,7 @@ namespace FSAWebSystem.Controllers
                 _notyfService.Warning(message);
                 return Ok(Json(new { proposals, errorMessages }));
             }
-          
+
         }
 
 
@@ -442,7 +448,7 @@ namespace FSAWebSystem.Controllers
             weeklyBucketTarget = await ValidateProposeAdditional(banners, skus, proposeAdditional, weeklyBucketId, proposal);
 
             var proposalDetailTarget = new ProposalDetail();
- 
+
             if (proposal.Type != ProposalType.ProposeAdditional)
             {
                 proposalDetailTarget.WeeklyBucketId = weeklyBucketTarget.Id;
@@ -512,7 +518,7 @@ namespace FSAWebSystem.Controllers
                 };
                 listHistory.Add(propHistory);
             }
-           
+
             return listHistory;
         }
 
@@ -520,15 +526,15 @@ namespace FSAWebSystem.Controllers
         {
             var currDate = DateTime.Now;
 
-            if(proposalInputs.Where(x => !x.isWaitingApproval).All(x => x.rephase == 0) && proposalInputs.Where(x => !x.isWaitingApproval).All(x => x.proposeAdditional == 0))
+            if (proposalInputs.Where(x => !x.isWaitingApproval).All(x => x.rephase == 0) && proposalInputs.Where(x => !x.isWaitingApproval).All(x => x.proposeAdditional == 0))
             {
                 errorMessages.Add("No submitted proposal!");
-            } 
-         
+            }
+
             foreach (var proposal in proposalInputs.Where(x => (!string.IsNullOrEmpty(x.remark) || x.proposeAdditional > 0 || x.rephase > 0)))
             {
 
-                if(proposal.rephase > 0 && proposal.proposeAdditional > 0)
+                if (proposal.rephase > 0 && proposal.proposeAdditional > 0)
                 {
                     errorMessages.Add(string.Format("Cannot request Rephase and Propose Additional together at the same time on Bucket Name: {0}, PlantName: {1} and PCMap: {2}", proposal.bannerName, proposal.plantName, proposal.pcMap));
                 }
@@ -542,9 +548,9 @@ namespace FSAWebSystem.Controllers
                     errorMessages.Add(string.Format("Cannot request Rephase more than next week bucket value on Bucket Name: {0}, PlantName: {1} and PCMap: {2}", proposal.bannerName, proposal.plantName, proposal.pcMap));
                 }
 
-                if(proposal.proposeAdditional > 0)
+                if (proposal.proposeAdditional > 0)
                 {
-                    if(currDate.DayOfWeek >= DayOfWeek.Friday && currDate.DayOfWeek <= DayOfWeek.Sunday && fSACalendarDetail.Week == 4)
+                    if (currDate.DayOfWeek >= DayOfWeek.Friday && currDate.DayOfWeek <= DayOfWeek.Sunday && fSACalendarDetail.Week == 4)
                     {
                         errorMessages.Add(string.Format("Cannot request Propose Additional after Friday on Week 4 "));
                     }

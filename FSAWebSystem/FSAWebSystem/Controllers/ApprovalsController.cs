@@ -278,7 +278,7 @@ namespace FSAWebSystem.Controllers
 
                 var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
 
-                var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email);
+                var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email, banner, sku);
                 listEmail.AddRange(emails);
 
                

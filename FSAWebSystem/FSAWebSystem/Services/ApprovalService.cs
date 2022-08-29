@@ -258,11 +258,11 @@ namespace FSAWebSystem.Services
             return usersEmail;
         }
 
-        public async Task<List<EmailApproval>> GenerateEmailProposal(Approval approval, string url, string requestor, Guid bannerId = new Guid())
+        public async Task<List<EmailApproval>> GenerateEmailProposal(Approval approval, string url, string requestor, Banner banner, SKU sku)
         {
             var listEmail = new List<EmailApproval>();
             var type = string.Empty;
-            var emails = await GetRecipientEmail(approval.ApproverWL, bannerId);
+            var emails = await GetRecipientEmail(approval.ApproverWL, banner.Id);
             if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
             {
                 type = "Reallocate Across KAM";
@@ -291,7 +291,19 @@ namespace FSAWebSystem.Services
                 emailApproval.Name = email;
                 emailApproval.Requestor = requestor;
                 emailApproval.Subject = $"FSA {type} Approval Request";
-                emailApproval.Body = $"Hi, {email}, <br> Please approve proposal request from {requestor} by <a href='{HtmlEncoder.Default.Encode(url)}'>clicking here</a>. <br><br><br> Thank You.";
+                emailApproval.Body = $"Hi, {email}, " +
+                                     $"<br> Please approve {type} Proposal Request: " +
+                                     $"<br> " +
+                                     $"Banner: {banner.BannerName} " +
+                                     $"<br> " +
+                                     $"Plant Code: {banner.PlantCode} " +
+                                     $"<br> " +
+                                     $"Plant Name: {banner.PlantName} " +
+                                     $"<br> " +
+                                     $"PC Code: {sku.PCMap}" +
+                                     $"<br>" +
+                                     $"Description Map: {sku.DescriptionMap} <br>" +
+                                     $" from {requestor} by <a href='{HtmlEncoder.Default.Encode(url)}'>clicking here</a>. <br><br><br> Thank You.";
                 listEmail.Add(emailApproval);
             }
 
