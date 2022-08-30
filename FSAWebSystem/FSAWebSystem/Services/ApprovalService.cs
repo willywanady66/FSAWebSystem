@@ -29,19 +29,33 @@ namespace FSAWebSystem.Services
         public async Task<ApprovalPagingData> GetApprovalPagination(DataTableParam param, int month, int year, UserUnilever user)
         {
 
+
+            var banners = _db.Banners.AsQueryable();
+            var skus = _db.SKUs.Include(x => x.ProductCategory).AsQueryable();
+            var workLevel = user.WLName;
+            var userBannerIds = user.Banners.Select(x => x.Id);
+            var userSkuIds = user.SKUs.Select(x => x.Id);
+            var userCategIds = user.ProductCategories.Select(x => x.Id);
+            if (workLevel == "KAM WL 2")
+            {
+                banners = banners.Where(x => userBannerIds.Contains(x.Id));
+            }
+            else if (workLevel == "CCD")
+            {
+                skus = skus.Where(x => userSkuIds.Contains(x.Id) || userCategIds.Contains(x.ProductCategory.Id));
+            }
+
             var approvals = (from approval in _db.Approvals
                              join proposal in (from proposal in _db.Proposals
                                                join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
                                                                          //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
-                                                                     join banner in _db.Banners on weeklyBucket.BannerId equals banner.Id
-                                                                     join sku in _db.SKUs.Include(x => x.ProductCategory) on weeklyBucket.SKUId equals sku.Id
+                                                                     join banner in banners on weeklyBucket.BannerId equals banner.Id
+                                                                     join sku in skus on weeklyBucket.SKUId equals sku.Id
                                                                      select new WeeklyBucket
                                                                      {
                                                                          Id = weeklyBucket.Id,
-                                                                         SKUId = sku.Id,
                                                                          ProductCategoryId = sku.ProductCategory.Id,
                                                                          BannerName = banner.BannerName,
-                                                                         BannerId = banner.Id,
                                                                          PlantName = banner.PlantName,
                                                                          PCMap = sku.PCMap,
                                                                          DescriptionMap = sku.DescriptionMap,
@@ -50,7 +64,6 @@ namespace FSAWebSystem.Services
                                                {
                                                    Id = proposal.Id,
                                                    ApprovalId = proposal.ApprovalId,
-                                                   BannerId = weeklyBucket.BannerId,
                                                    BannerName = weeklyBucket.BannerName,
                                                    PlantName = weeklyBucket.PlantName,
                                                    PCMap = weeklyBucket.PCMap,
@@ -59,10 +72,6 @@ namespace FSAWebSystem.Services
                                                    Rephase = proposal.Rephase,
                                                    Remark = proposal.Remark,
                                                    Type = proposal.Type,
-                                                   SKUId = weeklyBucket.SKUId,
-                                                   ProductCategoryId = weeklyBucket.ProductCategoryId,
-                                                   //Year = proposal.Year,
-                                                   //Month = proposal.Month,
                                                    Week = proposal.Week,
                                                    SubmittedAt = proposal.SubmittedAt
                                                }) on approval.Id equals proposal.ApprovalId
@@ -74,7 +83,6 @@ namespace FSAWebSystem.Services
                                  ProposalType = proposal.Type.Value,
                                  Id = approval.Id,
                                  ProposalSubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
-                                 BannerId = proposal.BannerId,
                                  BannerName = proposal.BannerName,
                                  PCMap = proposal.PCMap,
                                  DescriptionMap = proposal.DescriptionMap,
@@ -82,27 +90,23 @@ namespace FSAWebSystem.Services
                                  Rephase = proposal.Rephase,
                                  Remark = proposal.Remark,
                                  Week = proposal.Week,
-                                 Level1 = "",
-                                 Level2 = "",
                                  Level = approval.Level,
                                  ApproverWL = approval.ApproverWL,
-                                 ProductCategoryId = proposal.ProductCategoryId,
-                                 SKUId = proposal.SKUId
                              });
 
-            var workLevel = user.WLName;
-            var userBannerIds = user.Banners.Select(x => x.Id).ToList();
-            var userSkuIds = user.SKUs.Select(x => x.Id).ToList();
-            var userCategIds = user.ProductCategories.Select(x => x.Id).ToList();
-            approvals = approvals.Where(x => x.ApproverWL == workLevel);
-            if (workLevel == "KAM WL 2")
-            {
-                approvals = approvals.Where(x => userBannerIds.Contains(x.BannerId));
-            }
-            else if (workLevel == "CCD")
-            {
-                approvals = approvals.Where(x => userSkuIds.Contains(x.SKUId) || userCategIds.Contains(x.ProductCategoryId));
-            }
+            //var workLevel = user.WLName;
+            //var userBannerIds = user.Banners.Select(x => x.Id).ToList();
+            //var userSkuIds = user.SKUs.Select(x => x.Id).ToList();
+            //var userCategIds = user.ProductCategories.Select(x => x.Id).ToList();
+            //approvals = approvals.Where(x => x.ApproverWL == workLevel);
+            //if (workLevel == "KAM WL 2")
+            //{
+            //    approvals = approvals.Where(x => userBannerIds.Contains(x.BannerId));
+            //}
+            //else if (workLevel == "CCD")
+            //{
+            //    approvals = approvals.Where(x => userSkuIds.Contains(x.SKUId) || userCategIds.Contains(x.ProductCategoryId));
+            //}
             //if (workLevel == "KAM WL 2")
             //{
             //    approvals = approvals.Where(x => (x.ProposalType == ProposalType.Rephase || x.ProposalType == ProposalType.ReallocateAcrossKAM) && x.Level == 2 && userBannerIds.Contains(x.BannerId));
