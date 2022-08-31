@@ -273,9 +273,7 @@ namespace FSAWebSystem.Controllers
                 }
 
                 approval.Level -= 1;
-                var nextApproverWL = _approvalService.GetWLApprover(approval);
-                approval.ApproverWL = nextApproverWL;
-
+                
                 var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
 
                 var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email, banner, sku);
@@ -288,6 +286,11 @@ namespace FSAWebSystem.Controllers
                     approval.ApprovalStatus = ApprovalStatus.Approved;
                     proposal.IsWaitingApproval = false;
                     await UpdateWeeklyBuckets(proposal.ProposalDetails, proposal.Type.Value, proposal.Week, approval.Id);
+                }
+                else
+                {
+                    var nextApproverWL = _approvalService.GetWLApprover(approval);
+                    approval.ApproverWL = nextApproverWL;
                 }
 
                 var approvalEmail = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);

@@ -240,6 +240,10 @@ namespace FSAWebSystem.Services
                 {
                     wlApprover = "SOM MT WL 1";
                 }
+                else if (approval.ProposalType == ProposalType.ProposeAdditional)
+                {
+                    wlApprover = "CD DIRECTOR";
+                }
                 else
                 {
                     wlApprover = "SOM MT WL 2";
