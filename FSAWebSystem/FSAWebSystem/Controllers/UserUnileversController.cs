@@ -140,7 +140,7 @@ namespace FSAWebSystem.Controllers
                     var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerId.Contains(x.Id)).ToList();
                     var selectedWorkLevel = _userService.GetAllWorkLevel().Single(x => x.Id == Guid.Parse(workLevelId)).Id;
 
-                    var selectedSkuIds = skuIds.Select(x => Guid.Parse(x)).ToList();
+                   var selectedSkuIds = skuIds.Select(x => Guid.Parse(x)).ToList();
                     var selectedSKUs = (_skuService.GetAllProducts().ToList()).Where(x => selectedSkuIds.Contains(x.Id)).ToList();
 
                     var selectedCategoryIds = categoryIds.Select(x => Guid.Parse(x)).ToList();

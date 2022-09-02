@@ -92,6 +92,12 @@ namespace FSAWebSystem.Services
             return userUnilever;
         }
 
+        public async Task<UserUnilever> GetUserOnly(Guid id)
+        {
+            var userUnilever = await _db.UsersUnilever.SingleOrDefaultAsync(x => x.Id == id);
+            return userUnilever;
+        }
+
         public async Task<UserUnilever> GetUserByEmail(string email)
         {
             return await _db.UsersUnilever.Include(x => x.Banners).Include(x => x.RoleUnilever.Menus).SingleOrDefaultAsync(x => x.Email == email);

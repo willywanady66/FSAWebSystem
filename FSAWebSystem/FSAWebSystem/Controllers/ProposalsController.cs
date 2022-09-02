@@ -397,7 +397,7 @@ namespace FSAWebSystem.Controllers
                     //REALLOCATE ACROSS MT
                     case 2:
                         weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => x.SKUId == sku.Id);
-                        proposal.Type = ProposalType.ReallocateAcrossCDM;
+                        proposal.Type = ProposalType.ReallocateAcrossMT;
                         break;
                     default:
                         proposal.Type = ProposalType.ProposeAdditional;
