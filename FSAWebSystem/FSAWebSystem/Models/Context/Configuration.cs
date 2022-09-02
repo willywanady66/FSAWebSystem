@@ -97,6 +97,7 @@ namespace FSAWebSystem.Models.Context
                 "VP MTDA",
                 "CCD",
                 "CORE VP",
+                "CD DIRECTOR"
             };
             if(_db.WorkLevels.Any())
             {
