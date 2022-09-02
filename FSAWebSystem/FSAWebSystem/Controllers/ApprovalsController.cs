@@ -94,27 +94,6 @@ namespace FSAWebSystem.Controllers
 
                         isApproved = approval.ApprovedBy.Contains(userUnilever.Email);
 
-                        //if (workLevel == "KAM WL 2" || workLevel == "CDM WL 3" || workLevel == "VP MTDA" || workLevel == "CORE VP")
-                        //{
-                        //    if (approval.Level != 2)
-                        //    {
-                        //        canApprove = false;
-                        //    }
-                        //}
-                        //else if (workLevel == "SOM MT WL 1" || workLevel == "SOM MT WL 2" || workLevel == "CD DIRECTOR")
-                        //{
-                        //    if (approval.Level != 1)
-                        //    {
-                        //        canApprove = false;
-                        //    }
-                        //}
-                        //else if (workLevel == "CCD")
-                        //{
-                        //    if (approval.Level != 3)
-                        //    {
-                        //        canApprove = false;
-                        //    }
-                        //}
 
                         if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
                         {
@@ -183,8 +162,8 @@ namespace FSAWebSystem.Controllers
             try
             {
                 var user = await _userManager.GetUserAsync(User);
-                var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
-                userUnilever.WLName = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
+                var userUnilever = await _userService.GetUserOnly((Guid)user.UserUnileverId);
+               userUnilever.WLName = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
                 var currentDate = DateTime.Now;
             
                 var data = await _approvalService.GetApprovalPagination(param, currentDate.Month, currentDate.Year, userUnilever);
@@ -272,14 +251,14 @@ namespace FSAWebSystem.Controllers
                     approval.ApprovalNote += ";" + approvalNote;
                 }
 
-                approval.Level -= 1;
                 
                 var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
 
                 var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email, banner, sku);
                 listEmail.AddRange(emails);
 
-               
+
+                approval.Level -= 1;
                 //Update Weekly & Approval Done
                 if (approval.Level == 0)
                 {
