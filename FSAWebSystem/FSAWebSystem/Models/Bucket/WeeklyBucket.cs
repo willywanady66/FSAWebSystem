@@ -22,6 +22,7 @@ namespace FSAWebSystem.Models.Bucket
         public decimal DispatchConsume {get;set; }
         public DateTime? CreatedAt { get; set; }
         public string? CreatedBy { get; set; }
+        //public Guid MonthlyBucketId { get; set; }
 
         [NotMapped]
         public string CDM { get; set; }

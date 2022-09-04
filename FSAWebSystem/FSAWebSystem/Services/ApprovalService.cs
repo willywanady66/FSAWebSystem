@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Text.Encodings.Web;
 
 namespace FSAWebSystem.Services
@@ -313,7 +314,7 @@ namespace FSAWebSystem.Services
             return wlApprover;
         }
 
-        public async Task<List<string>> GetRecipientEmail(string wlApprover, Guid bannerId = new Guid())
+        public async Task<List<Tuple<string, List<Guid>>>> GetRecipientEmail(string wlApprover, Guid bannerId = new Guid())
         {
             var worklevel = await _db.WorkLevels.SingleAsync(x => x.WL == wlApprover);
             var users = await _db.UsersUnilever.Include(x => x.Banners).Where(x => x.WLId == worklevel.Id).ToListAsync();
@@ -322,8 +323,85 @@ namespace FSAWebSystem.Services
                 users = users.Where(x => x.Banners.Select(x => x.Id).Contains(bannerId)).ToList();
             }
 
-            var usersEmail = users.Select(x => x.Email).ToList();
+            var usersEmail = users.Select(x => new Tuple<string, List<Guid>>(x.Email, x.Banners.Select(y => y.Id).ToList())).ToList();
+            //var usersEmail = users.Select(x => x.Email).ToList();
             return usersEmail;
+        }
+
+        public async Task<List<EmailApproval>> GenerateCombinedEmailProposal(List<Approval> approvals, string baseUrl, string requestor)
+        {
+            var listEmail = new List<EmailApproval>();
+            var emails = new List<Tuple<string, List<Guid>>>();
+            var approvalGrps = approvals.GroupBy(x => x.ProposalType ).ToList();
+           
+            foreach (var apprvlGrp in approvalGrps)
+            {
+                var groupBanner = apprvlGrp.GroupBy(x => x.BannerId).ToList();
+                foreach(var banner in groupBanner)
+                {
+                     emails.AddRange(await GetRecipientEmail(apprvlGrp.First().ApproverWL, banner.Key));
+                }
+                var type = string.Empty;
+              
+                if (apprvlGrp.First().ProposalType == ProposalType.ReallocateAcrossKAM)
+                {
+                    type = "Reallocate Across KAM";
+                }
+                else if (apprvlGrp.First().ProposalType == ProposalType.ReallocateAcrossCDM)
+                {
+                    type = "Reallocate Across CDM";
+                }
+                else if (apprvlGrp.First().ProposalType == ProposalType.ReallocateAcrossMT)
+                {
+                    type = "Reallocate Across MT";
+                }
+                else if (apprvlGrp.First().ProposalType == ProposalType.Rephase)
+                {
+                    type = "Rephase";
+                }
+                else
+                {
+                    type = "Propose Additional";
+                }
+                var emailGroups = emails.GroupBy(x => x.Item1).ToList();
+                foreach(var emailGroup in emailGroups)
+                {
+                    var emailDetails = string.Empty;
+                    var emailApproval = new EmailApproval();
+                    emailApproval.RecipientEmail = emailGroup.Key;
+                    emailApproval.Requestor = requestor;
+                    emailApproval.Subject = $"FSA {type} Approval Request";
+                    emailApproval.Body = $"Hi, {emailGroup.Key}, " +
+                                         $"<br> Please approve {type} Proposal Request: " +
+                                         $"<br> <br>";
+                   
+                    foreach (var approval in apprvlGrp)
+                    {
+                        emailApproval.ApprovalUrl = baseUrl + "/" + approval.Id;
+                        if (emailGroup.Any(x => x.Item2.Contains(approval.BannerId)))
+                        {
+                            var banner = await _db.Banners.SingleOrDefaultAsync(x => x.Id == approval.BannerId);
+                            var sku = await _db.SKUs.SingleOrDefaultAsync(x => x.Id == approval.SKUId);
+                            emailDetails += $"Banner: {banner.BannerName} " +
+                                         $"<br> " +
+                                         $"Plant Code: {banner.PlantCode} " +
+                                         $"<br> " +
+                                         $"Plant Name: {banner.PlantName} " +
+                                         $"<br> " +
+                                         $"PC Code: {sku.PCMap}" +
+                                         $"<br>" +
+                                         $"Description Map: {sku.DescriptionMap} " +
+                                         $"<br>" +
+                                         $"Link: <a href='{HtmlEncoder.Default.Encode(emailApproval.ApprovalUrl)}'>Detail</a> <br> <br>";
+                           
+                            
+                        }
+                    }
+                    emailApproval.Body += emailDetails + $" from {requestor}. <br><br><br> Thank You.";
+                    listEmail.Add(emailApproval);
+                }   
+            }
+            return listEmail;
         }
 
         public async Task<List<EmailApproval>> GenerateEmailProposal(Approval approval, string url, string requestor, Banner banner, SKU sku)
@@ -354,9 +432,9 @@ namespace FSAWebSystem.Services
             foreach (var email in emails)
             {
                 var emailApproval = new EmailApproval();
-                emailApproval.RecipientEmail = email;
+                emailApproval.RecipientEmail = email.Item1;
                 emailApproval.ApprovalUrl = url;
-                emailApproval.Name = email;
+                emailApproval.Name = email.Item1;
                 emailApproval.Requestor = requestor;
                 emailApproval.Subject = $"FSA {type} Approval Request";
                 emailApproval.Body = $"Hi, {email}, " +

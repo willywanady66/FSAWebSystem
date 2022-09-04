@@ -18,6 +18,9 @@ using FSAWebSystem.Models.Bucket;
 using FSAWebSystem.Services;
 using System.Text.Encodings.Web;
 using System.Globalization;
+using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.SS.Util;
 
 namespace FSAWebSystem.Controllers
 {
@@ -66,7 +69,7 @@ namespace FSAWebSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> GetProposalPagination(DataTableParamProposal param)
         {
-            var user = await _userManager.GetUserAsync(User);
+             var user = await _userManager.GetUserAsync(User);
             var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
             List<Proposal> listProposal = new List<Proposal>();
             var listData = Json(new { });
@@ -206,11 +209,11 @@ namespace FSAWebSystem.Controllers
             {
                 try
                 {
-                    var banners = _bannerService.GetAllActiveBanner();
+                    var banners = _bannerService.GetAllActiveBanner();  
                     var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
 
 
-                    foreach (var proposalInput in proposals.Where(x => (x.proposeAdditional > 0 || x.rephase > 0) && !x.isWaitingApproval))
+                    foreach (var proposalInput in proposals.Where(x => (x.proposeAdditional > 0 || x.rephase >   0) && !x.isWaitingApproval))
                     {
                         var approval = new Approval();
                         var proposal = new Proposal();
@@ -277,6 +280,7 @@ namespace FSAWebSystem.Controllers
 
                             }
                             approval = CreateApproval(approvalId, savedProposal.Type.Value);
+                           
                             savedProposal.Week = fsaDetail.Week;
                             savedProposal.Month = fsaDetail.Month;
                             savedProposal.Year = fsaDetail.Year;
@@ -288,20 +292,23 @@ namespace FSAWebSystem.Controllers
 
                             proposalHistories = await CreateProposalHistory(approval, savedProposal, fsaDetail);
                         }
-
+                        var weeklyBucket = await _bucketService.GetWeeklyBucket(Guid.Parse(proposalInput.weeklyBucketId));
+                        approval.BannerId = Guid.Parse(proposalInput.bannerId);
+                        approval.SKUId = weeklyBucket.SKUId;
                         listApproval.Add(approval);
 
                         listProposalHistory.AddRange(proposalHistories);
-                        var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
+                  
 
-                        var weeklyBucket = await _bucketService.GetWeeklyBucket(Guid.Parse(proposalInput.weeklyBucketId));
+                            
                         var banner = await _bannerService.GetBanner(Guid.Parse(proposalInput.bannerId));
                         var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
 
-                        var email = await _approvalService.GenerateEmailProposal(approval, page, user.Email, banner, sku);
-                        listEmail.AddRange(email);
+                        
                     }
-
+                    var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals");
+                    var emails = await _approvalService.GenerateCombinedEmailProposal(listApproval, baseUrl, User.Identity.Name);
+                    listEmail.AddRange(emails);
 
                     await _proposalService.SaveProposals(listProposal);
                     await _proposalService.SaveProposalHistories(listProposalHistory);
@@ -563,6 +570,129 @@ namespace FSAWebSystem.Controllers
             }
         }
 
+        public async Task<ActionResult> DownloadProposalExcel(int month, int year)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var userUnilever = await _userService.GetUserOnly((Guid)user.UserUnileverId);
+            userUnilever.WLName = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
+            var data = _proposalService.GetProposalExcelData(month, year, userUnilever);
+            var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
+            var workbook = new HSSFWorkbook();
+            ISheet worksheet = workbook.CreateSheet("Sheet1");
+            var monthRow = worksheet.CreateRow(0).CreateCell(0);
+
+            List<string> errorMessages = new List<string>();
+
+            var style = workbook.CreateCellStyle();
+            style.Alignment = HorizontalAlignment.Center;
+
+            var columns = new List<string>
+            {
+                "Month",
+                "KAM",
+                "CDM",
+                "BannerName",
+                "Plant Code",
+                "Plant Name",
+                "PC Map",
+                "Description Map",
+                "Monthly Bucket",
+                "Plant Contribution",
+                "Banner Week 1",
+                "Banner Week 2",
+                "Banner Week 3",
+                "Banner Week 4",
+                "Banner Week 5",
+                "Rating Rate",
+                "Dispatch Consume",
+                "Valid + BJ",
+                "Remaining FSA",
+            };
+
+            CellRangeAddress range = new CellRangeAddress(0, 0, 0, columns.Count - 1);
+            worksheet.AddMergedRegion(range);
+
+            monthRow.CellStyle = style;
+            monthRow.SetCellValue("Month:" + monthName + " - " + year.ToString());
+
+            range = new CellRangeAddress(1, 1, 0, columns.Count - 1);
+            worksheet.AddMergedRegion(range);
+            var headerRow = worksheet.CreateRow(1).CreateCell(0);
+            headerRow.CellStyle = style;
+            headerRow.SetCellValue("Proposal");
+
+            var row = worksheet.CreateRow(2);
+
+            for (var i = 0; i < columns.Count; i++)
+            {
+                row.CreateCell(i).SetCellValue(columns[i]);
+            }
+
+            int x = 0;
+            foreach (var item in data)
+            {
+                var i = 0;
+                row = worksheet.CreateRow(x + 3);
+
+                row.CreateCell(i).SetCellValue(item.Month);
+                i++;
+                row.CreateCell(i).SetCellValue(item.KAM);
+                i++;
+                row.CreateCell(i).SetCellValue(item.CDM);
+                i++;
+                row.CreateCell(i).SetCellValue(item.BannerName);
+                i++;
+                row.CreateCell(i).SetCellValue(item.PlantCode);
+                i++;
+                row.CreateCell(i).SetCellValue(item.PlantName);
+                i++;
+                row.CreateCell(i).SetCellValue(item.PCMap);
+                i++;
+                row.CreateCell(i).SetCellValue(item.DescriptionMap);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.MonthlyBucket);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.PlantContribution);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.BucketWeek1);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.BucketWeek2);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.BucketWeek3);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.BucketWeek4);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.BucketWeek5);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.RatingRate);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.DispatchConsume);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.ValidBJ);
+                i++;
+                row.CreateCell(i).SetCellValue((double)item.RemFSA);
+                i++;
+
+                x++;
+            }
+
+            MemoryStream ms = new MemoryStream();
+            workbook.Write(ms);
+            ms.Position = 0;
+            try
+            {
+                FileStreamResult file = File(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Proposal - " + monthName + " - " + year.ToString() + ".xls");
+
+                return file;
+            }
+            catch (Exception ex)
+            {
+                errorMessages.Add(ex.Message);
+            }
+
+         
+            return Ok();
+        }
 
     }
 }

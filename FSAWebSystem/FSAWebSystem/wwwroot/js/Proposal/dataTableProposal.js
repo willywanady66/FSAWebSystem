@@ -19,7 +19,7 @@
     var month = $('#dropDownMonth option:selected').val();
     var year = $('#dropDownYear option:selected').val();
     let proposalInputs = new Array();
-    let remarks = ["", "Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year"];
+    let remarks = ["Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year"];
     //var proposals = getUserInput(proposalInputs);
 
 
@@ -72,7 +72,8 @@
                         data = '(' + data.toString().substring(1) + ')';
                     }
                     return data;
-                }
+                },
+                "orderable": false
             },
             {
                 "targets": 10,
@@ -257,6 +258,10 @@
             { "data": "approvedBy" },   //11
             { "data": "approvalNote" },   //12
         ],
+        "columnDefs": [{
+            "targets": 10,
+            "orderable": false
+        }],
         "rowCallback": function (row, data, index) {
             if (data.approvalStatus == "Approved") {
                 $('td:eq(10)', row).css({ color: "green" });

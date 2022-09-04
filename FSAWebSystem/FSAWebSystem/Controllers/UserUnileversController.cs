@@ -58,11 +58,12 @@ namespace FSAWebSystem.Controllers
             return View(userUnilever);
         }
         // GET: UserUnilevers/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(Guid id)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
-            userUnilever.UserId = id;
+            var userUnilever = await _userService.GetUser(id);
+            var user = await _userManager.FindByEmailAsync(userUnilever.Email);
+            
+            userUnilever.UserId = user.Id;
             if (userUnilever == null)
             {
                 return NotFound();
@@ -131,50 +132,71 @@ namespace FSAWebSystem.Controllers
             //ModelState.Remove("WorkLevelId");
             if (ModelState.IsValid)
             {
+                await FillDropdowns(ViewData);
                 try
                 {
                     var user = await _userManager.FindByIdAsync(userUnilever.UserId);
-					var savedUser = await _userService.GetUser((Guid)user.UserUnileverId);
+                    var savedUser = await _userService.GetUser((Guid)user.UserUnileverId);
 
-					List<Guid> selectedBannerId = (from bannerId in bannerIds select Guid.Parse(bannerId)).ToList();
+                    List<Guid> selectedBannerId = (from bannerId in bannerIds select Guid.Parse(bannerId)).ToList();
                     var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerId.Contains(x.Id)).ToList();
-                    var selectedWorkLevel = _userService.GetAllWorkLevel().Single(x => x.Id == Guid.Parse(workLevelId)).Id;
-
-                   var selectedSkuIds = skuIds.Select(x => Guid.Parse(x)).ToList();
-                    var selectedSKUs = (_skuService.GetAllProducts().ToList()).Where(x => selectedSkuIds.Contains(x.Id)).ToList();
-
-                    var selectedCategoryIds = categoryIds.Select(x => Guid.Parse(x)).ToList();
-                    var selectedCategories = (_skuService.GetAllProductCategories().ToList()).Where(x => selectedCategoryIds.Contains(x.Id)).ToList();
-
-                    user.UserName = userUnilever.Email;
-                    user.NormalizedUserName = userUnilever.Email;
-                    user.Email = userUnilever.Email;
-                    user.NormalizedEmail = userUnilever.Email;
-                    await _userManager.UpdateAsync(user);
-
-                    var claims = await _userManager.GetClaimsAsync(user);
-
-                    foreach(var claim in claims)
+                    if ((savedUser == null || savedUser.Id == userUnilever.Id) && (user == null || user.Id == userUnilever.UserId))
                     {
-                        await _userManager.RemoveClaimAsync(user, claim);
+                        var selectedWorkLevel = _userService.GetAllWorkLevel().Single(x => x.Id == Guid.Parse(workLevelId)).Id;
+
+                        var selectedSkuIds = skuIds.Select(x => Guid.Parse(x)).ToList();
+                        var selectedSKUs = (_skuService.GetAllProducts().ToList()).Where(x => selectedSkuIds.Contains(x.Id)).ToList();
+
+                        var selectedCategoryIds = categoryIds.Select(x => Guid.Parse(x)).ToList();
+                        var selectedCategories = (_skuService.GetAllProductCategories().ToList()).Where(x => selectedCategoryIds.Contains(x.Id)).ToList();
+
+                        user.UserName = userUnilever.Email;
+                        user.NormalizedUserName = userUnilever.Email;
+                        user.Email = userUnilever.Email;
+                        user.NormalizedEmail = userUnilever.Email;
+                        await _userManager.UpdateAsync(user);
+
+                        var claims = await _userManager.GetClaimsAsync(user);
+
+                        foreach (var claim in claims)
+                        {
+                            await _userManager.RemoveClaimAsync(user, claim);
+                        }
+
+                        savedUser.SKUs = selectedSKUs;
+                        savedUser.ProductCategories = selectedCategories;
+                        savedUser.Banners = selectedBanners;
+                        savedUser.Name = userUnilever.Name;
+                        savedUser.Email = userUnilever.Email;
+                        savedUser.RoleUnilever = await _roleService.GetRole(Guid.Parse(roleUnileverId));
+                        savedUser.WLId = selectedWorkLevel;
+                        savedUser.IsActive = userUnilever.IsActive;
+
+                        foreach (var menu in savedUser.RoleUnilever.Menus)
+                        {
+                            await _userManager.AddClaimAsync(user, new Claim("Menu", menu.Name));
+                        }
+
+                        await _userService.Update(savedUser, User.Identity.Name);
+                        await _context.SaveChangesAsync();
+
+                        _notyfService.Success("User Saved");
+                        return RedirectToAction("Index", "Admin");
                     }
-
-                    savedUser.SKUs = selectedSKUs;
-                    savedUser.ProductCategories = selectedCategories;
-                    savedUser.Banners = selectedBanners;
-                    savedUser.Name = userUnilever.Name;
-                    savedUser.Email = userUnilever.Email;
-                    savedUser.RoleUnilever = await _roleService.GetRole(Guid.Parse(roleUnileverId));
-                    savedUser.WLId = selectedWorkLevel;
-                    savedUser.IsActive = userUnilever.IsActive;
-
-                    foreach(var menu in savedUser.RoleUnilever.Menus)
+                    else
                     {
-                        await _userManager.AddClaimAsync(user, new Claim("Menu", menu.Name));
+                        ModelState.AddModelError(string.Empty, "User Already exist!");
+                        var listBanner = (List<SelectListItem>)ViewData["ListBanner"];
+                        var userBanner = savedUser.Banners.Select(x => x.Id).ToList();
+
+                        var selectedBanner = listBanner.Where(x => selectedBannerId.Contains(Guid.Parse(x.Value))).ToList();
+                        foreach (var item in selectedBanner)
+                        {
+                            item.Selected = true;
+                        }
+                        userUnilever.Banners = selectedBanners;
                     }
-                  
-                    await _userService.Update(savedUser, User.Identity.Name);
-                    await _context.SaveChangesAsync();
+                       
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -187,13 +209,10 @@ namespace FSAWebSystem.Controllers
                         throw;
                     }
                 }
-                _notyfService.Success("User Saved");
-                return RedirectToAction("Index", "Admin");
             }
-            else
-            {
-                await FillDropdowns(ViewData);
-            }
+    
+   
+
             return View(userUnilever);
         }
 

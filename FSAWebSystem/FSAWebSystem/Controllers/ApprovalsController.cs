@@ -27,7 +27,7 @@ namespace FSAWebSystem.Controllers
         private readonly UserManager<FSAWebSystemUser> _userManager;
         private readonly INotyfService _notyfService;
         private readonly IUserService _userService;
-        private readonly IEmailService _emailService;
+        private readonly IEmailService _emailService; 
         private readonly IBannerService _bannerService;
         private readonly ISKUService _skuService;
         
@@ -72,8 +72,8 @@ namespace FSAWebSystem.Controllers
                 {
                     var user = await _userManager.GetUserAsync(User);
                     var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
-
-                    if(approval.ProposalType != ProposalType.Rephase)
+                    var workLevel = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
+                    if (approval.ProposalType != ProposalType.Rephase)
                     {
                         var appovaldetailTarget = approval.ApprovalDetails.SingleOrDefault(x => x.ProposeAdditional > 0);
                         if (appovaldetailTarget != null)
@@ -87,7 +87,7 @@ namespace FSAWebSystem.Controllers
                             ViewData["BannerSource"] = appovaldetailSource.BannerName;
                         }
 
-                        var workLevel = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
+                       
 
                  
                         canApprove = approval.ApproverWL == workLevel;
@@ -114,6 +114,9 @@ namespace FSAWebSystem.Controllers
                     }
                     else
                     {
+
+                            canApprove = approval.ApproverWL == workLevel;
+       
 
                     }
 
@@ -212,85 +215,31 @@ namespace FSAWebSystem.Controllers
             {
                 
                 var listEmail = new List<EmailApproval>();
-                var user = await _userManager.GetUserAsync(User);
-                var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
-                var currDate = DateTime.Now;
                 var approval = await _approvalService.GetApprovalById(approvalId);
              
                 var errorMessages = new List<string>();
+                var approvalIds = new List<Guid>();
+                approvalIds.Add(approvalId);
                 if(approval.ApprovedBy.Contains(User.Identity.Name))
                 {
                     errorMessages.Add("You already approve this proposal");
                     _notyfService.Warning("Proposal Already Approved");
                     TempData["ErrorMessages"] = errorMessages;
-                    return Ok();
-                }
-
-                var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
-                var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
-                var banner = await _bannerService.GetBanner(weeklyBucket.BannerId);
-                var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
-                var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
-                approval.ApprovedAt = currDate;
-                approval.ApprovalStatus = ApprovalStatus.WaitingNextLevel;
-                if(string.IsNullOrEmpty(approval.ApprovedBy))
-                {
-                    approval.ApprovedBy = User.Identity.Name;
+                    return Ok(Json( new{ errorMessages}));
                 }
                 else
                 {
-                    approval.ApprovedBy += ";" + User.Identity.Name;
-                }
 
-                if(string.IsNullOrEmpty(approval.ApprovalNote))
-                {
-                    approval.ApprovalNote = approvalNote;
-                }
-                else
-                {
-                    approval.ApprovalNote += ";" + approvalNote;
-                }
-
-                
-                var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
-
-                var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email, banner, sku);
-                listEmail.AddRange(emails);
-
-
-                approval.Level -= 1;
-                //Update Weekly & Approval Done
-                if (approval.Level == 0)
-                {
-                    approval.ApprovalStatus = ApprovalStatus.Approved;
-                    proposal.IsWaitingApproval = false;
-                    await UpdateWeeklyBuckets(proposal.ProposalDetails, proposal.Type.Value, proposal.Week, approval.Id);
-                }
-                else
-                {
-                    var nextApproverWL = _approvalService.GetWLApprover(approval);
-                    approval.ApproverWL = nextApproverWL;
-                }
-
-                var approvalEmail = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);
-                await _emailService.SendEmailAsync(approvalEmail.RecipientEmail, approvalEmail.Subject, approvalEmail.Body);
-
-                await _context.SaveChangesAsync();
-                _notyfService.Success("Proposal Approved");
-
-                if(approval.Level != 0)
-                {
-                    foreach (var email in listEmail)
-                    {
-                        await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
-                    }
+                    await ApproveProposals(approvalIds, approvalNote);
                 }
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return BadRequest();
+                _notyfService.Error("Approve Proposal Failed");
+                return Ok(Json(new { ex.Message }));
             }
+            _notyfService.Success("Proposal Approved");
             return Ok();
         }
 
@@ -323,6 +272,151 @@ namespace FSAWebSystem.Controllers
         {
             try
             {
+                var approvalIds = new List<Guid>
+                {
+                    approvalId
+                };
+                var approval = await _approvalService.GetApprovalById(approvalId);
+                var errorMessages = new List<string>();
+                if (approval.ApprovedBy.Contains(User.Identity.Name))
+                {
+                    var type = string.Empty;
+                    if (approval.ApprovalStatus ==ApprovalStatus.Rejected)
+                    {
+                        type = "rejected";
+                    }
+                    else if(approval.ApprovalStatus != ApprovalStatus.Pending)
+                    {
+                        type = "approved";
+                    }
+                    errorMessages.Add("You already " + type + " this proposal");
+                    _notyfService.Warning("Proposal already " + type);
+                    TempData["ErrorMessages"] = errorMessages;
+                    return Ok(Json(new { errorMessages }));
+                }
+                else
+                {
+
+                    await ApproveProposals(approvalIds, approvalNote);
+                }
+            }
+            catch(Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return BadRequest();
+            }
+            _notyfService.Warning("Proposal Rejected");
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> RejectProposals(List<Guid> approvalIds, string approvalNote)
+        {
+            try
+            {
+                await Reject(approvalIds, approvalNote);
+            }
+            catch(Exception ex)
+            {
+                TempData["ErrorMessages"] = ex.Message;
+                _notyfService.Error("Reject Proposals Failed");
+                return BadRequest();
+            }
+            _notyfService.Warning("Proposals Rejected");
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> ApproveProposals(List<Guid> approvalIds, string approvalNote)
+        {
+            try
+            {
+                await Approve(approvalIds, approvalNote);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessages"] = ex.Message;
+                _notyfService.Error("Approve Proposals Failed");
+                return BadRequest();
+            }
+            _notyfService.Success("Proposals Approved");
+            return Ok();
+        }
+        public async Task Approve(List<Guid> approvalIds, string approvalNote)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            //var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
+            var currDate = DateTime.Now;
+            foreach (var approvalId in approvalIds)
+            {
+                var listEmail = new List<EmailApproval>();
+                
+                var approval = await _approvalService.GetApprovalById(approvalId);
+                var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
+                var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
+                var banner = await _bannerService.GetBanner(weeklyBucket.BannerId);
+                var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
+                var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
+                approval.ApprovedAt = currDate;
+                approval.ApprovalStatus = ApprovalStatus.WaitingNextLevel;
+                if (string.IsNullOrEmpty(approval.ApprovedBy))
+                {
+                    approval.ApprovedBy = User.Identity.Name;
+                }
+                else
+                {
+                    approval.ApprovedBy += ";" + User.Identity.Name;
+                }
+
+                if (string.IsNullOrEmpty(approval.ApprovalNote))
+                {
+                    approval.ApprovalNote = approvalNote;
+                }
+                else
+                {
+                    approval.ApprovalNote += ";" + approvalNote;
+                }
+
+
+                var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
+
+                var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email, banner, sku);
+                listEmail.AddRange(emails);
+
+
+                approval.Level -= 1;
+                //Update Weekly & Approval Done
+                if (approval.Level == 0)
+                {
+                    approval.ApprovalStatus = ApprovalStatus.Approved;
+                    proposal.IsWaitingApproval = false;
+                    await UpdateWeeklyBuckets(proposal.ProposalDetails, proposal.Type.Value, proposal.Week, approval.Id);
+                }
+                else
+                {
+                    var nextApproverWL = _approvalService.GetWLApprover(approval);
+                    approval.ApproverWL = nextApproverWL;
+                }
+
+                var approvalEmail = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);
+                await _emailService.SendEmailAsync(approvalEmail.RecipientEmail, approvalEmail.Subject, approvalEmail.Body);
+
+                await _context.SaveChangesAsync();
+
+                if (approval.Level != 0)
+                {
+                    foreach (var email in listEmail)
+                    {
+                        await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
+                    }
+                }
+            }
+        }
+
+        public async Task Reject(List<Guid> approvalIds, string approvalNote)
+        {
+            foreach(var approvalId in approvalIds)
+            {
                 var approval = await _approvalService.GetApprovalById(approvalId);
                 var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
@@ -338,10 +432,18 @@ namespace FSAWebSystem.Controllers
                 else
                 {
                     approval.ApprovalNote += ";" + approvalNote;
+                }  
+
+                if (string.IsNullOrEmpty(approval.ApprovedBy))
+                {
+                    approval.ApprovedBy = User.Identity.Name;
+                }
+                else
+                {
+                    approval.ApprovedBy += ";" + User.Identity.Name;
                 }
 
                 approval.ApprovedAt = DateTime.Now;
-                approval.ApprovedBy = User.Identity.Name;
                 approval.ApproverWL = string.Empty;
                 proposal.IsWaitingApproval = false;
 
@@ -350,14 +452,7 @@ namespace FSAWebSystem.Controllers
                 var email = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);
                 await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
             }
-            catch(Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                return BadRequest();
-            }
-            _notyfService.Warning("Proposal Rejected");
-            return Ok();
-        }
 
+        }
     }
 }

@@ -29,7 +29,7 @@
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
 
-                    return `<a href="${editUserUrl}/${full.userId}">
+                    return `<a href="${editUserUrl}/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
 

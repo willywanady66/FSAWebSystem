@@ -1,8 +1,6 @@
 ﻿$(document).ready(function () {
 
-    //function approve(id) {
-    //    console.log();
-    //}
+
 
    var approvalTable = $('#dataTableApproval').DataTable({
         "processing": true,
@@ -12,23 +10,34 @@
             type: "POST"
         },
         "columns": [
-            { "data": "proposalSubmitDate" },  //0
-            { "data": "bannerName" }, //1
-            { "data": "pcMap" },       //2
-            { "data": "descriptionMap" }, //3
-            { "data": "proposeAdditional" },      //4
-            { "data": "rephase" }, //5
-            { "data": "remark" }, //6
-            { "data": "id" }, //7
+            { "data": "id" },  //0
+            { "data": "proposalSubmitDate" },  //1
+            { "data": "bannerName" }, //2
+            { "data": "pcMap" },       //3
+            { "data": "descriptionMap" }, //4
+            { "data": "proposeAdditional" },      //5
+            { "data": "rephase" }, //6
+            { "data": "remark" }, //7
+            { "data": "id" }, //8
+            { "data": "id" }, //9
            
-        ],
+       ],
+       "order": [[1, 'asc']],
        columnDefs: [
            {
-               "targets": [6],
-               "className": "hide_column"
+               "targets": 0,
+               "orderable": false,
+               className: 'text-center',
+               "render": function (data, type, full, meta) {
+                   return `<input type="checkbox" class="" id="checkbox-${full.id}" />`
+               }
+           },
+           {
+               "targets": [9],
+               "className": "hide_column"   
            },
             {
-                targets: 7,
+                targets: 8,
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
@@ -132,75 +141,93 @@
         })
     });
 
-    //var approvalReallocateTable = $('#dataTableApprovalReallocate').DataTable({
-    //    "processing": true,
-    //    "serverSide": true,
-    //    "ajax": {
-    //        url: "Approvals/GetApprovalReallocatePagination",
-    //        type: "POST"
-    //    },
-    //    "columns": [
-    //        { "data": "submitDate" },  //0
-    //        { "data": "level1" }, //1
-    //        { "data": "level2" }, //2
-    //        { "data": "bannerName" }, //3
-    //        { "data": "pcMap" },       //4
-    //        { "data": "descriptionMap" }, //5
-    //        { "data": "proposal.reallocate" },      //6
-    //        { "data": "proposal.bannerTargetId" }, //7
-    //        { "data": "remark" }, //8
-    //        { "data": "id" }, //9
-    //        { "data": "id" }, //10
-    //        { "data": "proposalId" }, //11
-    //        //{ "data": "remark" }, //6
-    //    ],
-    //    columnDefs: [
-    //        {
-    //            targets: 7,
-    //            orderable: false,
-    //            className: 'text-center',
-    //            "render": function (data, type, full, meta) {
-    //                return full.proposal.bannerNameTarget + " (" + full.proposal.plantNameTarget + ")" + " (" + full.proposal.plantCodeTarget + ")";
-    //            }
-    //        },
-    //        {
-    //            targets: 9,
-    //            orderable: false,
-    //            className: 'text-center',
-    //            "render": function (data, type, full, meta) {
-    //                return `<button id="approveReallocateBtn" class="btn btn-primary">Approve</button>`
-    //            }
-    //        },
-    //        {
-    //            targets: 10,
-    //            orderable: false,
-    //            className: 'text-center',
-    //            "render": function (data, type, full, meta) {
-    //                return `<button class="btn btn-danger">Reject</button>`
-    //            }
-    //        },
-    //        {
-    //            targets: 11,
-    //            className: 'hide_column'
-    //        }
-    //    ]
-    //});
+    $("#approveProposalsBtn").click(function () {
+        Swal.fire({
+            title: 'Loading...',
+            html: 'Approving...',
+            timerProgressBar: true,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading()
+            },
+        });
+        var selectedIds = getSelectedProposal();
+        var approvalNote = $('#approvalNote').val();
+        $.ajax({
+            type: "POST",
+            url: approveProposalsUrl,
+            data: { "approvalIds": selectedIds, "approvalNote": approvalNote },
+            success: function (data) {
+                Swal.close();
+            }
+        })
+    });
 
-    //$("#dataTableApprovalReallocate tbody").on('click', '#approveReallocateBtn', function () {
-    //    var data = approvalReallocateTable.row($(this).parents('tr')).data();
-    //    var proposalId = data.proposalId;
-    //    var approvalId = data.id;
-    //    var type = data.proposal.type;
-    //    $.ajax({
-    //        type: "POST",
-    //        url: "Approvals/ApproveProposal",
-    //        data: { "proposalId": proposalId, "approvalId": approvalId, "type": type },
-    //        success: function (data) {
-    //            var ul = document.getElementById('error-messages');
-    //            ul.innerHTML = '';
-    //        }
-    //    })
-    //});
+
+
+    $("#rejectProposalsBtn").click(function () {
+        Swal.fire({
+            title: 'Loading...',
+            html: 'Rejecting...',
+            timerProgressBar: true,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading()
+            },
+        });
+        var selectedIds = getSelectedProposal();
+        var approvalNote = $('#approvalNoteReject').val();
+        $.ajax({
+            type: "POST",
+            url: rejectProposalsUrl,
+            data: { "approvalIds": selectedIds, "approvalNote": approvalNote },
+            success: function (data) {
+                Swal.close();
+                
+            }
+        })
+    });
+
+    $('#checkAll').click(function () {
+        if ($(this).is(':checked')) {
+            $('#dataTableApproval TBODY TR').each(function () {
+                var row = $(this);
+                row.find("TD").eq(0).find("INPUT").prop("checked", true);
+            });
+        }
+        else {
+            $('#dataTableApproval TBODY TR').each(function () {
+                var row = $(this);
+                row.find("TD").eq(0).find("INPUT").prop("checked", false);
+            });       
+        }
+    });
+
+    $('#dataTableApproval').on('change', 'input[type="checkbox"]', function () {
+        if ($('#dataTableApproval TBODY INPUT:checkbox:checked').length > 0) {
+            $('#openConfirmApproveModalBtn').prop('disabled', false);
+            $('#openConfirmRejectModalBtn').prop('disabled', false);
+        }
+        else {
+            $('#openConfirmApproveModalBtn').prop('disabled', true);
+            $('#openConfirmRejectModalBtn').prop('disabled', true);
+        }
+    });
+
+    function getSelectedProposal() {
+        var ids = [];
+        $('#dataTableApproval TBODY TR').each(function () {
+            var row = $(this);
+            var selected = row.find("TD").eq(0).find("INPUT").is(':checked')
+            if (selected) {
+                var id = row.find("TD").eq(9).html();
+                ids.push(id);
+            }
+        });
+        return ids;
+    }
 }); 
 
 

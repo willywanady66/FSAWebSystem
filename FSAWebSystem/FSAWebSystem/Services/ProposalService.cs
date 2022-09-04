@@ -28,7 +28,7 @@ namespace FSAWebSystem.Services
                              join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
                              where weeklyBucket.Month == month && weeklyBucket.Year == year
-                           
+
                              select new Proposal
                              {
                                  Id = p != null ? p.Id : Guid.Empty,
@@ -56,12 +56,13 @@ namespace FSAWebSystem.Services
                                  IsWaitingApproval = p != null ? p.IsWaitingApproval : false,
                                  SubmittedBy = p == null ? Guid.Empty : p.SubmittedBy.Value,
                                  ApprovalId = p != null ? p.ApprovalId : Guid.Empty,
-                             }) ;
+                             });
 
+            var zz = proposals.ToList();
             var proposal2 = (from proposal in proposals
                              join approval in _db.Approvals.Where(x => x.ApprovalStatus == ApprovalStatus.Pending) on proposal.ApprovalId equals approval.Id into approvalGroup
                              from apprvl in approvalGroup.DefaultIfEmpty()
-                             
+
                              select new Proposal
                              {
                                  Id = proposal.Id,
@@ -82,7 +83,7 @@ namespace FSAWebSystem.Services
                                  CurrentBucket = proposal.CurrentBucket,
                                  NextBucket = proposal.NextBucket,
                                  Remark = proposal.IsWaitingApproval ? proposal.Remark : string.Empty,
-                                 Rephase = proposal.IsWaitingApproval ?  proposal.Rephase : decimal.Zero,
+                                 Rephase = proposal.IsWaitingApproval ? proposal.Rephase : decimal.Zero,
                                  ApprovedRephase = proposal.ApprovedRephase,
                                  ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending,
                                  ProposeAdditional = proposal.IsWaitingApproval ? proposal.ProposeAdditional : decimal.Zero,
@@ -93,8 +94,55 @@ namespace FSAWebSystem.Services
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
-                proposal2 = proposal2.Where(x => x.BannerName.ToLower().Contains(search) || x.PlantCode.ToLower().Contains(search) || x.PlantName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search));
+                proposal2 = proposal2.Where(x => x.BannerName.ToLower().Contains(search.ToLower()) ||
+                                            x.PlantCode.ToLower().Contains(search.ToLower()) ||
+                                            x.PlantName.ToLower().Contains(search.ToLower()) ||
+                                            x.PCMap.ToLower().Contains(search.ToLower()) ||
+                                            x.DescriptionMap.ToLower().Contains(search.ToLower()));
             }
+
+
+            if (param.order.Any())
+            {
+                var order = param.order[0];
+                switch (order.column)
+                {
+                    case 0:
+                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.BannerName) : proposal2.OrderByDescending(x => x.BannerName);
+                        break;
+                    case 1:
+                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.PlantName) : proposal2.OrderBy(x => x.PlantName);
+                        break;
+                    case 2:
+                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.PCMap) : proposal2.OrderBy(x => x.PCMap);
+                        break;
+                    case 3:
+                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.DescriptionMap) : proposal2.OrderBy(x => x.DescriptionMap);
+                        break;
+                    case 4:
+                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.RatingRate) : proposal2.OrderBy(x => x.RatingRate);
+                        break;
+                    case 5:
+                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.MonthlyBucket) : proposal2.OrderBy(x => x.MonthlyBucket);
+                        break;
+                    //case 6:
+                    //    proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.CurrentBucket) : proposal2.OrderBy(x => x.CurrentBucket);
+                    //    break;
+                    //case 7:
+                    //    proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.NextBucket) : proposal2.OrderBy(x => x.NextBucket);
+                    //    break;
+                    case 8:
+                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.ValidBJ) : proposal2.OrderBy(x => x.ValidBJ);
+                        break;
+                    case 9:
+                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.RemFSA) : proposal2.OrderBy(x => x.RemFSA);
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+
 
             var totalCount = proposal2.Count();
             var listProposal = proposal2.Skip(param.start).Take(param.length).ToList();
@@ -133,18 +181,65 @@ namespace FSAWebSystem.Services
                                          ApprovalId = approval.Id
                                      });
 
-        
-                 if (!string.IsNullOrEmpty(param.search.value))
+
+            if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
-                proposalHistories = proposalHistories.Where(x => x.BannerName.ToLower().Contains(search) ||  x.PlantName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search) || x.Remark.ToLower().Contains(search));
+                proposalHistories = proposalHistories.Where(x => x.BannerName.ToLower().Contains(search.ToLower()) ||
+                x.PlantName.ToLower().Contains(search.ToLower()) || x.PCMap.ToLower().Contains(search.ToLower()) ||
+                x.DescriptionMap.ToLower().Contains(search.ToLower()) ||
+                x.Remark.ToLower().Contains(search.ToLower())
+                );
+            }
+
+
+            if (param.order.Any())
+            {
+                var order = param.order[0];
+                switch (order.column)
+                {
+                    case 0:
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.SubmittedAt) : proposalHistories.OrderByDescending(x => x.SubmittedAt);
+                        break;
+                    case 1:
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.Week) : proposalHistories.OrderBy(x => x.Week);
+                        break;
+                    case 3:
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.BannerName) : proposalHistories.OrderBy(x => x.BannerName);
+                        break;
+                    case 4:
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.PlantName) : proposalHistories.OrderBy(x => x.PlantName);
+                        break;
+                    case 5:
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.PCMap) : proposalHistories.OrderBy(x => x.PCMap);
+                        break;
+                    case 6:
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.DescriptionMap) : proposalHistories.OrderBy(x => x.DescriptionMap);
+                        break;
+                    case 7:
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.Rephase) : proposalHistories.OrderBy(x => x.Rephase);
+                        break;
+                    case 8:
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.ProposeAdditional) : proposalHistories.OrderBy(x => x.ProposeAdditional);
+                        break;
+                    case 9:
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.Remark) : proposalHistories.OrderBy(x => x.Remark);
+                        break;
+                    case 11:
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.ApprovedBy) : proposalHistories.OrderBy(x => x.ApprovedBy);
+                        break;
+                        default:
+                        proposalHistories = proposalHistories.OrderByDescending(x => x.SubmittedAt).ThenBy(x => x.ApprovalId);
+                        break;
+
+                }
             }
 
             var totalCount = proposalHistories.Count();
-            var listProposalHistory = proposalHistories.Skip(param.start).Take(param.length).OrderByDescending(x => x.SubmittedAt).ThenBy(x => x.ApprovalId).ToList();
+            var listProposalHistory = proposalHistories.Skip(param.start).Take(param.length).ToList();
             Thread.CurrentThread.CurrentCulture = new CultureInfo("id-ID");
 
-       
+
 
             foreach (var proposalHistory in listProposalHistory)
             {
@@ -174,7 +269,7 @@ namespace FSAWebSystem.Services
             var listProposals = _db.Proposals.Where(x => !x.IsWaitingApproval);
             return listProposals;
         }
-          
+
         public async Task<Proposal> GetProposalById(Guid proposalId)
         {
             var proposal = await _db.Proposals.SingleOrDefaultAsync(x => x.Id == proposalId);
@@ -191,6 +286,39 @@ namespace FSAWebSystem.Services
         {
             await _db.ProposalHistories.AddRangeAsync(listProposalHistory);
 
+        }
+
+        public List<ProposalExcelModel> GetProposalExcelData(int month, int year, UserUnilever user)
+        {
+
+            var data = (from weeklyBucket in _db.WeeklyBuckets
+                        join banner in _db.Banners.Include(x => x.UserUnilevers).Where(y => y.UserUnilevers.Any(z => z.Id == user.Id)) on weeklyBucket.BannerId equals banner.Id
+                        join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
+                        where weeklyBucket.Month == month && weeklyBucket.Year == year
+                        select new ProposalExcelModel
+                        {
+                            Month = month,
+                            KAM = banner.KAM,
+                            CDM = banner.CDM,
+                            BannerName = banner.BannerName,
+                            PlantCode = banner.PlantCode,
+                            PlantName = banner.PlantName,
+                            PCMap = sku.PCMap,
+                            DescriptionMap = sku.DescriptionMap,
+                            MonthlyBucket = weeklyBucket.MonthlyBucket,
+                            PlantContribution = weeklyBucket.PlantContribution,
+                            ValidBJ = weeklyBucket.ValidBJ,
+                            RemFSA = weeklyBucket.RemFSA,
+                            DispatchConsume = weeklyBucket.DispatchConsume,
+                            BucketWeek1 = weeklyBucket.BucketWeek1,
+                            BucketWeek2 = weeklyBucket.BucketWeek2,
+                            BucketWeek3 = weeklyBucket.BucketWeek3,
+                            BucketWeek4 = weeklyBucket.BucketWeek4,
+                            BucketWeek5 = weeklyBucket.BucketWeek5,
+                            RatingRate = weeklyBucket.RatingRate
+                        }).ToList();
+
+            return data;
         }
     }
 }

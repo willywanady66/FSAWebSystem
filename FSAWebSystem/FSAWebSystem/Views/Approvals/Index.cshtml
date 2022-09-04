@@ -11,6 +11,8 @@
 	var rejectUrl = '@Url.Action("RejectProposal", "Approvals")';
 	var indexUrl = '@Url.Action("Index", "Approvals")';
 	var approvalDetailUrl = '@Url.Action("Details", "Approvals")';
+	var rejectProposalsUrl = '@Url.Action("RejectProposals", "Approvals")';
+	var approveProposalsUrl = '@Url.Action("ApproveProposals", "Approvals")';
 </script>
 <script src="~/js/Approval/dataTableApproval.js"></script>
 
@@ -29,6 +31,7 @@
 			<table class="table table-bordered" id="dataTableApproval" width="100%" cellspacing="0">
 				<thead>
 					<tr class="text-center">
+						<th class="align-middle"><input type="checkbox" class="" id="checkAll"></th>
 						<th class="align-middle">Submit Date</th>
 						<th class="align-middle">Banner</th>
 						<th class="align-middle">PC Map</th>
@@ -37,12 +40,87 @@
 						<th class="align-middle">Rephase</th>
 						<th class="align-middle">Remark</th>
 						<th class="align-middle">View</th>
+						<th class="hide_column">View</th>
 					</tr>
 				</thead>
 			</table>
 		</div>
 
 
+		<div class="pt-3">
+			<button id="openConfirmRejectModalBtn" class="btn btn-danger" data-toggle="modal" disabled
+					data-target="#rejectProposalModal">
+				Reject
+			</button>
+			<button id="openConfirmApproveModalBtn" class="btn btn-primary float-right" data-toggle="modal" disabled
+					data-target="#approveProposalModal">
+				Approve
+			</button>
+		</div>
+	</div>
+</div>
 
+
+<div class="modal fade" id="approveProposalModal" tabindex="-1" role="dialog"
+	 aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">
+					Approve Proposal?
+				</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p>Are you sure want to Approve selected Proposals?</p>
+				<div>
+					<label>Approval Note: </label>
+				</div>
+				<div>
+					<textarea class="form-control" id="approvalNote"></textarea>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-primary" id="approveProposalsBtn"
+						data-dismiss="modal">
+					Approve
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal fade" id="rejectProposalModal" tabindex="-1" role="dialog"
+	 aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">
+					Reject selected Proposals?
+				</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p>Are you sure want to Reject this Proposal?</p>
+				<div>
+					<label>Rejection Reason: </label>
+				</div>
+				<div>
+					<textarea class="form-control" id="approvalNoteReject"></textarea>
+				</div>
+			</div>
+
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-danger" id="rejectProposalsBtn"
+						data-dismiss="modal">
+					Reject
+				</button>
+			</div>
+		</div>
 	</div>
 </div>
