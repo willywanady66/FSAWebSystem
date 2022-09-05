@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using FSAWebSystem.Services;
 using System.Text.Encodings.Web;
+using FSAWebSystem.Models.Bucket;
 
 namespace FSAWebSystem.Controllers
 {
@@ -142,6 +143,21 @@ namespace FSAWebSystem.Controllers
 
                     ViewData["CanApprove"] = canApprove;
                     ViewData["IsApproved"] = isApproved;
+                    if(approval.ProposalType != ProposalType.Rephase && approval.ProposalType != ProposalType.ProposeAdditional)
+                    {
+                        if(approval.ProposalType == ProposalType.ReallocateAcrossKAM)
+                        {
+                            approval.NextProposalType = ProposalType.ReallocateAcrossCDM;
+                        }
+						else if(approval.ProposalType == ProposalType.ReallocateAcrossCDM)
+						{
+                            approval.NextProposalType = ProposalType.ReallocateAcrossMT;
+						}
+						else
+						{
+                            approval.NextProposalType = ProposalType.ProposeAdditional;
+						}
+                    }
                     return View(approval);
                 }
             }
@@ -378,12 +394,6 @@ namespace FSAWebSystem.Controllers
                 }
 
 
-                var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
-
-                var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email, banner, sku);
-                listEmail.AddRange(emails);
-
-
                 approval.Level -= 1;
                 //Update Weekly & Approval Done
                 if (approval.Level == 0)
@@ -396,20 +406,24 @@ namespace FSAWebSystem.Controllers
                 {
                     var nextApproverWL = _approvalService.GetWLApprover(approval);
                     approval.ApproverWL = nextApproverWL;
+
+                    var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
+
+                    var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email, banner, sku);
+                    listEmail.AddRange(emails);
+                    
+                }
+
+                await _context.SaveChangesAsync();
+
+                foreach (var email in listEmail)
+                {
+                    await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
                 }
 
                 var approvalEmail = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);
                 await _emailService.SendEmailAsync(approvalEmail.RecipientEmail, approvalEmail.Subject, approvalEmail.Body);
-
-                await _context.SaveChangesAsync();
-
-                if (approval.Level != 0)
-                {
-                    foreach (var email in listEmail)
-                    {
-                        await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
-                    }
-                }
+                
             }
         }
 
@@ -454,5 +468,137 @@ namespace FSAWebSystem.Controllers
             }
 
         }
+
+		[HttpPost]
+        public async Task<IActionResult> RequestApprovalNextType(Guid approvalId, string approvalNote)
+		{
+			try
+			{
+                var approval = await _approvalService.GetApprovalById(approvalId);
+                var proposal = await _proposalService.GetProposalByApprovalId(approvalId);
+                var weekBucketTarget = await GetWeeklyBucketTarget(approval, proposal);
+                var proposalDetailTarget = proposal.ProposalDetails.Single(x => x.ProposeAdditional < 0);
+                proposalDetailTarget.WeeklyBucketId = weekBucketTarget.Id;
+
+                approval.Level = approval.ProposalType == ProposalType.ProposeAdditional ? 3 : 2;
+                approval.ApproverWL = _approvalService.GetWLApprover(approval);
+
+                List<Approval> listApproval = new List<Approval>();
+                if (string.IsNullOrEmpty(approval.ApprovedBy))
+                {
+                    approval.ApprovedBy = User.Identity.Name;
+                }
+                else
+                {
+                    approval.ApprovedBy += ";" + User.Identity.Name;
+                }
+
+                if (string.IsNullOrEmpty(approval.ApprovalNote))
+                {
+                    approval.ApprovalNote = approvalNote;
+                }
+                else
+                {
+                    approval.ApprovalNote += ";" + approvalNote;
+                }
+
+                listApproval.Add(approval);
+
+                await _context.SaveChangesAsync();
+                
+                var listEmail = new List<EmailApproval>();
+                var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals");
+                var emails = await _approvalService.GenerateCombinedEmailProposal(listApproval, baseUrl, User.Identity.Name);
+                listEmail.AddRange(emails);
+            }
+            catch(Exception ex)
+			{
+
+			}
+
+            return Ok();
+        }
+
+        public async Task<WeeklyBucket> GetWeeklyBucketTarget(Approval approval, Proposal proposal)
+		{
+            var i = 0;
+            var bucketTargetIds = new List<Guid>();
+            var weeklyBucketTarget = new WeeklyBucket();
+            var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
+            var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
+            var banners = _bannerService.GetAllActiveBanner();
+            var banner = await banners.SingleOrDefaultAsync(x => x.Id == weeklyBucket.BannerId);
+            
+
+            if(approval.ProposalType == ProposalType.ReallocateAcrossKAM)
+			{
+                i = 0;
+			}
+            else if (approval.ProposalType == ProposalType.ReallocateAcrossCDM)
+			{
+                i = 1;
+			}
+			else
+			{
+                i = 2;
+			}
+
+            while (i != 3)
+            {
+                var weeklyBucketTargets = _bucketService.GetWeeklyBuckets();
+                switch (i)
+                {
+                    //REALLOCATE ACROSS CDM
+                    case 0:
+                        bucketTargetIds = await banners.Where(x => x.CDM == banner.CDM).Select(x => x.Id).ToListAsync();
+                        weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id);
+                        proposal.Type = ProposalType.ReallocateAcrossCDM;
+                        
+                        break;
+                    //REALLOCATE ACROSS MT
+                    case 1:
+                        weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => x.SKUId == sku.Id);
+                        proposal.Type = ProposalType.ReallocateAcrossMT;
+                        break;
+                    default:
+                        proposal.Type = ProposalType.ProposeAdditional;
+                        break;
+                }
+
+                if(proposal.Type != ProposalType.ProposeAdditional)
+				{
+                    approval.ProposalType = proposal.Type.Value;
+                    var proposeAdditional = proposal.ProposalDetails.Single(x => x.ProposeAdditional > 0).ProposeAdditional;
+                    var weeklyBucketTargetByMonthly = await weeklyBucketTargets.Where(x => x.MonthlyBucket > proposeAdditional && x.Id != weeklyBucket.Id && x.Month == proposal.Month).OrderByDescending(x => x.MonthlyBucket).FirstOrDefaultAsync();
+                    var weeklyBucketTargetByRemFSA = await weeklyBucketTargets.Where(x => x.RemFSA > proposeAdditional && x.Id != weeklyBucket.Id && x.Month == proposal.Month).OrderByDescending(x => x.RemFSA).FirstOrDefaultAsync();
+                    if (weeklyBucketTargetByMonthly == null && weeklyBucketTargetByRemFSA == null)
+                    {
+                        proposal.Type = ProposalType.ProposeAdditional;
+                        i++;
+                    }
+                    else if (weeklyBucketTargetByMonthly != null && weeklyBucketTargetByRemFSA != null)
+                    {
+                        if (weeklyBucketTargetByMonthly.MonthlyBucket > weeklyBucketTargetByRemFSA.RemFSA)
+                        {
+                            weeklyBucketTarget = weeklyBucketTargetByMonthly;
+                            break;
+                        }
+                        else
+                        {
+                            weeklyBucketTarget = weeklyBucketTargetByRemFSA;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        weeklyBucketTarget = weeklyBucketTargetByMonthly != null ? weeklyBucketTargetByMonthly : weeklyBucketTargetByRemFSA;
+                        break;
+                    }
+                }
+                
+            }
+
+            return weeklyBucketTarget;
+        } 
     }
 }

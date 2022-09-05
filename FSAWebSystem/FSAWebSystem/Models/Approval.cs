@@ -75,6 +75,8 @@ namespace FSAWebSystem.Models
         public decimal ValidBJ { get; set; }
         [NotMapped]
         public decimal RemFSA { get; set; }
+		[NotMapped]
+        public ProposalType NextProposalType { get; set; }
     }
 
     public enum ApprovalStatus
@@ -83,7 +85,7 @@ namespace FSAWebSystem.Models
         WaitingNextLevel,
         Approved,
         Rejected,
-        Cancelled
+        RequestedToNextType
     }
 
 }

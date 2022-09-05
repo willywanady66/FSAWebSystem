@@ -164,6 +164,34 @@
         })
     });
 
+    $('#requestNextTypeBtn').click(function () {
+        Swal.fire({
+            title: 'Loading...',
+            html: 'Approving...',
+            timerProgressBar: true,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading()
+            },
+        });
+        var approvalId = $('.approvalId').val();
+        var approvalNote = $('#requestNote').val();
+        $.ajax({
+            type: "POST",
+            url: reqNextTypeUrl,
+            data: { "approvalId": approvalId, "approvalNote": approvalNote },
+            success: function (data) {
+                Swal.close();
+                setTimeout(
+                    function () {
+                        window.location.href = indexUrl;
+                    }, 500)
+
+            }
+        })
+    });
+
 
 
     $("#rejectProposalsBtn").click(function () {

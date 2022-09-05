@@ -437,7 +437,7 @@ namespace FSAWebSystem.Services
                 emailApproval.Name = email.Item1;
                 emailApproval.Requestor = requestor;
                 emailApproval.Subject = $"FSA {type} Approval Request";
-                emailApproval.Body = $"Hi, {email}, " +
+                emailApproval.Body = $"Hi, {emailApproval.RecipientEmail}, " +
                                      $"<br> Please approve {type} Proposal Request: " +
                                      $"<br> " +
                                      $"Banner: {banner.BannerName} " +

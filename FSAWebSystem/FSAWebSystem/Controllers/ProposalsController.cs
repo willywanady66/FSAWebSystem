@@ -264,7 +264,7 @@ namespace FSAWebSystem.Controllers
                             {
                                 savedProposal.ProposeAdditional = proposalInput.proposeAdditional;
                                 savedProposal.Type = ProposalType.ProposeAdditional;
-                                var weeklyBucketTarget = await ValidateProposeAdditional(banners, skus, proposalInput.proposeAdditional, savedProposal.WeeklyBucketId, savedProposal);
+                                var weeklyBucketTarget = await GetWeeklyBucketTarget(banners, skus, proposalInput.proposeAdditional, savedProposal.WeeklyBucketId, savedProposal,fsaDetail.Month, fsaDetail.Year);
                                 if (savedProposal.Type != ProposalType.ProposeAdditional)
                                 {
                                     proposalDetailTarget.WeeklyBucketId = weeklyBucketTarget.Id;
@@ -375,7 +375,7 @@ namespace FSAWebSystem.Controllers
 
             return proposal;
         }
-        public async Task<WeeklyBucket> ValidateProposeAdditional(IQueryable<Banner> banners, IQueryable<SKU> skus, decimal proposeAdditional, Guid weeklyBucketId, Proposal proposal)
+        public async Task<WeeklyBucket> GetWeeklyBucketTarget(IQueryable<Banner> banners, IQueryable<SKU> skus, decimal proposeAdditional, Guid weeklyBucketId, Proposal proposal, int month, int year)
         {
             var i = 0;
             var bucketTargetIds = new List<Guid>();
@@ -392,7 +392,7 @@ namespace FSAWebSystem.Controllers
                     //REALLOCATE ACROSS KAM
                     case 0:
                         bucketTargetIds = await banners.Where(x => x.KAM == banner.KAM && x.CDM == banner.CDM).Select(x => x.Id).ToListAsync();
-                        weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id);
+                        weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id && x.Month == month && x.Year == year);
                         proposal.Type = ProposalType.ReallocateAcrossKAM;
                         break;
                     //REALLOCATE ACROSS CDM
@@ -452,7 +452,7 @@ namespace FSAWebSystem.Controllers
 
             var weeklyBucketTarget = new WeeklyBucket();
 
-            weeklyBucketTarget = await ValidateProposeAdditional(banners, skus, proposeAdditional, weeklyBucketId, proposal);
+            weeklyBucketTarget = await GetWeeklyBucketTarget(banners, skus, proposeAdditional, weeklyBucketId, proposal, fsaDetail.Month, fsaDetail.Year);
 
             var proposalDetailTarget = new ProposalDetail();
 

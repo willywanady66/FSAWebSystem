@@ -10,6 +10,7 @@
 	bool isApproved = (bool)ViewData["IsApproved"];
 	List<Tuple<string, string, string>> approvalNotes = ViewData["ApprovalNotes"] as List<Tuple<string, string, string>>;
 	int i = -1;
+	var text = string.Empty;
 }
 
 <script type="text/javascript">
@@ -18,7 +19,8 @@
 	var rejectUrl = '@Url.Action("RejectProposal", "Approvals")';
 	var indexUrl = '@Url.Action("Index", "Approvals")';
 	var approvalDetailUrl = '@Url.Action("Details", "Approvals")';
-	</script>
+	var reqNextTypeUrl = '@Url.Action("RequestApprovalNextType", "Approvals")';
+</script>
 <script src="~/js/Approval/dataTableApproval.js"></script>
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
 	<h1 class="h3 mb-0 text-gray-800">Approval Details</h1>
@@ -38,168 +40,195 @@
 	<div class="card-header py-3">
 	</div>
 	<div class="card-body">
-		
-			@if(Model != null)
-			{
-				<div class="col-sm-12 col-md-8 col-lg-6">
-				@if(isApproved)
+
+		@if (Model != null)
+		{
+			<div class="col-sm-12 col-md-8 col-lg-6">
+				@if (isApproved)
 				{
 					<div>
 						<h3 style="color:green">Approved!</h3>
 					</div>
 				}
-				else if(!canApprove)
+				else if (!canApprove)
 				{
 					<div>
 						<h3 style="color:red">You Are Not Authorized to Approve!</h3>
 					</div>
 				}
-					<div>
-				<label>Week : </label>
-				<label>@Model.Week</label>
-			</div>
-			<div>
-				<label>Type :</label>
-				@if(Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
-				{
-					<label>Rephase</label>
-				}
-				else if(Model.ProposalType == FSAWebSystem.Models.ProposalType.ProposeAdditional){
-					<label>Propose Additional</label>
-				}
-				else{
-					<label>Reallocate</label>
-				}
-			</div>
-			<div>
-				<label>Remark: </label>
-				<label>@Model.Remark </label>
-			</div>
-			<div>
-				<label>Requested By: </label>
-				<label>@Model.RequestedBy </label>
-			</div>
+				<div>
+					<label>Week : </label>
+					<label>@Model.Week</label>
+				</div>
+				<div>
+					<label>Type :</label>
+					@if (Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
+					{
+						<label>Rephase</label>
+					}
+					else if (Model.ProposalType == FSAWebSystem.Models.ProposalType.ProposeAdditional)
+					{
+						<label>Propose Additional</label>
+					}
+					else
+					{
+						<label>Reallocate</label>
+					}
+				</div>
+				<div>
+					<label>Remark: </label>
+					<label>@Model.Remark </label>
+				</div>
+				<div>
+					<label>Requested By: </label>
+					<label>@Model.RequestedBy </label>
+				</div>
 			</div>
 			<input type="hidden" class="approvalId" asp-for="Id" />
-				<div class="table-responsive">
-			<table class="table table-bordered" id="dataTableApprovalDetails" width="100%" cellspacing="0">
-				<thead>
-					<tr>
-						<th>CDM</th>
-						<th>KAM</th>
-						<th>Banner</th>
-						<th>PC Map</th>
-						<th>Description</th>
-						<th>Rating Rate</th>
-						<th>Monthly Bucket</th>
-						<th>Current Bucket</th>
-						<th>Next Week Bucket</th>
-						<th>Valid + BJ</th>
-						<th>REM FSA</th>
-						
-						@if(Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
+			<div class="table-responsive">
+				<table class="table table-bordered" id="dataTableApprovalDetails" width="100%" cellspacing="0">
+					<thead>
+						<tr>
+							<th>CDM</th>
+							<th>KAM</th>
+							<th>Banner</th>
+							<th>PC Map</th>
+							<th>Description</th>
+							<th>Rating Rate</th>
+							<th>Monthly Bucket</th>
+							<th>Current Bucket</th>
+							<th>Next Week Bucket</th>
+							<th>Valid + BJ</th>
+							<th>REM FSA</th>
+
+							@if (Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
+							{
+								<th>Rephase</th>
+							}
+							else
+							{
+								<th>Propose Additional</th>
+							}
+
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var item in Model.ApprovalDetails)
 						{
-							<th>Rephase</th>
+							<tr>
+								<td>@Html.DisplayFor(modelItem => item.CDM)</td>
+								<td>@Html.DisplayFor(modelItem => item.KAM)</td>
+								<td>@Html.DisplayFor(modelItem => item.BannerName)</td>
+								<td>@Html.DisplayFor(modelItem => item.PCMap)</td>
+								<td>@Html.DisplayFor(modelItem => item.DescriptionMap)</td>
+								<td>@Html.DisplayFor(modelItem => item.RatingRate)</td>
+								<td>@Html.DisplayFor(modelItem => item.MonthlyBucket)</td>
+								<td>@Html.DisplayFor(modelItem => item.CurrentBucket)</td>
+								<td>@Html.DisplayFor(modelItem => item.NextBucket)</td>
+								<td>@Html.DisplayFor(modelItem => item.ValidBJ)</td>
+								<td>@Html.DisplayFor(modelItem => item.RemFSA)</td>
+								@if (Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
+								{
+									<td>
+										@Html.DisplayFor(modelItem => item.Rephase)
+									</td>
+								}
+								else
+								{
+									<td>
+										@if (item.ProposeAdditional > 0)
+										{
+											<span style="color:green">@Html.DisplayFor(modelItem => item.ProposeAdditional)</span>
+										}
+										else
+										{
+
+											<span style="color:red">(@(@item.ProposeAdditional * @i))</span>
+										}
+
+									</td>
+								}
+
+
+							</tr>
+						}
+					</tbody>
+				</table>
+				@if (Model.ProposalType != FSAWebSystem.Models.ProposalType.ProposeAdditional && Model.ProposalType != FSAWebSystem.Models.ProposalType.Rephase)
+				{
+					<p class="pt-3">Note: This @type from <b>@bannerSource</b> Bucket to <b>@bannerTarget</b> Bucket  </p>
+				}
+				else if (Model.ProposalType == FSAWebSystem.Models.ProposalType.ProposeAdditional)
+				{
+					<p class="pt-3">Propose Additional</p>
+				}
+
+				<div>
+					<button id="openConfirmRejectModalBtn" class="btn btn-danger" data-toggle="modal" @(Model != null && canApprove ? "" : "disabled")
+						data-target="#rejectProposalModal">
+						Reject
+					</button>
+					<button id="openConfirmApproveModalBtn" class="btn btn-primary float-right" data-toggle="modal" @(Model != null && canApprove ? "" : "disabled")
+						data-target="#approveProposalModal">
+						Approve
+					</button>
+				</div>
+
+				<div class="pt-4">
+					@if (@Model.ProposalType != ProposalType.Rephase && Model.ProposalType != ProposalType.ProposeAdditional)
+					{
+						if (@Model.NextProposalType == ProposalType.ReallocateAcrossCDM)
+						{
+							text = "Reallocate Across CDM";
+						}
+						else if (Model.NextProposalType == ProposalType.ReallocateAcrossKAM)
+						{
+							text = "Reallocate Across KAM";
+						}
+						else if(Model.NextProposalType == ProposalType.ReallocateAcrossMT)
+						{
+							text = "Reallocate Across MT";
 						}
 						else
 						{
-							<th>Propose Additional</th>
+							text = "Propose Additional";
 						}
-
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var item in Model.ApprovalDetails)
-					{
-						<tr>
-							<td>@Html.DisplayFor(modelItem => item.CDM)</td>
-							<td>@Html.DisplayFor(modelItem => item.KAM)</td>
-							<td>@Html.DisplayFor(modelItem => item.BannerName)</td>
-							<td>@Html.DisplayFor(modelItem => item.PCMap)</td>
-							<td>@Html.DisplayFor(modelItem => item.DescriptionMap)</td>
-							<td>@Html.DisplayFor(modelItem => item.RatingRate)</td>
-							<td>@Html.DisplayFor(modelItem => item.MonthlyBucket)</td>
-							<td>@Html.DisplayFor(modelItem => item.CurrentBucket)</td>
-							<td>@Html.DisplayFor(modelItem => item.NextBucket)</td>
-							<td>@Html.DisplayFor(modelItem => item.ValidBJ)</td>
-							<td>@Html.DisplayFor(modelItem => item.RemFSA)</td>
-							@if(Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
-							{
-							<td>
-								@Html.DisplayFor(modelItem => item.Rephase)
-							</td>
-							}
-							else
-							{	<td>
-								@if(item.ProposeAdditional > 0)
-								{
-									<span style="color:green">@Html.DisplayFor(modelItem => item.ProposeAdditional)</span>
-								}
-									else
-									{
-										
-										<span style="color:red">(@(@item.ProposeAdditional * @i))</span>
-									}
-									
-							</td>	
-							}
-							
-						
-						</tr>
+						<button class="form-control btn btn-success" data-toggle="modal" data-target="#reqNextLevelProposalModal">Request @text</button>
 					}
-				</tbody>
-			</table>
-			@if (Model.ProposalType != FSAWebSystem.Models.ProposalType.ProposeAdditional && Model.ProposalType != FSAWebSystem.Models.ProposalType.Rephase)
-			{
-				<p class="pt-3">Note: This @type from <b>@bannerSource</b> Bucket to <b>@bannerTarget</b> Bucket  </p>
-			}
-			else if(Model.ProposalType == FSAWebSystem.Models.ProposalType.ProposeAdditional)
-			{
-				<p class="pt-3">Propose Additional</p>
-			}
 
-			<div>
-				<button id="openConfirmRejectModalBtn" class="btn btn-danger" data-toggle="modal" @(Model != null && canApprove ? "" : "disabled")
-						data-target="#rejectProposalModal">
-					Reject
-				</button>
-				<button id="openConfirmApproveModalBtn" class="btn btn-primary float-right" data-toggle="modal" @(Model != null && canApprove ? "" : "disabled")
-						data-target="#approveProposalModal">
-					Approve
-				</button>
+				</div>
 			</div>
-		</div>
-		
-			}
-			
-			
 
-		
-		
+		}
+
+
+
+
+
 	</div>
 </div>
 
-		<div class="row px-2">
-			@if(approvalNotes.Any())
-			{
-			<h3>Approval Note</h3>
-			@foreach(var item in approvalNotes)
-			{
+<div class="row px-2">
+	@if (approvalNotes.Any())
+	{
+		<h3>Approval Note</h3>
+		@foreach (var item in approvalNotes)
+		{
 			<div class="card shadow pt-2">
 				<div class="card-body">
-					<p>From :  <b>@item.Item1</b> (<b>@item.Item2</b>)</p> 
-					<p>Note: <b>@item.Item3</b></p> 
+					<p>From :  <b>@item.Item1</b> (<b>@item.Item2</b>)</p>
+					<p>Note: <b>@item.Item3</b></p>
 				</div>
 			</div>
-			
-			}
+
+		}
 	}
-		
-			
-			<hr />
-			
-		</div>
-			
+
+
+	<hr />
+
+</div>
+
 
 <div class="modal fade" id="approveProposalModal" tabindex="-1" role="dialog"
 	 aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -221,7 +250,7 @@
 				<div>
 					<textarea class="form-control" id="approvalNote"></textarea>
 				</div>
-				</div>
+			</div>
 			<div class="modal-footer">
 				<button type="submit" class="btn btn-primary" id="approveProposalBtn"
 						data-dismiss="modal">
@@ -259,6 +288,38 @@
 				<button type="submit" class="btn btn-danger" id="rejectProposalBtn"
 						data-dismiss="modal">
 					Reject
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="reqNextLevelProposalModal" tabindex="-1" role="dialog"
+	 aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">
+					Request Reallocate @text?
+				</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p>Are you sure want to Request Reallocate @text?</p>
+				<div>
+					<label>Reason: </label>
+				</div>
+				<div>
+					<textarea class="form-control" id="requestNote"></textarea>
+				</div>
+			</div>
+
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-success" id="requestNextTypeBtn"
+						data-dismiss="modal">
+					Request
 				</button>
 			</div>
 		</div>
