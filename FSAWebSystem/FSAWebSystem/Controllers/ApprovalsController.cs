@@ -313,7 +313,7 @@ namespace FSAWebSystem.Controllers
                 else
                 {
 
-                    await ApproveProposals(approvalIds, approvalNote);
+                    await Reject(approvalIds, approvalNote);
                 }
             }
             catch(Exception ex)
@@ -339,7 +339,7 @@ namespace FSAWebSystem.Controllers
                 return BadRequest();
             }
             _notyfService.Warning("Proposals Rejected");
-            return Ok();
+            return RedirectToAction("Index", "Approvals");
         }
 
         [HttpPost]
@@ -356,25 +356,30 @@ namespace FSAWebSystem.Controllers
                 return BadRequest();
             }
             _notyfService.Success("Proposals Approved");
-            return Ok();
+            return RedirectToAction("Index", "Approvals");
         }
         public async Task Approve(List<Guid> approvalIds, string approvalNote)
         {
             var user = await _userManager.GetUserAsync(User);
             //var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
             var currDate = DateTime.Now;
+            var listApproval = new List<Approval>();
+            var listEmail = new List<EmailApproval>();
+
             foreach (var approvalId in approvalIds)
             {
-                var listEmail = new List<EmailApproval>();
-                
+               
                 var approval = await _approvalService.GetApprovalById(approvalId);
                 var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
-                var banner = await _bannerService.GetBanner(weeklyBucket.BannerId);
-                var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
+                //var banner = await _bannerService.GetBanner(weeklyBucket.BannerId);
+                //var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
                 var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
                 approval.ApprovedAt = currDate;
+                approval.SKUId = weeklyBucket.SKUId;
+                approval.BannerId = weeklyBucket.BannerId;
                 approval.ApprovalStatus = ApprovalStatus.WaitingNextLevel;
+                approval.RequestedBy = userRequestor.Email;
                 if (string.IsNullOrEmpty(approval.ApprovedBy))
                 {
                     approval.ApprovedBy = User.Identity.Name;
@@ -406,37 +411,35 @@ namespace FSAWebSystem.Controllers
                 {
                     var nextApproverWL = _approvalService.GetWLApprover(approval);
                     approval.ApproverWL = nextApproverWL;
-
-                    var page = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals", new { id = approval.Id });
-
-                    var emails = await _approvalService.GenerateEmailProposal(approval, page, userRequestor.Email, banner, sku);
-                    listEmail.AddRange(emails);
-                    
+                        
+                    listApproval.Add(approval);
                 }
+            }
 
-                await _context.SaveChangesAsync();
-
-                foreach (var email in listEmail)
-                {
-                    await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
-                }
-
-                var approvalEmail = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);
-                await _emailService.SendEmailAsync(approvalEmail.RecipientEmail, approvalEmail.Subject, approvalEmail.Body);
-                
+            await _context.SaveChangesAsync();
+            var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals");
+            var proposalEmails = await _approvalService.GenerateCombinedEmailProposal(listApproval, baseUrl);
+            var approvalEmails = await _approvalService.GenerateCombinedEmailApproval(listApproval, User.Identity.Name, approvalNote);
+            listEmail.AddRange(proposalEmails);
+            listEmail.AddRange(approvalEmails);
+            foreach (var email in listEmail)
+            {
+                await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
             }
         }
 
         public async Task Reject(List<Guid> approvalIds, string approvalNote)
         {
-            foreach(var approvalId in approvalIds)
+            var listApproval = new List<Approval>();
+            var listEmail = new List<EmailApproval>();
+            foreach (var approvalId in approvalIds)
             {
                 var approval = await _approvalService.GetApprovalById(approvalId);
                 var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
-                var banner = await _bannerService.GetBanner(weeklyBucket.BannerId);
-                var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
+     
                 var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
+           
 
                 approval.ApprovalStatus = ApprovalStatus.Rejected;
                 if (string.IsNullOrEmpty(approval.ApprovalNote))
@@ -460,10 +463,15 @@ namespace FSAWebSystem.Controllers
                 approval.ApprovedAt = DateTime.Now;
                 approval.ApproverWL = string.Empty;
                 proposal.IsWaitingApproval = false;
+                approval.RequestedBy = userRequestor.Email;
 
-                await _context.SaveChangesAsync();
-
-                var email = await _approvalService.GenerateEmailApproval(approval, User.Identity.Name, userRequestor.Email, approvalNote, banner, sku);
+                listApproval.Add(approval);
+            }
+            await _context.SaveChangesAsync();
+            var approvalEmails = await _approvalService.GenerateCombinedEmailApproval(listApproval, User.Identity.Name, approvalNote);
+            listEmail.AddRange(approvalEmails);
+            foreach (var email in listEmail)
+            {
                 await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
             }
 
@@ -476,14 +484,17 @@ namespace FSAWebSystem.Controllers
 			{
                 var approval = await _approvalService.GetApprovalById(approvalId);
                 var proposal = await _proposalService.GetProposalByApprovalId(approvalId);
+                var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
                 var weekBucketTarget = await GetWeeklyBucketTarget(approval, proposal);
                 var proposalDetailTarget = proposal.ProposalDetails.Single(x => x.ProposeAdditional < 0);
                 proposalDetailTarget.WeeklyBucketId = weekBucketTarget.Id;
+                var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
 
                 approval.Level = approval.ProposalType == ProposalType.ProposeAdditional ? 3 : 2;
                 approval.ApproverWL = _approvalService.GetWLApprover(approval);
+                approval.SKUId = weeklyBucket.SKUId;
+                approval.BannerId = weeklyBucket.BannerId;
 
-                List<Approval> listApproval = new List<Approval>();
                 if (string.IsNullOrEmpty(approval.ApprovedBy))
                 {
                     approval.ApprovedBy = User.Identity.Name;
@@ -502,14 +513,17 @@ namespace FSAWebSystem.Controllers
                     approval.ApprovalNote += ";" + approvalNote;
                 }
 
-                listApproval.Add(approval);
 
                 await _context.SaveChangesAsync();
                 
                 var listEmail = new List<EmailApproval>();
                 var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals");
-                var emails = await _approvalService.GenerateCombinedEmailProposal(listApproval, baseUrl, User.Identity.Name);
-                listEmail.AddRange(emails);
+                var proposalEmails = await _approvalService.GenerateEmailProposal(approval, baseUrl, userRequestor.Email);
+                listEmail.AddRange(proposalEmails);
+                foreach (var email in listEmail)
+                {
+                    await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
+                }
             }
             catch(Exception ex)
 			{

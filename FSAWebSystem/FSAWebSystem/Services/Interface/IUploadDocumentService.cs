@@ -18,5 +18,8 @@ namespace FSAWebSystem.Services.Interface
         public List<string> GetWeeklyDispatchColumns();
         public List<string> GetDailyOrderColumns();
         public List<string> GetUserColumns();
+        public List<string> GetAndromedaColumns();
+        public List<string> GetBottomPriceColumns();
+        public List<string> GetITrustColumns();
     }
 }

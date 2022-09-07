@@ -12,12 +12,14 @@ namespace FSAWebSystem.Services.Interface
         //public Task<ApprovalPagingData> GetApprovalReallocatePagination(DataTableParam param, int month, int year);
         public Task<Approval> GetApprovalById(Guid approvalId);
         public Task<Approval> GetApprovalDetails(Guid approvalId);
-        public Task<List<Tuple<string, List<Guid>>>> GetRecipientEmail(string wlApproval, Guid bannerId = new Guid());
+        public Task<List<Tuple<string, Guid, Approval, string>>> GetRecipientEmail(Approval approval);
         public string GetWLApprover(Approval approval);
-        public Task<List<EmailApproval>> GenerateEmailProposal(Approval approval, string url, string requestor, Banner banner, SKU sku);
+        public Task<List<EmailApproval>> GenerateEmailProposal(Approval approval, string url, string requestor);
         public Task<EmailApproval> GenerateEmailApproval(Approval approval, string userApproverEmail, string requesterEmail, string approvalNote, Banner banner, SKU sku);
 
-        public Task<List<EmailApproval>> GenerateCombinedEmailProposal(List<Approval> approvals, string baseUrl, string requestor);
+        public Task<List<EmailApproval>> GenerateCombinedEmailApproval(List<Approval> approvals, string userApproverEmail, string approvalNote); 
+
+        public Task<List<EmailApproval>> GenerateCombinedEmailProposal(List<Approval> approvals, string baseUrl, string requestor = "");
         
-        }
+    }
 }

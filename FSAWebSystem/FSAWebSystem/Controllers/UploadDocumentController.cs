@@ -86,6 +86,15 @@ namespace FSAWebSystem.Controllers
                 case DocumentUpload.DailyOrder:
                     columns = _uploadDocService.GetDailyOrderColumns();
                     break;
+                case DocumentUpload.Andromeda:
+                    columns = _uploadDocService.GetAndromedaColumns();
+                    break;
+                case DocumentUpload.BottomPrice:
+                    columns = _uploadDocService.GetBottomPriceColumns();
+                    break;
+                case DocumentUpload.ITRUST:
+                    columns = _uploadDocService.GetITrustColumns();
+                    break;
             }
 
             CellRangeAddress range = new CellRangeAddress(0, 0, 0, columns.Count - 1);

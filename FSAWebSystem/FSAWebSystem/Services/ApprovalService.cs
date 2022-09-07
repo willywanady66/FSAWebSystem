@@ -314,101 +314,96 @@ namespace FSAWebSystem.Services
             return wlApprover;
         }
 
-        public async Task<List<Tuple<string, List<Guid>>>> GetRecipientEmail(string wlApprover, Guid bannerId = new Guid())
+        public async Task<List<Tuple<string, Guid, Approval, string>>> GetRecipientEmail(Approval approval)
         {
-            var worklevel = await _db.WorkLevels.SingleAsync(x => x.WL == wlApprover);
+            var worklevel = await _db.WorkLevels.SingleAsync(x => x.WL == approval.ApproverWL);
             var users = await _db.UsersUnilever.Include(x => x.Banners).Where(x => x.WLId == worklevel.Id).ToListAsync();
-            if (wlApprover == "KAM WL 2")
+            if (approval.ApproverWL == "KAM WL 2")
             {
-                users = users.Where(x => x.Banners.Select(x => x.Id).Contains(bannerId)).ToList();
+                users = users.Where(x => x.Banners.Select(x => x.Id).Contains(approval.BannerId)).ToList();
             }
 
-            var usersEmail = users.Select(x => new Tuple<string, List<Guid>>(x.Email, x.Banners.Select(y => y.Id).ToList())).ToList();
+
+            var type = string.Empty;
+
+            if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
+            {
+                type = "Reallocate Across KAM";
+            }
+            else if (approval.ProposalType == ProposalType.ReallocateAcrossCDM)
+            {
+                type = "Reallocate Across CDM";
+            }
+            else if (approval.ProposalType == ProposalType.ReallocateAcrossMT)
+            {
+                type = "Reallocate Across MT";
+            }
+            else if (approval.ProposalType == ProposalType.Rephase)
+            {
+                type = "Rephase";
+            }
+            else
+            {
+                type = "Propose Additional";
+            }
+
+            var usersEmail = users.Select(x => new Tuple<string, Guid, Approval, string>(x.Email, approval.SKUId, approval, type)).ToList();
             //var usersEmail = users.Select(x => x.Email).ToList();
             return usersEmail;
         }
 
-        public async Task<List<EmailApproval>> GenerateCombinedEmailProposal(List<Approval> approvals, string baseUrl, string requestor)
+        public async Task<List<EmailApproval>> GenerateCombinedEmailProposal(List<Approval> approvals, string baseUrl, string? requestor = "")
         {
             var listEmail = new List<EmailApproval>();
-            var emails = new List<Tuple<string, List<Guid>>>();
-            var approvalGrps = approvals.GroupBy(x => x.ProposalType ).ToList();
-           
-            foreach (var apprvlGrp in approvalGrps)
+            
+            var approvalIds = approvals.Select(x => x.Id);
+            var approvalGroupsSku = approvals.GroupBy(x => x.SKUId).ToList();
+
+            var emails2 = new List<Tuple<string, Guid, Approval, string>>();
+            foreach (var approval in approvals)
             {
-                var groupBanner = apprvlGrp.GroupBy(x => x.BannerId).ToList();
-                foreach(var banner in groupBanner)
-                {
-                     emails.AddRange(await GetRecipientEmail(apprvlGrp.First().ApproverWL, banner.Key));
-                }
-                var type = string.Empty;
-              
-                if (apprvlGrp.First().ProposalType == ProposalType.ReallocateAcrossKAM)
-                {
-                    type = "Reallocate Across KAM";
-                }
-                else if (apprvlGrp.First().ProposalType == ProposalType.ReallocateAcrossCDM)
-                {
-                    type = "Reallocate Across CDM";
-                }
-                else if (apprvlGrp.First().ProposalType == ProposalType.ReallocateAcrossMT)
-                {
-                    type = "Reallocate Across MT";
-                }
-                else if (apprvlGrp.First().ProposalType == ProposalType.Rephase)
-                {
-                    type = "Rephase";
-                }
-                else
-                {
-                    type = "Propose Additional";
-                }
-                var emailGroups = emails.GroupBy(x => x.Item1).ToList();
-                foreach(var emailGroup in emailGroups)
-                {
-                    var emailDetails = string.Empty;
-                    var emailApproval = new EmailApproval();
-                    emailApproval.RecipientEmail = emailGroup.Key;
-                    emailApproval.Requestor = requestor;
-                    emailApproval.Subject = $"FSA {type} Approval Request";
-                    emailApproval.Body = $"Hi, {emailGroup.Key}, " +
-                                         $"<br> Please approve {type} Proposal Request: " +
-                                         $"<br> <br>";
-                   
-                    foreach (var approval in apprvlGrp)
-                    {
-                        emailApproval.ApprovalUrl = baseUrl + "/" + approval.Id;
-                        if (emailGroup.Any(x => x.Item2.Contains(approval.BannerId)))
-                        {
-                            var banner = await _db.Banners.SingleOrDefaultAsync(x => x.Id == approval.BannerId);
-                            var sku = await _db.SKUs.SingleOrDefaultAsync(x => x.Id == approval.SKUId);
-                            emailDetails += $"Banner: {banner.BannerName} " +
-                                         $"<br> " +
-                                         $"Plant Code: {banner.PlantCode} " +
-                                         $"<br> " +
-                                         $"Plant Name: {banner.PlantName} " +
-                                         $"<br> " +
-                                         $"PC Code: {sku.PCMap}" +
-                                         $"<br>" +
-                                         $"Description Map: {sku.DescriptionMap} " +
-                                         $"<br>" +
-                                         $"Link: <a href='{HtmlEncoder.Default.Encode(emailApproval.ApprovalUrl)}'>Detail</a> <br> <br>";
-                           
-                            
-                        }
-                    }
-                    emailApproval.Body += emailDetails + $" from {requestor}. <br><br><br> Thank You.";
-                    listEmail.Add(emailApproval);
-                }   
+                emails2.AddRange(await GetRecipientEmail(approval));
             }
+
+            var emailGrps = emails2.GroupBy(x => new { x.Item1, x.Item2 }).ToList();
+            foreach(var emailGroup in emailGrps)
+            {
+                var emailApproval = new EmailApproval();
+                emailApproval.RecipientEmail = emailGroup.Key.Item1;
+                emailApproval.Requestor = requestor;
+                emailApproval.Subject = $"FSA Approval Request";
+                emailApproval.Body = $"Hi, {emailGroup.Key.Item1}, ";
+                                        
+                foreach (var email in emailGroup)
+                { 
+                    var approval = email.Item3;
+                    emailApproval.ApprovalUrl = baseUrl + "/" + approval.Id;
+                    var banner = await _db.Banners.SingleOrDefaultAsync(x => x.Id == approval.BannerId);
+                    var sku = await _db.SKUs.SingleOrDefaultAsync(x => x.Id == approval.SKUId);
+                    emailApproval.Body += $"<br> Please approve {email.Item4} Proposal Request: " +
+                                         $"<br> <br> Banner: {banner.BannerName} " +
+                                 $"<br> " +
+                                 $"Plant Code: {banner.PlantCode} " +
+                                 $"<br> " +
+                                 $"Plant Name: {banner.PlantName} " +
+                                 $"<br> " +
+                                 $"PC Code: {sku.PCMap}" +
+                                 $"<br>" +
+                                 $"Description Map: {sku.DescriptionMap} " +
+                                 $"<br>" +
+                                 $"Link: <a href='{HtmlEncoder.Default.Encode(emailApproval.ApprovalUrl)}'>Detail</a> <br> <br>";
+                }
+                listEmail.Add(emailApproval);
+            }
+           
             return listEmail;
         }
 
-        public async Task<List<EmailApproval>> GenerateEmailProposal(Approval approval, string url, string requestor, Banner banner, SKU sku)
+        public async Task<List<EmailApproval>> GenerateEmailProposal(Approval approval, string url, string requestor)
         {
             var listEmail = new List<EmailApproval>();
             var type = string.Empty;
-            var emails = await GetRecipientEmail(approval.ApproverWL, banner.Id);
+            var emails = await GetRecipientEmail(approval);
             if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
             {
                 type = "Reallocate Across KAM";
@@ -431,6 +426,8 @@ namespace FSAWebSystem.Services
             }
             foreach (var email in emails)
             {
+                var banner = _db.Banners.Single(x => x.Id == approval.BannerId);
+                var sku = _db.SKUs.Single(x => x.Id == approval.SKUId);
                 var emailApproval = new EmailApproval();
                 emailApproval.RecipientEmail = email.Item1;
                 emailApproval.ApprovalUrl = url;
@@ -547,6 +544,112 @@ namespace FSAWebSystem.Services
             return emailApproval;
         }
 
+        public async Task<List<EmailApproval>> GenerateCombinedEmailApproval(List<Approval> approvals, string userApproverEmail, string approvalNote){
+            var listEmailApproval = new List<EmailApproval>();
+            var banners = _db.Banners;
+            var skus = _db.SKUs;
+            var proposals = _db.Proposals;
+            var approvalGroups = approvals.GroupBy(x => new { x.RequestedBy, x.SKUId }).ToList();
+            foreach(var approvalGroup in approvalGroups)
+            {
+                var emailApproval = new EmailApproval();
+                emailApproval.Requestor = approvalGroup.Key.RequestedBy;
+                emailApproval.RecipientEmail = approvalGroup.Key.RequestedBy;
+                emailApproval.Subject = "FSA Proposal Request Status";
+                emailApproval.Body = $"Hi, {approvalGroup.Key.RequestedBy}, <br><br>";
+                foreach (var approval in approvalGroup)
+                {
+                    var type = string.Empty;
+                    var sku = skus.SingleOrDefault(x => x.Id == approval.SKUId);
+                    var banner = banners.SingleOrDefault(x => x.Id == approval.BannerId);
+                    var emailBody = GenerateApprovalEmailBody(approval, approval.ProposalType, userApproverEmail, approvalNote, banner, sku);
+                    emailApproval.Body += emailBody;
+                }
+                emailApproval.Body += "<br> Thank You.";
+                listEmailApproval.Add(emailApproval);
+            }
+            return listEmailApproval;
+        }
+
+        public string GenerateApprovalEmailBody(Approval approval, ProposalType proposalType, string userApproverEmail, string approvalNote, Banner banner, SKU sku)
+        {
+            var body = string.Empty;
+            var type = string.Empty;
+            if (proposalType == ProposalType.ReallocateAcrossKAM)
+            {
+                type = "Reallocate Across KAM";
+            }
+            else if (proposalType == ProposalType.ReallocateAcrossCDM)
+            {
+                type = "Reallocate Across CDM";
+            }
+            else if (proposalType == ProposalType.ReallocateAcrossMT)
+            {
+                type = "Reallocate Across MT";
+            }
+            else if (proposalType == ProposalType.Rephase)
+            {
+                type = "Rephase";
+            }
+            else
+            {
+                type = "Propose Additional";
+            }
+
+            if (approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel)
+            {
+                body = $"Your Proposal Request on " +
+                                     $"<br> " +
+                                     $"Banner: {banner.BannerName} " +
+                                     $"<br> " +
+                                     $"Plant Code: {banner.PlantCode} " +
+                                        $"<br> " +
+                                     $"Plant Name: {banner.PlantName} " +
+                                        $"<br> " +
+                                        $"PC Code: {sku.PCMap}" +
+                                        $"<br>" +
+                                        $"Description Map: {sku.DescriptionMap}" +
+                                        $"<br>" +
+                                     $"has been approved by {userApproverEmail} and now waiting for next level approval. <br><br>";
+            }
+            else if (approval.ApprovalStatus == ApprovalStatus.Rejected)
+            {
+                body = $"Your Proposal Request on " +
+                                    $"<br> " +
+                                    $"Banner: {banner.BannerName} " +
+                                    $"<br> " +
+                                    $"Plant Code: {banner.PlantCode} " +
+                                    $"<br> " +
+                                    $"Plant Name: {banner.PlantName} " +
+                                    $"<br> " +
+                                    $"PC Code: {sku.PCMap} " +
+                                    $"<br>" +
+                                    $"Description Map: {sku.DescriptionMap} " +
+                                    $"<br>" +
+                                    $"has been rejected by {userApproverEmail} because of {approvalNote}. <br><br>";
+            }
+            else
+            {
+                var note = !string.IsNullOrEmpty(approvalNote) ? $"Approval Note: {approvalNote} <br>" : string.Empty;
+                body = $"Your Proposal Request on " +
+                                    $"<br> " +
+                                    $"Banner: {banner.BannerName} " +
+                                    $"<br> " +
+                                    $"Plant Code: {banner.PlantCode} " +
+                                    $"<br> " +
+                                    $"Plant Name: {banner.PlantName} " +
+                                    $"<br> " +
+                                    $"PC Code: {sku.PCMap} " +
+                                    $"<br>" +
+                                    $"Description Map: {sku.DescriptionMap} " +
+                                    $"<br>" +
+                                    note +
+                                    $"has been approved by {userApproverEmail}. <br><br>";
+            }
+            return body;
+        }
     }
+
+ 
 }
 

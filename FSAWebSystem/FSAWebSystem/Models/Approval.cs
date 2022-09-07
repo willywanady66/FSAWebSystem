@@ -77,6 +77,8 @@ namespace FSAWebSystem.Models
         public decimal RemFSA { get; set; }
 		[NotMapped]
         public ProposalType NextProposalType { get; set; }
+        [NotMapped]
+        public List<string> EmailApprover { get; set; }
     }
 
     public enum ApprovalStatus

@@ -67,6 +67,44 @@ namespace FSAWebSystem.Services
             };
         }
 
+        public List<string> GetAndromedaColumns()
+        {
+            return new List<string>
+            {
+                "Material",
+                "Description",
+                "UU Stock",
+                "IT This Week",
+                "RR_ACT 13 WK"
+            };
+        }
+
+        public List<string> GetBottomPriceColumns()
+        {
+            return new List<string>
+            {
+                "PC MAP",
+                "Description",
+                "Average of Normal Price",
+                "Average of Bottom Price",
+                "Average of Actual Price",
+                "Min of Actual Price",
+                "Gap"
+            };
+        }
+
+        public List<string> GetITrustColumns()
+        {
+            return new List<string>
+            {
+                "PC MAP",
+                "Description",
+                "Sum of Intransit",
+                "Sum of Stock",
+                "Sum of Final RPP"
+            };
+        }
+
         public async Task SaveMonthlyBuckets(List<MonthlyBucket> monthlyBuckets)
         {
             await _db.MonthlyBuckets.AddRangeAsync(monthlyBuckets);
@@ -165,6 +203,12 @@ namespace FSAWebSystem.Services
         [Description("Weekly Dispatch")]
         WeeklyDispatch,
         [Description("Daily Order")]
-        DailyOrder
+        DailyOrder,
+        [Description("Andromeda")]
+        Andromeda,
+        [Description("Bottom Price")]
+        BottomPrice,
+        [Description("I-TRUST")]
+        ITRUST
     }
 }

@@ -160,6 +160,13 @@
             data: { "approvalIds": selectedIds, "approvalNote": approvalNote },
             success: function (data) {
                 Swal.close();
+                setTimeout(
+                    function () {
+                        window.location.href = indexUrl;
+                    }, 500)
+            },
+            error: function () {
+                Swal.close();
             }
         })
     });
@@ -213,7 +220,13 @@
             data: { "approvalIds": selectedIds, "approvalNote": approvalNote },
             success: function (data) {
                 Swal.close();
-                
+                setTimeout(
+                    function () {
+                        window.location.href = indexUrl;
+                    }, 500)
+            },
+            error: function () {
+                Swal.close();
             }
         })
     });

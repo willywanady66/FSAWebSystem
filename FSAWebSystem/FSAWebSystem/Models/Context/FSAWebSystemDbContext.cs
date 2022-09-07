@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using FSAWebSystem.Models;
 using FSAWebSystem.Models.Bucket;
+using FSAWebSystem.Models.ApprovalSystemCheckModel;
 
 namespace FSAWebSystem.Models.Context
 {
@@ -57,5 +58,8 @@ namespace FSAWebSystem.Models.Context
         public DbSet<WeeklyBucketHistory> WeeklyBucketHistories { get; set; }
         public DbSet<ProposalHistory> ProposalHistories { get; set; }
         public DbSet<ApprovalDetail> ApprovalDetail { get; set; }
+        public DbSet<AndromedaModel> Andromedas { get; set; }
+        public DbSet<BottomPriceModel> BottomPrices { get; set; }
+        public DbSet<ITrustModel> ITrustModels{ get; set; }
     }
 }

@@ -47,7 +47,8 @@ namespace FSAWebSystem.Services
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
-                banners = banners.Where(x => x.BannerName.ToLower().Contains(search) || x.Trade.ToLower().Contains(search) || x.PlantCode.ToLower().Contains(search) || x.PlantName.ToLower().Contains(search));
+                banners = banners.Where(x => x.BannerName.ToLower().Contains(search.ToLower()) || x.Trade.ToLower().Contains(search.ToLower()) || x.PlantCode.ToLower().Contains(search.ToLower()) || x.PlantName.ToLower().Contains(search.ToLower())
+                                        || x.CDM.ToLower().Contains(search.ToLower()) || x.KAM.ToLower().Contains(search.ToLower()));
             }
 
             if (param.order.Any())
