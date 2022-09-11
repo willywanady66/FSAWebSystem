@@ -11,6 +11,6 @@
         public decimal AvgActualPrice{ get; set; }
         public decimal MinActualPrice{ get; set; }
         public decimal Gap{ get; set; }
-        public decimal Remaks{ get; set; }
+        public string Remarks{ get; set; }
     }
 }

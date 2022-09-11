@@ -114,7 +114,7 @@ namespace FSAWebSystem.Services
             var usedBanner = await _db.Banners.Where(x => x.IsActive).Include(x => x.UserUnilevers).SingleOrDefaultAsync(x => x.BannerName.ToUpper() == name.ToUpper() && x.PlantCode == plantCode);
 
             var usedBannerBucket =  _db.MonthlyBuckets.Where(x => x.BannerId == usedBanner.Id);
-            var bannerUsed = usedBanner.UserUnilevers.Any() && usedBannerBucket.Any();
+            var bannerUsed = usedBanner.UserUnilevers.Any() || usedBannerBucket.Any();
             return bannerUsed;
 
         }

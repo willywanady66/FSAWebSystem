@@ -1,4 +1,5 @@
 ﻿using FSAWebSystem.Models;
+using FSAWebSystem.Models.ApprovalSystemCheckModel;
 using FSAWebSystem.Models.Bucket;
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Services.Interface;
@@ -89,7 +90,8 @@ namespace FSAWebSystem.Services
                 "Average of Bottom Price",
                 "Average of Actual Price",
                 "Min of Actual Price",
-                "Gap"
+                "Gap",
+                "Remark"
             };
         }
 
@@ -173,6 +175,38 @@ namespace FSAWebSystem.Services
             await _db.WeeklyBucketHistories.AddRangeAsync(weeklyBucketHistories);
         }
 
+        public async Task SaveAndromeda(List<AndromedaModel> listAndromeda)
+        {
+            await _db.Andromedas.AddRangeAsync(listAndromeda);
+        }
+
+        public async Task SaveITrust(List<ITrustModel> listITrust)
+        {
+            await _db.ITrusts.AddRangeAsync(listITrust);
+        }
+
+        public async Task SaveBottomPrice(List<BottomPriceModel> listBottomPrice)
+        {
+            await _db.BottomPrices.AddRangeAsync(listBottomPrice);
+        }
+
+        public async Task DeleteAndromeda()
+        {
+            var andromedas = _db.Andromedas;
+            _db.Andromedas.RemoveRange(andromedas);
+        }
+
+        public async Task DeleteBottomPrice()
+        {
+            var bottomPrices = _db.BottomPrices;
+            _db.BottomPrices.RemoveRange(bottomPrices);
+        }
+
+        public async Task DeleteITrust()
+        {
+            var iTrust= _db.ITrusts;
+            _db.ITrusts.RemoveRange(iTrust);
+        }
         public List<string> GetUserColumns()
         {
             return new List<string>

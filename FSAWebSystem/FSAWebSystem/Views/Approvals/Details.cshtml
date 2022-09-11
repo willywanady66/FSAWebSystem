@@ -26,14 +26,14 @@
 	<h1 class="h3 mb-0 text-gray-800">Approval Details</h1>
 </div>
 <div class="text-danger">
-@*	@if (TempData["ErrorMessages"] != null)
+	@*	@if (TempData["ErrorMessages"] != null)
 	{
-		<ul>
-			@foreach (var error in TempData["ErrorMessages"] as IEnumerable<string>)
-			{
-				<li>@Html.DisplayFor(Model => error)</li>
-			}
-		</ul>
+	<ul>
+	@foreach (var error in TempData["ErrorMessages"] as IEnumerable<string>)
+	{
+	<li>@Html.DisplayFor(Model => error)</li>
+	}
+	</ul>
 	}*@
 </div>
 <div class="card shadow mb-4 pt-4 pl-2">
@@ -43,7 +43,7 @@
 
 		@if (Model != null)
 		{
-			<div class="col-sm-12 col-md-8 col-lg-6">
+			<div class="col-12">
 				@if (isApproved)
 				{
 					<div>
@@ -56,33 +56,58 @@
 						<h3 style="color:red">You Are Not Authorized to Approve!</h3>
 					</div>
 				}
-				<div>
-					<label>Week : </label>
-					<label>@Model.Week</label>
+				<div class="row">
+					<div class="col-6">
+						<div>
+							<label>Week : </label>
+							<label>@Model.Week</label>
+						</div>
+						<div>
+							<label>Type :</label>
+							@if (Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
+							{
+								<label>Rephase</label>
+							}
+							else if (Model.ProposalType == FSAWebSystem.Models.ProposalType.ProposeAdditional)
+							{
+								<label>Propose Additional</label>
+							}
+							else
+							{
+								<label>Reallocate</label>
+							}
+						</div>
+						<div>
+							<label>Remark: </label>
+							<label>@Model.Remark </label>
+						</div>
+						<div>
+							<label>Requested By: </label>
+							<label>@Model.RequestedBy </label>
+						</div>
+					</div>
+					<div class="col-6">
+						<div>
+							<label>Analysis Check</label>
+						</div>
+						<div>
+							<ul>
+								@if(Model.IsAndromedaPassed.HasValue)
+								{
+									<li><span style="color: @(Model.IsAndromedaPassed.Value ? "Green" : "Red")">Andromeda (Nat Stock)</span></li>
+								}
+								@if(Model.IsITrustPassed.HasValue)
+								{
+									<li><span style="color: @(Model.IsITrustPassed.Value ? "Green" : "Red")">I-Trust (Dist Stock)</span></li>
+								}
+								@if(Model.IsBottomPricePassed.HasValue)
+								{
+									<li><span style="color: @(Model.IsBottomPricePassed.Value ? "Green" : "Red")">Bottom Price</span></li>
+								}
+							</ul>
+						</div>
 				</div>
-				<div>
-					<label>Type :</label>
-					@if (Model.ProposalType == FSAWebSystem.Models.ProposalType.Rephase)
-					{
-						<label>Rephase</label>
-					}
-					else if (Model.ProposalType == FSAWebSystem.Models.ProposalType.ProposeAdditional)
-					{
-						<label>Propose Additional</label>
-					}
-					else
-					{
-						<label>Reallocate</label>
-					}
-				</div>
-				<div>
-					<label>Remark: </label>
-					<label>@Model.Remark </label>
-				</div>
-				<div>
-					<label>Requested By: </label>
-					<label>@Model.RequestedBy </label>
-				</div>
+			</div>
 			</div>
 			<input type="hidden" class="approvalId" asp-for="Id" />
 			<div class="table-responsive">
@@ -109,7 +134,6 @@
 							{
 								<th>Propose Additional</th>
 							}
-
 						</tr>
 					</thead>
 					<tbody>
@@ -148,8 +172,6 @@
 
 									</td>
 								}
-
-
 							</tr>
 						}
 					</tbody>
@@ -185,7 +207,7 @@
 						{
 							text = "Reallocate Across KAM";
 						}
-						else if(Model.NextProposalType == ProposalType.ReallocateAcrossMT)
+						else if (Model.NextProposalType == ProposalType.ReallocateAcrossMT)
 						{
 							text = "Reallocate Across MT";
 						}
@@ -198,7 +220,6 @@
 
 				</div>
 			</div>
-
 		}
 
 

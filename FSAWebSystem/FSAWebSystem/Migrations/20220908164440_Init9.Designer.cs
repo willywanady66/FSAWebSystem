@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220908164440_Init9")]
+    partial class Init9
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -235,9 +237,8 @@ namespace FSAWebSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Remarks")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("Remaks")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("SKUId")
                         .HasColumnType("uniqueidentifier");

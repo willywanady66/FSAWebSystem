@@ -37,7 +37,7 @@ namespace FSAWebSystem.Controllers
         {
             ViewData["ListMonth"] = _calendarService.GetListMonth();
             ViewData["ListYear"] = _calendarService.GetListYear();
-            var currentDate = DateTime.Now;
+            var currentDate = DateTime.Now; 
             var listDocumentUpload = Enum.GetValues(typeof(DocumentUpload)).Cast<DocumentUpload>().Select(x => new SelectListItem { Text = UploadDocumentService.GetEnumDesc(x), Value = ((int)x).ToString() }).ToList();
 
 
@@ -178,6 +178,50 @@ namespace FSAWebSystem.Controllers
                 recordsTotal = data.totalRecord,
                 recordsFiltered = data.totalRecord,
                 data = data.banners
+            });
+            return listData;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAndromedaPagination(DataTableParam param)
+        {
+            var data = await _skuService.GetAndromedaPagination(param);
+            var listData = Json(new
+            {
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.andromedas
+            });
+            return listData;
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> GetBottomPricePagination(DataTableParam param)
+        {
+            var data = await _skuService.GetBottomPricePagination(param);
+            var listData = Json(new
+            {
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.bottomPrices
+            });
+            return listData;
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> GetITrustPagination(DataTableParam param)
+        {
+            var data = await _skuService.GetITrustPagination(param);
+            var listData = Json(new
+            {
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.iTrusts
             });
             return listData;
         }

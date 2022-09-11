@@ -60,6 +60,6 @@ namespace FSAWebSystem.Models.Context
         public DbSet<ApprovalDetail> ApprovalDetail { get; set; }
         public DbSet<AndromedaModel> Andromedas { get; set; }
         public DbSet<BottomPriceModel> BottomPrices { get; set; }
-        public DbSet<ITrustModel> ITrustModels{ get; set; }
+        public DbSet<ITrustModel> ITrusts{ get; set; }
     }
 }

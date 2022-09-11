@@ -60,7 +60,7 @@ namespace FSAWebSystem.Services
                          {
                              UserId = user.Id,
                              Id = userUnilever.Id,
-                             Banners = userUnilever.Banners,
+                             Banners = userUnilever.Banners.Where(x => x.IsActive).ToList(),
                              RoleUnilever = userUnilever.RoleUnilever,
                              Role = userUnilever.RoleUnilever.RoleName,
                              IsActive = userUnilever.IsActive,

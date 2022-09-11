@@ -2,7 +2,7 @@
 {
     public class AndromedaModel
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         public Guid SKUId { get; set; }
         public string PCMap { get; set; }

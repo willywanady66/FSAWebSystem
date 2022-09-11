@@ -20,6 +20,9 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Security.Claims;
+using ExcelDataReader;
+using FSAWebSystem.Models.ApprovalSystemCheckModel;
+using Newtonsoft.Json;
 
 namespace FSAWebSystem.Controllers
 {
@@ -145,26 +148,28 @@ namespace FSAWebSystem.Controllers
         [Authorize]
         public async Task<IActionResult> UploadFile(IFormFile excelDocument, string documentType, string loggedUser, string? uploadMonth)
         {
+            string fileContent = string.Empty;
             var currDate = DateTime.Now;
             var month = currDate.Month;
+          
             if (!string.IsNullOrEmpty(uploadMonth))
             {
                 month = Convert.ToInt32(uploadMonth);
 
             }
             var doc = (DocumentUpload)(Convert.ToInt32(documentType));
-            
+
             List<string> errorMessages = new List<string>();
-           
+
 
             if (excelDocument != null)
             {
                 if (!excelDocument.FileName.Contains(doc.ToString()))
                 {
-                    errorMessages.Add("Wrong File Format!");
-                    TempData["ErrorMessages"] = errorMessages;
-                    TempData["Tab"] = "UploadDoc";
-                    return RedirectToAction("Index", "Admin");
+                    errorMessages.Add("Wrong File!");
+             
+                    _notyfService.Error("Wrong File!");
+                    return Ok(Json(new { errorMessages }));
                 }
 
                 if (doc == DocumentUpload.MonthlyBucket)
@@ -174,12 +179,10 @@ namespace FSAWebSystem.Controllers
                     if (!isCalendarExist)
                     {
                         errorMessages.Add("Please Input FSACalendar for " + monthName + "-" + currDate.Year.ToString());
-                        TempData["ErrorMessages"] = errorMessages;
-                        TempData["Tab"] = "UploadDoc";
-                        return RedirectToAction("Index", "Admin");
+                        return Ok(Json(new { errorMessages }));
                     }
                 }
-                else if(doc == DocumentUpload.WeeklyDispatch)
+                else if (doc == DocumentUpload.WeeklyDispatch)
                 {
                     var calendarDetail = await _calendarService.GetCalendarDetail(DateTime.Now);
                     var weeklyDispatch = await _bucketService.WeeklyBucketExist(calendarDetail.Month, calendarDetail.Week, calendarDetail.Year);
@@ -187,22 +190,29 @@ namespace FSAWebSystem.Controllers
                     if (weeklyDispatch)
                     {
                         errorMessages.Add("Cannot upload! Weekly Bucket for Month: " + monthName + ", Week: " + calendarDetail.Week.ToString() + " already exist!");
-                        TempData["ErrorMessages"] = errorMessages;
-                        TempData["Tab"] = "UploadDoc";
-                        return RedirectToAction("Index", "Admin");
+                        return Ok(Json(new { errorMessages }));
                     }
                 }
-                
-
+                var workbook = new HSSFWorkbook();
                 MemoryStream stream = new MemoryStream();
-                //var stream = new FileStream(excelDocument.FileName, FileMode.Open, FileAccess.Read);
                 await excelDocument.CopyToAsync(stream);
                 stream.Position = 0;
-                var workbook = new HSSFWorkbook(stream);
-                ISheet sheet = workbook.GetSheetAt(0);
+                ISheet sheet = new HSSFSheet(workbook);
+                DataTable dt = new DataTable();
+                if (doc != DocumentUpload.Andromeda && doc != DocumentUpload.ITRUST && doc != DocumentUpload.BottomPrice)
+                {
+                    workbook = new HSSFWorkbook(stream);
+                    sheet = workbook.GetSheetAt(0);
+                }
+                else
+                {
+                    IExcelDataReader excelReader = ExcelReaderFactory.CreateBinaryReader(stream);
+                    DataSet dataSet = excelReader.AsDataSet();
+                    dt = dataSet.Tables[0];
+                }
 
                 var columns = new List<string>();
-                DataTable dt = new DataTable();
+
                 try
                 {
                     switch (doc)
@@ -237,7 +247,106 @@ namespace FSAWebSystem.Controllers
                             dt = CreateDataTable(sheet, columns, errorMessages);
                             await SaveDailyOrder(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
+                        case DocumentUpload.Andromeda:
+                            columns = _uploadDocService.GetAndromedaColumns();
+                            fileContent = await SaveAndromeda(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+                            break;
+                        case DocumentUpload.ITRUST:
+                            columns = _uploadDocService.GetITrustColumns();
+                            fileContent = await SaveITrust(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+                            break;
+                        case DocumentUpload.BottomPrice:
+                            columns = _uploadDocService.GetBottomPriceColumns();
+                            fileContent = await SaveBottomPrice(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+                            break;
                     }
+
+                    if (!errorMessages.Any())
+                    {
+                        await _db.SaveChangesAsync();
+                        _notyfService.Success(doc.ToString() + " successfully uploaded");
+                        if (!string.IsNullOrEmpty(fileContent))
+                        {
+                            _notyfService.Warning("Some SKUs Not Found, Please Refer to ListError file");
+                        }
+                    }
+                    else
+                    {
+                        _notyfService.Error("Upload Failed.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errorMessages.Add(ex.Message);
+                }
+            }
+            else
+            {
+                errorMessages.Add("Please Select File.");
+                _notyfService.Error("Please Select File.");
+            }
+            return Ok(Json(new { errorMessages }));
+        }
+
+        [Authorize]
+        public async Task<IActionResult> UploadFileCheck(IFormFile excelDocument, string documentType, string loggedUser)
+        {
+            string fileContent = string.Empty;
+            var fileByte = string.Empty; ;
+
+            var doc = (DocumentUpload)(Convert.ToInt32(documentType));
+
+            List<string> errorMessages = new List<string>();
+            if (excelDocument != null)
+            {
+                if (!excelDocument.FileName.Contains(doc.ToString()))
+                {
+                    errorMessages.Add("Wrong File!");
+                    _notyfService.Error("Wrong File!");
+                    if (doc == DocumentUpload.Andromeda || doc == DocumentUpload.ITRUST || doc == DocumentUpload.BottomPrice)
+                    {
+                        return Ok(Json(new { errorMessages }));
+                    }
+                }
+                var workbook = new HSSFWorkbook();
+                MemoryStream stream = new MemoryStream();
+                await excelDocument.CopyToAsync(stream);
+                stream.Position = 0;
+                ISheet sheet = new HSSFSheet(workbook);
+                DataTable dt = new DataTable();
+                if (doc != DocumentUpload.Andromeda && doc != DocumentUpload.ITRUST && doc != DocumentUpload.BottomPrice)
+                {
+                    workbook = new HSSFWorkbook(stream);
+                    sheet = workbook.GetSheetAt(0);
+                }
+                else
+                {
+                    IExcelDataReader excelReader = ExcelReaderFactory.CreateBinaryReader(stream);
+                    DataSet dataSet = excelReader.AsDataSet();
+                    dt = dataSet.Tables[0];
+                }
+
+                var columns = new List<string>();
+                try
+                {
+                    switch (doc)
+                    {
+                        case DocumentUpload.Andromeda:
+                            columns = _uploadDocService.GetAndromedaColumns();
+                            fileContent = await SaveAndromeda(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+                            break;
+                        case DocumentUpload.ITRUST:
+                            columns = _uploadDocService.GetITrustColumns();
+                            fileContent = await SaveITrust(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+                            break;
+                        case DocumentUpload.BottomPrice:
+                            columns = _uploadDocService.GetBottomPriceColumns();
+                            fileContent = await SaveBottomPrice(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+                            break;
+                    }
+
+
+
                     if (!errorMessages.Any())
                     {
                         await _db.SaveChangesAsync();
@@ -245,11 +354,15 @@ namespace FSAWebSystem.Controllers
                     }
                     else
                     {
-                        TempData["ErrorMessages"] = errorMessages;
-                        TempData["Tab"] = "UploadDoc";
                         _notyfService.Error("Upload Failed.");
+                        return Ok(Json(new { errorMessages }));
                     }
 
+
+                    if (!string.IsNullOrEmpty(fileContent))
+                    {
+                        _notyfService.Warning("Some SKUs Not Found, Please Refer to ListError file");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -260,19 +373,16 @@ namespace FSAWebSystem.Controllers
             else
             {
                 errorMessages.Add("Please Select File.");
-                TempData["ErrorMessages"] = errorMessages;
                 _notyfService.Error("Please Select File.");
             }
 
-            return RedirectToAction("Index", "Admin");
+            return Ok(Json(new { errorMessages }));
         }
-
 
         private DataTable CreateDataTable(ISheet sheet, List<string> columns, List<string> errorMessage)
         {
 
             var dt = new DataTable();
-
             foreach (var column in columns)
             {
                 dt.Columns.Add(column);
@@ -427,7 +537,7 @@ namespace FSAWebSystem.Controllers
                     var claims = await _userManager.GetClaimsAsync(savedUser);
                     await _userManager.RemoveClaimsAsync(savedUser, claims);
 
-                    foreach(var menu in user.RoleUnilever.Menus)
+                    foreach (var menu in user.RoleUnilever.Menus)
                     {
                         await _userManager.AddClaimAsync(savedUser, new Claim("Menu", menu.Name));
                     }
@@ -543,7 +653,7 @@ namespace FSAWebSystem.Controllers
                     row += 1;
                     //var sku = skus.Single(x => x.PCMap == dr["PC Map"].ToString());
                     //var banner = banners.Single(x => x.BannerName == dr["Banner"].ToString());
-                   
+
                     var monthlyBucket = new MonthlyBucket
                     {
                         Id = Guid.NewGuid(),
@@ -614,7 +724,7 @@ namespace FSAWebSystem.Controllers
 
             if (!errorMessages.Any())
             {
-                var savedBanners = _bannerService.GetAllBanner();
+                var savedBanners = _bannerService.GetAllBanner().Where(x => x.IsActive);
                 var bannersToAdd = new List<Banner>();
 
                 foreach (var banner in banners)
@@ -668,7 +778,7 @@ namespace FSAWebSystem.Controllers
 
                 weeklyBuckets.Add(weeklyBucket);
             }
-           
+
             ValidateWeeklyBucketExcel(weeklyBuckets, errorMessages);
 
             if (!errorMessages.Any())
@@ -711,7 +821,7 @@ namespace FSAWebSystem.Controllers
                     }
                     else if (calendarDetail.Week == 4)
                     {
-                        remainingBucket =  savedWeeklyBucket.BucketWeek3;
+                        remainingBucket = savedWeeklyBucket.BucketWeek3;
                         //remainingBucket = /*savedWeeklyBucket.ValidBJ*/ - savedWeeklyBucket.BucketWeek3;
                     }
                     else
@@ -792,13 +902,13 @@ namespace FSAWebSystem.Controllers
                 weeklyBucket.BucketWeek2 = mBucket * ((decimal)50 / (decimal)100);
                 weeklyBuckets.Add(weeklyBucket);
 
-   
 
-                
+
+
             }
 
             await _uploadDocService.SaveWeeklyBuckets(weeklyBuckets);
- 
+
         }
 
         private void ValidateMonthlyBucketExcel(List<MonthlyBucket> listMonthlyBucket, IQueryable<MonthlyBucket> savedMonthlyBuckets, List<string> errorMessages)
@@ -810,7 +920,7 @@ namespace FSAWebSystem.Controllers
                 errorMessages.Add("Please fill all PCMap and BannerName column");
             }
 
-            
+
 
             var bannerPlantCodesFromExcel = listMonthlyBucket.Select(x => new { x.BannerName, x.PlantCode }).Distinct().ToList();
 
@@ -848,11 +958,11 @@ namespace FSAWebSystem.Controllers
                         errorMessages.Add("Monthly Bucket for Banner: " + skuGrp.Key.BannerName + ", PCMap: " + skuGrp.Key.PCMap + " and Plant Code : " + skuGrp.Key.PlantCode + " already exist in database");
                     }
                 }
-   
+
             }
         }
 
-        private void ValidateWeeklyBucketExcel(List<WeeklyBucket> listWeeklyBucket,  List<string> errorMessages)
+        private void ValidateWeeklyBucketExcel(List<WeeklyBucket> listWeeklyBucket, List<string> errorMessages)
         {
             if (listWeeklyBucket.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
             {
@@ -929,7 +1039,7 @@ namespace FSAWebSystem.Controllers
 
             var skusNotExist = (from dailyOrder in listDailyOrder
                                 where !(
-                                from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId, x.Month, x.Year})
+                                from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerId, x.SKUId, x.Month, x.Year })
                                 join sku in _skuService.GetAllProducts().AsEnumerable() on weeklyBucket.SKUId equals sku.Id
                                 where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
                                 select new
@@ -998,13 +1108,13 @@ namespace FSAWebSystem.Controllers
                 {
                     errorMessages.Add("Name cannot empty on Email: " + grp.Key);
                 }
-                if(groupName.Count() > 1)
+                if (groupName.Count() > 1)
                 {
                     errorMessages.Add("There are more than 1 Name on Email: " + grp.Key);
                 }
 
                 var groupWl = grp.GroupBy(x => x.WLName);
-                if(groupWl.Any(x => string.IsNullOrEmpty(x.Key)))
+                if (groupWl.Any(x => string.IsNullOrEmpty(x.Key)))
                 {
                     errorMessages.Add("WL Name cannot empty on Email: " + grp.Key);
                 }
@@ -1027,7 +1137,7 @@ namespace FSAWebSystem.Controllers
                 {
                     errorMessages.Add("There are more than 1 Role on Email: " + grp.Key);
                 }
-                if(!savedRoles.Any(x => x.RoleName == groupRole.First().Key))
+                if (!savedRoles.Any(x => x.RoleName == groupRole.First().Key))
                 {
                     errorMessages.Add("Role: " + groupRole.First().Key + " on Email: " + grp.Key + " doesnt exist in database!");
                 }
@@ -1037,7 +1147,7 @@ namespace FSAWebSystem.Controllers
                     var bannerExist = savedBanners.Any(x => x.BannerName == user.BannerName && x.PlantCode == user.PlantCode);
                     if (!bannerExist)
                     {
-                        errorMessages.Add("Banner Name: " + user.BannerName + ", Plant Code: " + user.PlantCode + "on Email: " + grp.Key  + " doesn't exist in database!");
+                        errorMessages.Add("Banner Name: " + user.BannerName + ", Plant Code: " + user.PlantCode + "on Email: " + grp.Key + " doesn't exist in database!");
                     }
                 }
 
@@ -1126,5 +1236,192 @@ namespace FSAWebSystem.Controllers
             return string.IsNullOrWhiteSpace(input) ? "0" : input;
         }
 
+        private async Task<string> SaveAndromeda(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
+        {
+            List<AndromedaModel> listAndromeda = new List<AndromedaModel>();
+            FSADocument fSADocument = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
+            var fileContent = string.Empty;
+            try
+            {
+                var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
+
+                //var pcMaps = await skus.Select(x => x.PCMap).ToListAsync();
+
+                for (var i = 2; i < dt.Rows.Count; i++)
+                {
+                    var row = dt.Rows[i];
+                    var andromedaMdl = new AndromedaModel
+                    {
+                        PCMap = row[0].ToString(),
+                        Description = row[1].ToString(),
+                        UUStock = Decimal.Parse(ConvertNumber(row[2].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        ITThisWeek = Decimal.Parse(ConvertNumber(row[3].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        RRACT13Wk = Decimal.Parse(ConvertNumber(row[4].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                    };
+
+                    listAndromeda.Add(andromedaMdl);
+                }
+                var pcMapAndromeda = listAndromeda.Select(x => x.PCMap).Distinct().ToList();
+                var pcMapInDb = skus.Where(x => pcMapAndromeda.Contains(x.PCMap)).Select(x => x.PCMap).ToList();
+                var pcMapsNotInDb = pcMapAndromeda.Except(pcMapInDb).ToList();
+
+                var skusNotInDb = listAndromeda.Where(x => pcMapsNotInDb.Contains(x.PCMap)).Select(x => new SKU { PCMap = x.PCMap, DescriptionMap = x.Description}).ToList();
+
+                var andromedasToSave = listAndromeda.Where(x => pcMapInDb.Contains(x.PCMap));
+                var andromedaGroupSku = andromedasToSave.GroupBy(x => x.PCMap).ToList();
+                List<AndromedaModel> listAndromedaToSave = new List<AndromedaModel>();
+                foreach (var andromedaGroup in andromedaGroupSku)
+                {
+                    var andromeda = new AndromedaModel();
+                    var sku = skus.Single(x => x.PCMap == andromedaGroup.Key);
+                    andromeda.Id = Guid.NewGuid();
+                    andromeda.SKUId = sku.Id;
+                    andromeda.PCMap = andromedaGroup.First().PCMap;
+                    andromeda.Description = andromedaGroup.First().Description;
+                    andromeda.UUStock = andromedaGroup.Sum(x => x.UUStock);
+                    andromeda.ITThisWeek = andromedaGroup.Sum(x => x.ITThisWeek);
+                    andromeda.RRACT13Wk = andromedaGroup.Sum(x => x.RRACT13Wk);
+                    andromeda.WeekCover = andromeda.UUStock + andromeda.ITThisWeek + andromeda.RRACT13Wk;
+                    listAndromedaToSave.Add(andromeda);
+                }
+
+                var pcMap = string.Empty;
+
+                _uploadDocService.DeleteAndromeda();
+                await _uploadDocService.SaveDocument(fSADocument);
+                await _uploadDocService.SaveAndromeda(listAndromedaToSave);
+                fileContent = GenerateErrorFile(skusNotInDb);
+            }
+            catch (Exception ex)
+            {
+                errorMessages.Add(ex.Message);
+                return string.Empty;
+            }
+
+            return fileContent;
+        }
+
+        private async Task<string> SaveITrust(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
+        {
+            List<ITrustModel> listITrust = new List<ITrustModel>();
+            FSADocument fSADocument = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
+            var fileContent = string.Empty;
+
+          
+            try
+            {
+                var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
+                for (var i = 2; i < dt.Rows.Count; i++)
+                {
+                    var row = dt.Rows[i];
+                    var iTrust = new ITrustModel
+                    {
+                        PCMap = row[0].ToString(),
+                        Description = row[1].ToString(),
+                        SumIntransit = Decimal.Parse(ConvertNumber(row[2].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        SumStock = Decimal.Parse(ConvertNumber(row[3].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        SumFinalRpp = Decimal.Parse(ConvertNumber(row[4].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," })
+                    };
+
+                    listITrust.Add(iTrust);
+                }
+
+                var pcMapITrust = listITrust.Select(x => x.PCMap).Distinct().ToList();
+                var pcMapInDb = skus.Where(x => pcMapITrust.Contains(x.PCMap)).Select(x => x.PCMap).ToList();
+                var pcMapsNotInDb = pcMapITrust.Except(pcMapInDb).ToList();
+
+                var skusNotInDb = listITrust.Where(x => pcMapsNotInDb.Contains(x.PCMap)).Select(x => new SKU { PCMap = x.PCMap, DescriptionMap = x.Description }).ToList();
+
+                var iTrustsToSave = listITrust.Where(x => pcMapInDb.Contains(x.PCMap));
+                foreach(var iTrustToSave in iTrustsToSave)
+                {
+                    iTrustToSave.Id = Guid.NewGuid();
+                    var sku = skus.Single(x => x.PCMap == iTrustToSave.PCMap);
+                    iTrustToSave.SKUId = sku.Id;
+                    iTrustToSave.DistStock = (iTrustToSave.SumStock + iTrustToSave.SumIntransit) / iTrustToSave.SumFinalRpp;
+                }
+                fileContent = GenerateErrorFile(skusNotInDb);
+
+                await _uploadDocService.SaveDocument(fSADocument);
+                await _uploadDocService.DeleteITrust();
+                await _uploadDocService.SaveITrust(iTrustsToSave.ToList());
+            }
+            catch (Exception ex)
+            {
+                errorMessages.Add(ex.Message);
+                return string.Empty;
+            }
+            return fileContent;
+        }
+
+        private async Task<string> SaveBottomPrice(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
+        {
+            List<BottomPriceModel> listBottomPrice = new List<BottomPriceModel>();
+            FSADocument fSADocument = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
+            var fileContent = string.Empty;
+
+            try
+            {
+                var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
+                for (var i = 2; i < dt.Rows.Count; i++)
+                {
+                    var row = dt.Rows[i];
+                    var iTrust = new BottomPriceModel
+                    {
+                        PCMap = row[0].ToString(),
+                        Description = row[1].ToString(),
+                        AvgNormalPrice = Decimal.Parse(ConvertNumber(row[2].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        AvgBottomPrice = Decimal.Parse(ConvertNumber(row[3].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        AvgActualPrice = Decimal.Parse(ConvertNumber(row[4].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        MinActualPrice = Decimal.Parse(ConvertNumber(row[5].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        Gap = Decimal.Parse(ConvertNumber(row[6].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        Remarks = row[7].ToString()
+                    };
+
+                    listBottomPrice.Add(iTrust);
+                }
+
+                var pcMapBPrice = listBottomPrice.Select(x => x.PCMap).Distinct().ToList();
+                var pcMapInDb = skus.Where(x => pcMapBPrice.Contains(x.PCMap)).Select(x => x.PCMap).ToList();
+                var pcMapsNotInDb = pcMapBPrice.Except(pcMapInDb).ToList();
+
+                var skusNotInDb = listBottomPrice.Where(x => pcMapsNotInDb.Contains(x.PCMap)).Select(x => new SKU { PCMap = x.PCMap, DescriptionMap = x.Description }).ToList();
+
+                var bPricesToSave = listBottomPrice.Where(x => pcMapInDb.Contains(x.PCMap));
+                foreach (var bPrice in bPricesToSave)
+                {
+                    bPrice.Id = Guid.NewGuid();
+                    var sku = skus.Single(x => x.PCMap == bPrice.PCMap);
+                    bPrice.SKUId = sku.Id;
+                }
+                fileContent = GenerateErrorFile(skusNotInDb);
+                await _uploadDocService.SaveDocument(fSADocument);
+                await _uploadDocService.DeleteBottomPrice();
+                await _uploadDocService.SaveBottomPrice(bPricesToSave.ToList());
+            }
+            catch (Exception ex)
+            {
+                errorMessages.Add(ex.Message);
+                return string.Empty;
+            }
+     
+            return fileContent;
+        }
+        public string GenerateErrorFile(List<SKU> skusNotInDb)
+        {
+            MemoryStream ms = new MemoryStream();
+            var message = "SKU does not exist in database: ";
+            StreamWriter writer = new StreamWriter(ms);
+            writer.WriteLine(message);
+            var skus = skusNotInDb.DistinctBy(x => x.PCMap);
+            foreach (var skuNotInDb in skus)
+            {
+                writer.WriteLine(skuNotInDb.PCMap + " - " + skuNotInDb.DescriptionMap);
+            }
+            writer.Flush();
+            ms.Position = 0;
+
+            return Convert.ToBase64String(ms.ToArray());
+        } 
     }
 }

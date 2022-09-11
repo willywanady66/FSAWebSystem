@@ -53,7 +53,7 @@ namespace FSAWebSystem.Services
 			if (!string.IsNullOrEmpty(param.search.value))
 			{
 				var search = param.search.value.ToLower();
-				skus = skus.Where(x => x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search) || x.Category.ToLower().Contains(search) || x.Status.ToLower().Contains(search));
+				skus = skus.Where(x => x.PCMap.ToLower().Contains(search.ToLower()) || x.DescriptionMap.ToLower().Contains(search.ToLower()) || x.Category.ToLower().Contains(search.ToLower()) || x.Status.ToLower().Contains(search.ToLower()));
 			}
 
             if (param.order.Any())
@@ -106,7 +106,7 @@ namespace FSAWebSystem.Services
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
-                categories = categories.Where(x => x.CategoryProduct.ToLower().Contains(search));
+                categories = categories.Where(x => x.CategoryProduct.ToLower().Contains(search.ToLower()));
             }
 
             if (param.order.Any())
@@ -144,6 +144,143 @@ namespace FSAWebSystem.Services
             listCategory = categories.Select(x => new SelectListItem { Text = x.CategoryProduct, Value = x.Id.ToString() }).ToList();
             viewData["ListCategory"] = listCategory;
         }
+
+        public async Task<AndromedaPagingData> GetAndromedaPagination(DataTableParam param)
+        {
+            //var skus = _db.SKUs.Include(x => x.ProductCategory).AsQueryable();
+            var andromedas = _db.Andromedas.AsQueryable();
+            if (!string.IsNullOrEmpty(param.search.value))
+            {
+                var search = param.search.value.ToLower();
+                andromedas = andromedas.Where(x => x.PCMap.ToLower().Contains(search.ToLower()) || x.Description.ToLower().Contains(search.ToLower()));
+            }
+
+            if (param.order.Any())
+            {
+                var order = param.order[0];
+                switch (order.column)
+                {
+                    case 0:
+                        andromedas = order.dir == "desc" ? andromedas.OrderBy(x => x.PCMap) : andromedas.OrderBy(x => x.PCMap);
+                        break;
+                    case 1:
+                        andromedas = order.dir == "desc" ? andromedas.OrderByDescending(x => x.Description) : andromedas.OrderBy(x => x.Description);
+                        break;
+                    case 2:
+                        andromedas = order.dir == "desc" ? andromedas.OrderByDescending(x => x.UUStock) : andromedas.OrderBy(x => x.UUStock);
+                        break;
+                    case 3:
+                        andromedas = order.dir == "desc" ? andromedas.OrderByDescending(x => x.ITThisWeek) : andromedas.OrderBy(x => x.ITThisWeek);
+                        break;
+                    case 4:
+                        andromedas = order.dir == "desc" ? andromedas.OrderByDescending(x => x.WeekCover) : andromedas.OrderBy(x => x.WeekCover);
+                        break;
+                }
+            }
+
+            var totalCount = andromedas.Count();
+            var listAndromeda = await andromedas.Skip(param.start).Take(param.length).ToListAsync();
+            return new AndromedaPagingData
+            {
+                totalRecord = totalCount,
+                andromedas = listAndromeda
+            };
+        }
+
+        public async Task<BottomPricePagingData> GetBottomPricePagination(DataTableParam param)
+        {
+            var bottomPrices = _db.BottomPrices.AsQueryable();
+            if (!string.IsNullOrEmpty(param.search.value))
+            {
+                var search = param.search.value.ToLower();
+                bottomPrices = bottomPrices.Where(x => x.PCMap.ToLower().Contains(search.ToLower()) || x.Description.ToLower().Contains(search.ToLower()) || x.Remarks.ToLower().Contains(search.ToLower()));
+            }
+
+            if (param.order.Any())
+            {
+                var order = param.order[0];
+                switch (order.column)
+                {
+                    case 0:
+                        bottomPrices = order.dir == "desc" ? bottomPrices.OrderBy(x => x.PCMap) : bottomPrices.OrderBy(x => x.PCMap);
+                        break;
+                    case 1:
+                        bottomPrices = order.dir == "desc" ? bottomPrices.OrderByDescending(x => x.Description) : bottomPrices.OrderBy(x => x.Description);
+                        break;
+                    case 2:
+                        bottomPrices = order.dir == "desc" ? bottomPrices.OrderByDescending(x => x.AvgNormalPrice) : bottomPrices.OrderBy(x => x.AvgNormalPrice);
+                        break;
+                    case 3:
+                        bottomPrices = order.dir == "desc" ? bottomPrices.OrderByDescending(x => x.AvgBottomPrice) : bottomPrices.OrderBy(x => x.AvgBottomPrice);
+                        break;
+                    case 4:
+                        bottomPrices = order.dir == "desc" ? bottomPrices.OrderByDescending(x => x.AvgActualPrice) : bottomPrices.OrderBy(x => x.AvgActualPrice);
+                        break;
+                    case 5:
+                        bottomPrices = order.dir == "desc" ? bottomPrices.OrderByDescending(x => x.MinActualPrice) : bottomPrices.OrderBy(x => x.MinActualPrice);
+                        break;
+                    case 6:
+                        bottomPrices = order.dir == "desc" ? bottomPrices.OrderByDescending(x => x.Gap) : bottomPrices.OrderBy(x => x.Gap);
+                        break;
+                    case 7:
+                        bottomPrices = order.dir == "desc" ? bottomPrices.OrderByDescending(x => x.Remarks) : bottomPrices.OrderBy(x => x.Remarks);
+                        break;
+                }
+            }
+
+            var totalCount = bottomPrices.Count();
+            var listBottomPrice = await bottomPrices.Skip(param.start).Take(param.length).ToListAsync();
+            return new BottomPricePagingData
+            {
+                totalRecord = totalCount,
+                bottomPrices = listBottomPrice
+            };
+        }
+
+        public async Task<ITrustPagingData> GetITrustPagination(DataTableParam param)
+        {
+            var iTrusts = _db.ITrusts.AsQueryable();
+            if (!string.IsNullOrEmpty(param.search.value))
+            {
+                var search = param.search.value.ToLower();
+                iTrusts = iTrusts.Where(x => x.PCMap.ToLower().Contains(search.ToLower()) || x.Description.ToLower().Contains(search.ToLower()));
+            }
+
+            if (param.order.Any())
+            {
+                var order = param.order[0];
+                switch (order.column)
+                {
+                    case 0:
+                        iTrusts = order.dir == "desc" ? iTrusts.OrderBy(x => x.PCMap) : iTrusts.OrderBy(x => x.PCMap);
+                        break;
+                    case 1:
+                        iTrusts = order.dir == "desc" ? iTrusts.OrderByDescending(x => x.Description) : iTrusts.OrderBy(x => x.Description);
+                        break;
+                    case 2:
+                        iTrusts = order.dir == "desc" ? iTrusts.OrderByDescending(x => x.SumIntransit) : iTrusts.OrderBy(x => x.SumIntransit);
+                        break;
+                    case 3:
+                        iTrusts = order.dir == "desc" ? iTrusts.OrderByDescending(x => x.SumStock) : iTrusts.OrderBy(x => x.SumStock);
+                        break;
+                    case 4:
+                        iTrusts = order.dir == "desc" ? iTrusts.OrderByDescending(x => x.SumFinalRpp) : iTrusts.OrderBy(x => x.SumFinalRpp);
+                        break;
+                    case 5:
+                        iTrusts = order.dir == "desc" ? iTrusts.OrderByDescending(x => x.DistStock) : iTrusts.OrderBy(x => x.DistStock);
+                        break;
+                }
+            }
+
+            var totalCount = iTrusts.Count();
+            var listITrust = await iTrusts.Skip(param.start).Take(param.length).ToListAsync();
+            return new ITrustPagingData
+            {
+                totalRecord = totalCount,
+                iTrusts = listITrust
+            };
+        }
+
     }
 }
 	 

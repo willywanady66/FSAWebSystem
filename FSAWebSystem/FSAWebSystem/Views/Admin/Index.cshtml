@@ -1,12 +1,15 @@
 ﻿@using static FSAWebSystem.Controllers.AdminController
 @{
     ViewData["Title"] = "Admin Page";
-    var tab = TempData["Tab"] as string;
+    
 }
 @{
     @model AdminModel
     List<SelectListItem> listMonths = ViewData["listMonth"] as List<SelectListItem>;
     List<SelectListItem> listYears = ViewData["listYear"] as List<SelectListItem>;
+    //string ms = TempData["File"] as string;
+    var tab = TempData["Tab"] as string;
+    var byteData = new byte[0];
 }
 
 <script>
@@ -23,6 +26,10 @@
     var editSKUUrl = '@Url.Action("Edit", "SKUs")';
     var editFSACalUrl = '@Url.Action("Edit", "FSACalendarHeaders")';
     var editULICalUrl = '@Url.Action("Edit", "ULICalendars")';
+var uploadDocumentUrl = '@Url.Action("UploadFile", "UploadDocument")';
+var getAndromedaUrl = '@Url.Action("GetAndromedaPagination","Admin")'
+var getBottomPriceUrl = '@Url.Action("GetBottomPricePagination","Admin")'
+var getITrustUrl = '@Url.Action("GetITrustPagination","Admin")'
 </script>
 
 
@@ -30,18 +37,11 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Admin</h1>
 </div>
-<div class="text-danger">
-    @if (TempData["ErrorMessages"] != null)
-    {
-        <ul>
-            @foreach (var error in TempData["ErrorMessages"] as IEnumerable<string>)
-            {
-                <li>@Html.DisplayFor(Model => error)</li>
-            }
-        </ul>
-    }
-</div>
+
+
+
 <!-- DataTales Example -->
+@*<input type="hidden" value=@ms id="fileByte" name="fileByte" />*@
 <div class="card shadow mb-4 pt-4 pl-2">
     <ul class="nav nav-tabs" id="myTab2" role="tablist">
         <li class="nav-item waves-effect waves-light">
@@ -140,6 +140,12 @@
 </div>
 
 <div class="card shadow mb-4 pt-4 pl-2">
+
+	<div class="text-danger">
+		<ul id="error-messages">
+		</ul>
+	</div>
+
     <ul class="nav nav-tabs" id="myTab3" role="tablist">
         <li class="nav-item waves-effect waves-light">
             <a class="nav-link @(tab == "Calendar" || string.IsNullOrEmpty(tab) ? " active" : "")" id="calendar-tab" data-toggle="tab" href="#calendar" role="tab" aria-controls="calendar" aria-selected="@(tab == "Calendar" ? true : false)">Calendar</a>
@@ -232,6 +238,7 @@
         </div>
 
 
+
         <div class="tab-pane fade @(tab == "UploadDoc" ? " active show" : "")" id="uploadDoc" role="tabpanel" aria-labelledby="uploadDoc-tab">
             <div class="card-header py-3">
                 <h5 class="m-0 font-weight-bold text-primary d-inline"><i class="fas fa-file"></i> Upload Document</h5>
@@ -239,7 +246,7 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <form enctype="multipart/form-data" asp-controller="UploadDocument" asp-action="UploadFile">
+                        <form enctype="multipart/form-data" asp-controller="UploadDocument" asp-action="UploadFile" id="uploadFileForm">
                             <input type="hidden" value=@Model.LoggedUser id="loggedUser" name="loggedUser" />
                             <div class="form-group row" id="uploadMonthGroup">
                                 <label class="col-3 form-label my-auto">Month</label>
@@ -254,12 +261,107 @@
                                 <label class="col-3 form-label my-auto">File</label>
                                 <input class="col-9 file-input form-control" id="excelDocument" name="excelDocument" type="file" />
                             </div>
-                            <div class="form-group">
-                                <input class="btn btn-primary uploadDoc" type="submit" value="Upload" />
-                                @*<button value="Upload" class="btn btn-primary" asp-controller="UploadDocument" asp-action="UploadFile">Upload</button>*@
-                            </div>
+                            @*<div class="form-group">*@
+                                @*<input class="btn btn-primary uploadDoc" type="submit" value="Upload" id="submitUploadDoc" />*@
+                               
+                            @*</div>*@
                         </form>
+                         <button value="Upload" class="btn btn-primary" id="uploadBtn">Upload</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card shadow mb-4 pt-4 pl-2">
+
+    <ul class="nav nav-tabs" id="myTab5" role="tablist">
+         <li class="nav-item waves-effect waves-light">
+            <a class="nav-link active" id="andromeda-tab" data-toggle="tab" href="#andromeda" role="tab" aria-controls="andromeda" aria-selected="true">Andromeda</a>
+        </li>
+        <li class="nav-item waves-effect waves-light">
+            <a class="nav-link" id="bottomPrice-tab" data-toggle="tab" href="#bottomPrice" role="tab" aria-controls="bottomPrice" aria-selected="false">Bottom Price</a>
+        </li>
+        <li class="nav-item waves-effect waves-light">
+            <a class="nav-link" id="itrust-tab" data-toggle="tab" href="#itrust" role="tab" aria-controls="itrust" aria-selected="false">I-Trust</a>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent5">
+        <div class="tab-pane fade active show" id="andromeda" role="tabpanel" aria-labelledby="andromeda-tab">
+            <div class="card-header py-3">
+                <h5 class="m-0 font-weight-bold text-primary d-inline">Andromeda</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTableAndromeda" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>PC Map</th>
+                                <th>Description</th>
+                                <th>UU Stock</th>
+                                <th>IT This Week</th>
+                                <th>RR_ACT 13 WK</th>
+                                <th>Week Cover</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="bottomPrice" role="tabpanel" aria-labelledby="andromeda-tab-tab">
+            <div class="card-header py-3">
+                <h5 class="m-0 font-weight-bold text-primary d-inline">Bottom Price</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTableBottomPrice" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>PC Map</th>
+                                        <th>Description</th>
+                                        <th>Average of Normal Price</th>
+                                        <th>Average of Bottom Price</th>
+                                        <th>Average of Actual Price</th>
+                                        <th>Min of Actual Price</th>
+                                        <th>Gap</th>
+                                        <th>Remark</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="tab-pane fade" id="itrust" role="tabpanel" aria-labelledby="itrust-tab">
+            <div class="card-header py-3">
+                <h5 class="m-0 font-weight-bold text-primary d-inline">I-Trust</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTableITrust" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>PC Map</th>
+                                        <th>Description</th>
+                                        <th>Sum of Intransit</th>
+                                        <th>Sum of Stock</th>
+                                        <th>Sum of Final RPP</th>
+                                        <th>Dist Stock</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                 </div>
             </div>
         </div>
@@ -365,7 +467,7 @@
     </div>
 </div>
 
-<script>
+@*<script>
     $('.uploadDoc').click(function() {
         Swal.fire({
             title: 'Loading...',
@@ -380,5 +482,4 @@
     })
 </script>
 
-
-
+*@

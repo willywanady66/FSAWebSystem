@@ -223,12 +223,28 @@ namespace FSAWebSystem.Services
             if (apprvl != null)
             {
                 var proposalThisApproval = _db.Proposals.Include(x => x.ProposalDetails.Where(y => y.ApprovalId == approvalId)).SingleOrDefault(x => x.ApprovalId == apprvl.Id);
-
+                var weeklyBucketProposal = _db.WeeklyBuckets.Single(x => x.Id == proposalThisApproval.WeeklyBucketId);
                 apprvl.ProposalSubmitDate = proposalThisApproval.SubmittedAt.ToString("dd/MM/yyyy");
                 apprvl.Week = proposalThisApproval.Week;
                 apprvl.RequestedBy = (await _db.UsersUnilever.SingleAsync(x => x.Id == proposalThisApproval.SubmittedBy)).Email;
                 apprvl.ProposalType = proposalThisApproval.Type.Value;
                 apprvl.Remark = proposalThisApproval.Remark;
+
+                var andromeda = await _db.Andromedas.SingleOrDefaultAsync(x => x.SKUId == weeklyBucketProposal.SKUId);
+                if(andromeda != null)
+                {
+                    apprvl.IsAndromedaPassed = andromeda.WeekCover > 2; 
+                }
+                var bottomPrice = await _db.BottomPrices.SingleOrDefaultAsync(x => x.SKUId == weeklyBucketProposal.SKUId);
+                if (bottomPrice != null)
+                {
+                    apprvl.IsBottomPricePassed = bottomPrice.Remarks.ToUpper() == "ABOVE" || bottomPrice.Remarks.ToUpper() == "NORMAL";
+                }
+                var iTrust = await _db.ITrusts.SingleOrDefaultAsync(x => x.SKUId == weeklyBucketProposal.SKUId);
+                if(iTrust != null)
+                {
+                    apprvl.IsITrustPassed = iTrust.DistStock > 3;
+                }
 
                 foreach (var detail in proposalThisApproval.ProposalDetails)
                 {

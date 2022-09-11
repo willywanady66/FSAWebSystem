@@ -20,6 +20,13 @@ namespace FSAWebSystem.Models
         public string ApproverWL { get; set; }
 
         [NotMapped]
+        public bool? IsAndromedaPassed { get; set; }
+        [NotMapped]
+        public bool? IsBottomPricePassed { get; set; }
+        [NotMapped]
+        public bool? IsITrustPassed { get; set; }
+
+        [NotMapped]
         public string Level1 { get; set; }
         [NotMapped]
         public string Level2 { get; set; }
