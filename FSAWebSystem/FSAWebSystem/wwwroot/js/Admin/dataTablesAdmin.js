@@ -433,9 +433,9 @@ $(document).ready(function () {
             processData: false,
             contentType: false,
             success: function (data) {
-                if (data.data) {
-                    var errorFileData = data;
-                    var content = atob(errorFileData.data);
+                if (data.value.data) {
+                    var errorFileData = data.value.data;
+                    var content = atob(errorFileData);
                     const buffer = new ArrayBuffer(content.length);
                     const bytes = new Uint8Array(buffer);
                     var blob = new Blob([content], { type: "application/octet-stream" });
@@ -445,7 +445,6 @@ $(document).ready(function () {
                     link.download = fileName;
                     link.click();
 
-                    $("#uploadFileForm")[0].reset();
                 }
                 else if (data.value) {
                     if (data.value.errorMessages) {
@@ -462,6 +461,8 @@ $(document).ready(function () {
                         //document.documentElement.scrollTop = 0;
                     }
                 }
+
+                $("#uploadFileForm")[0].reset();
                 Swal.close();
        
             },

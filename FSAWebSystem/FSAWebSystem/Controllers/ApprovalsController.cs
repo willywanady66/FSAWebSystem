@@ -246,7 +246,7 @@ namespace FSAWebSystem.Controllers
                 else
                 {
 
-                    await ApproveProposals(approvalIds, approvalNote);
+                    await Approve(approvalIds, approvalNote);
                 }
             }
             catch (Exception ex)
@@ -312,7 +312,6 @@ namespace FSAWebSystem.Controllers
                 }
                 else
                 {
-
                     await Reject(approvalIds, approvalNote);
                 }
             }
@@ -339,7 +338,7 @@ namespace FSAWebSystem.Controllers
                 return BadRequest();
             }
             _notyfService.Warning("Proposals Rejected");
-            return RedirectToAction("Index", "Approvals");
+            return Ok();
         }
 
         [HttpPost]
@@ -356,7 +355,7 @@ namespace FSAWebSystem.Controllers
                 return BadRequest();
             }
             _notyfService.Success("Proposals Approved");
-            return RedirectToAction("Index", "Approvals");
+            return Ok();
         }
         public async Task Approve(List<Guid> approvalIds, string approvalNote)
         {
@@ -437,7 +436,8 @@ namespace FSAWebSystem.Controllers
                 var approval = await _approvalService.GetApprovalById(approvalId);
                 var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
-     
+                approval.BannerId = weeklyBucket.BannerId;
+                approval.SKUId = weeklyBucket.SKUId;
                 var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
            
 
@@ -487,9 +487,16 @@ namespace FSAWebSystem.Controllers
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
                 var weekBucketTarget = await GetWeeklyBucketTarget(approval, proposal);
                 var proposalDetailTarget = proposal.ProposalDetails.Single(x => x.ProposeAdditional < 0);
-                proposalDetailTarget.WeeklyBucketId = weekBucketTarget.Id;
+                if(weekBucketTarget.Id == Guid.Empty)
+                {
+                    proposal.ProposalDetails.Remove(proposalDetailTarget);
+                }
+                else {
+                    proposalDetailTarget.WeeklyBucketId = weekBucketTarget.Id;
+                }
+              
                 var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
-
+                approval.ProposalType = proposal.Type.Value;
                 approval.Level = approval.ProposalType == ProposalType.ProposeAdditional ? 3 : 2;
                 approval.ApproverWL = _approvalService.GetWLApprover(approval);
                 approval.SKUId = weeklyBucket.SKUId;
@@ -608,6 +615,10 @@ namespace FSAWebSystem.Controllers
                         weeklyBucketTarget = weeklyBucketTargetByMonthly != null ? weeklyBucketTargetByMonthly : weeklyBucketTargetByRemFSA;
                         break;
                     }
+                }
+                else
+                {
+                    break;
                 }
                 
             }

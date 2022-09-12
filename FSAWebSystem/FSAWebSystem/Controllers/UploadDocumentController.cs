@@ -268,6 +268,7 @@ namespace FSAWebSystem.Controllers
                         if (!string.IsNullOrEmpty(fileContent))
                         {
                             _notyfService.Warning("Some SKUs Not Found, Please Refer to ListError file");
+                            return Ok(Json (new { data = fileContent }));
                         }
                     }
                     else
@@ -1281,7 +1282,7 @@ namespace FSAWebSystem.Controllers
                     andromeda.UUStock = andromedaGroup.Sum(x => x.UUStock);
                     andromeda.ITThisWeek = andromedaGroup.Sum(x => x.ITThisWeek);
                     andromeda.RRACT13Wk = andromedaGroup.Sum(x => x.RRACT13Wk);
-                    andromeda.WeekCover = andromeda.UUStock + andromeda.ITThisWeek + andromeda.RRACT13Wk;
+                    andromeda.WeekCover = (andromeda.UUStock + andromeda.ITThisWeek) / andromeda.RRACT13Wk;
                     listAndromedaToSave.Add(andromeda);
                 }
 
@@ -1290,7 +1291,7 @@ namespace FSAWebSystem.Controllers
                 _uploadDocService.DeleteAndromeda();
                 await _uploadDocService.SaveDocument(fSADocument);
                 await _uploadDocService.SaveAndromeda(listAndromedaToSave);
-                fileContent = GenerateErrorFile(skusNotInDb);
+                fileContent = GenerateErrorFile(skusNotInDb); 
             }
             catch (Exception ex)
             {

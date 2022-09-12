@@ -388,7 +388,8 @@ namespace FSAWebSystem.Services
                 emailApproval.RecipientEmail = emailGroup.Key.Item1;
                 emailApproval.Requestor = requestor;
                 emailApproval.Subject = $"FSA Approval Request";
-                emailApproval.Body = $"Hi, {emailGroup.Key.Item1}, ";
+                emailApproval.Body = $"Hi, {emailGroup.Key.Item1}, " +
+                                     $"<br> Please approve Proposal Request: ";
                                         
                 foreach (var email in emailGroup)
                 { 
@@ -396,8 +397,7 @@ namespace FSAWebSystem.Services
                     emailApproval.ApprovalUrl = baseUrl + "/" + approval.Id;
                     var banner = await _db.Banners.SingleOrDefaultAsync(x => x.Id == approval.BannerId);
                     var sku = await _db.SKUs.SingleOrDefaultAsync(x => x.Id == approval.SKUId);
-                    emailApproval.Body += $"<br> Please approve {email.Item4} Proposal Request: " +
-                                         $"<br> <br> Banner: {banner.BannerName} " +
+                    emailApproval.Body +=  $"<br><br> {email.Item4} <br> <br> Banner: {banner.BannerName} " +
                                  $"<br> " +
                                  $"Plant Code: {banner.PlantCode} " +
                                  $"<br> " +
