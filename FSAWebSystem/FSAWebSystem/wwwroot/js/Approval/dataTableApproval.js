@@ -107,7 +107,7 @@
                 setTimeout(
                     function () {
                         window.location.href = indexUrl;
-                    }, 500)
+                    }, 800)
             }
         })
     });
@@ -135,7 +135,7 @@
                 setTimeout(
                 function() {
                         window.location.href = indexUrl;
-                    }, 500)
+                    }, 800)
                 
             }
         })
@@ -163,7 +163,7 @@
                 setTimeout(
                     function () {
                         window.location.href = indexUrl;
-                    }, 500)
+                    }, 800)
             },
             error: function () {
                 Swal.close();
@@ -193,7 +193,7 @@
                 setTimeout(
                     function () {
                         window.location.href = indexUrl;
-                    }, 500)
+                    }, 800)
 
             }
         })

@@ -28,7 +28,7 @@ namespace FSAWebSystem.Services
                              join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
                              where weeklyBucket.Month == month && weeklyBucket.Year == year
-
+                             
                              select new Proposal
                              {
                                  Id = p != null ? p.Id : Guid.Empty,
@@ -166,6 +166,7 @@ namespace FSAWebSystem.Services
                                      join sku in _db.SKUs.Where(x => x.IsActive) on proposalHistory.SKUId equals sku.Id
                                      join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId) && x.IsActive) on proposalHistory.BannerId equals banner.Id
                                      join approval in _db.Approvals on proposalHistory.ApprovalId equals approval.Id
+                                     where proposalHistory.SubmittedBy == userId
                                      select new ProposalHistory
                                      {
                                          Week = proposalHistory.Week,
@@ -182,7 +183,7 @@ namespace FSAWebSystem.Services
                                          ApprovalNote = approval.ApprovalNote,
                                          ApprovalStatus = approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel || approval.ApprovalStatus == ApprovalStatus.Pending ? approval.ApprovalStatus.ToString() + '(' + approval.ApproverWL + ')' : approval.ApprovalStatus.ToString(),
                                          ApprovalId = approval.Id
-                                     });
+                                     }) ;
 
 
             if (!string.IsNullOrEmpty(param.search.value))

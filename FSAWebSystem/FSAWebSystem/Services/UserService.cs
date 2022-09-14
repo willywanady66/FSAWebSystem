@@ -73,7 +73,28 @@ namespace FSAWebSystem.Services
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
-                users = users.Where(x => x.RoleUnilever.RoleName.ToLower().Contains(search) || x.Name.ToLower().Contains(search) || x.Email.ToLower().Contains(search));
+                users = users.Where(x => x.RoleUnilever.RoleName.ToLower().Contains(search.ToLower()) || x.Name.ToLower().Contains(search.ToLower()) || x.Email.ToLower().Contains(search.ToLower()) || x.WLName.ToLower().Contains(search.ToLower()));
+            }
+
+
+            if (param.order.Any())
+            {
+                var order = param.order[0];
+                switch (order.column)
+                {
+                    case 0:
+                        users = order.dir == "desc" ? users.OrderByDescending(x => x.Name) : users.OrderBy(x => x.Name);
+                        break;
+                    case 1:
+                        users = order.dir == "desc" ? users.OrderByDescending(x => x.WLName) : users.OrderBy(x => x.WLName);
+                        break;
+                    case 2:
+                        users = order.dir == "desc" ? users.OrderByDescending(x => x.Email) : users.OrderBy(x => x.Email);
+                        break;
+                    case 3:
+                        users = order.dir == "desc" ? users.OrderByDescending(x => x.Role) : users.OrderBy(x => x.Role);
+                        break;
+                }
             }
 
 
@@ -213,6 +234,9 @@ namespace FSAWebSystem.Services
                     case 1:
                         workLevels = order.dir == "desc" ? workLevels.OrderBy(x => x.Status).ThenByDescending(x => x.WL) : workLevels.OrderBy(x => x.Status).ThenBy(x => x.WL);
                         break;
+                    //case 2:
+                    //    workLevels = order.dir == "desc" ? workLevels.OrderBy(x => x.WL) : workLevels.OrderBy(x => x.WL);
+                    //    break;
                 }
             }
 
