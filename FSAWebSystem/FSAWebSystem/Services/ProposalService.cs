@@ -88,8 +88,11 @@ namespace FSAWebSystem.Services
                                  ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending,
                                  ProposeAdditional = proposal.IsWaitingApproval ? proposal.ProposeAdditional : decimal.Zero,
                                  ApprovedProposeAdditional = proposal.ApprovedProposeAdditional,
-                                 IsWaitingApproval = proposal.IsWaitingApproval
+                                 IsWaitingApproval = proposal.IsWaitingApproval,
+                                 SubmittedBy = proposal.SubmittedBy
                              });
+
+            proposal2 = proposal2.Where(x => x.SubmittedBy == userId || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
 
             if (!string.IsNullOrEmpty(param.search.value))
             {
