@@ -80,6 +80,13 @@ namespace FSAWebSystem.Models.Context
                         RoleName = "Support",
                         CreatedAt = DateTime.Now,
                         CreatedBy = "System"
+                    },
+                         new RoleUnilever
+                    {
+                        RoleUnileverId = Guid.NewGuid(),
+                        RoleName = "Master Requestor",
+                        CreatedAt = DateTime.Now,
+                        CreatedBy = "System"
                     }
                 };
                 _db.RoleUnilevers.AddRange(listRole);

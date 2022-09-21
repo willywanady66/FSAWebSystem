@@ -18,17 +18,16 @@ namespace FSAWebSystem.Services
         {
             _db = db;
         }
-        public async Task<ProposalData> GetProposalForView(int month, int year, int week, DataTableParamProposal param, Guid userId)
+        public async Task<ProposalData> GetProposalForView(int month, int year, int week, DataTableParamProposal param, UserUnilever userUnilever)
         {
             _db.ChangeTracker.AutoDetectChangesEnabled = false;
 
             var proposals = (from weeklyBucket in _db.WeeklyBuckets
-                             join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
+                             join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id)) on weeklyBucket.BannerId equals banner.Id
                              join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
                              join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
                              where weeklyBucket.Month == month && weeklyBucket.Year == year
-                             
                              select new Proposal
                              {
                                  Id = p != null ? p.Id : Guid.Empty,
@@ -92,7 +91,11 @@ namespace FSAWebSystem.Services
                                  SubmittedBy = proposal.SubmittedBy
                              });
 
-            proposal2 = proposal2.Where(x => x.SubmittedBy == userId || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
+            if (userUnilever.RoleUnilever.RoleName != "Master Requestor")
+            {
+                proposal2 = proposal2.Where(x => x.SubmittedBy == userUnilever.Id || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
+            }
+          
 
             if (!string.IsNullOrEmpty(param.search.value))
             {
@@ -159,14 +162,13 @@ namespace FSAWebSystem.Services
         }
 
 
-        public ProposalHistoryPagingData GetProposalHistoryPagination(DataTableParam param, Guid userId, int month, int year)
+        public ProposalHistoryPagingData GetProposalHistoryPagination(DataTableParam param, UserUnilever userUnilever, int month, int year)
         {
 
             var proposalHistories = (from proposalHistory in _db.ProposalHistories
                                      join sku in _db.SKUs.Where(x => x.IsActive) on proposalHistory.SKUId equals sku.Id
-                                     join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId) && x.IsActive) on proposalHistory.BannerId equals banner.Id
+                                     join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id) && x.IsActive) on proposalHistory.BannerId equals banner.Id
                                      join approval in _db.Approvals on proposalHistory.ApprovalId equals approval.Id
-                                     where proposalHistory.SubmittedBy == userId
                                      select new ProposalHistory
                                      {
                                          Week = proposalHistory.Week,
@@ -184,6 +186,11 @@ namespace FSAWebSystem.Services
                                          ApprovalStatus = approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel || approval.ApprovalStatus == ApprovalStatus.Pending ? approval.ApprovalStatus.ToString() + '(' + approval.ApproverWL + ')' : approval.ApprovalStatus.ToString(),
                                          ApprovalId = approval.Id
                                      }) ;
+
+            if (userUnilever.RoleUnilever.RoleName != "Master Requestor")
+            {
+                proposalHistories = proposalHistories.Where(x => x.SubmittedBy == userUnilever.Id);
+            }
 
 
             if (!string.IsNullOrEmpty(param.search.value))
@@ -242,9 +249,6 @@ namespace FSAWebSystem.Services
             var totalCount = proposalHistories.Count();
             var listProposalHistory = proposalHistories.Skip(param.start).Take(param.length).ToList();
             Thread.CurrentThread.CurrentCulture = new CultureInfo("id-ID");
-
-
-
             foreach (var proposalHistory in listProposalHistory)
             {
                 var submitDate = DateTime.Parse(proposalHistory.SubmittedAt);
@@ -298,6 +302,8 @@ namespace FSAWebSystem.Services
             var data = (from weeklyBucket in _db.WeeklyBuckets
                         join banner in _db.Banners.Include(x => x.UserUnilevers).Where(y => y.UserUnilevers.Any(z => z.Id == user.Id)) on weeklyBucket.BannerId equals banner.Id
                         join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
+                        join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
+                        from p in proposalGroups.DefaultIfEmpty()
                         where weeklyBucket.Month == month && weeklyBucket.Year == year
                         select new ProposalExcelModel
                         {
@@ -319,9 +325,11 @@ namespace FSAWebSystem.Services
                             BucketWeek3 = weeklyBucket.BucketWeek3,
                             BucketWeek4 = weeklyBucket.BucketWeek4,
                             BucketWeek5 = weeklyBucket.BucketWeek5,
-                            RatingRate = weeklyBucket.RatingRate
+                            RatingRate = weeklyBucket.RatingRate,
+                            SubmittedBy = p != null ? p.SubmittedBy.Value : Guid.Empty
                         }).ToList();
 
+            data = data.Where(x => x.SubmittedBy == user.Id || x.SubmittedBy == Guid.Empty).ToList();
             return data;
         }
     }

@@ -87,7 +87,7 @@ namespace FSAWebSystem.Controllers
                     {
                         week = 1;
                     }
-                    data = await _proposalService.GetProposalForView(Convert.ToInt32(param.month), Convert.ToInt32(param.year), week, param, userUnilever.Id);
+                    data = await _proposalService.GetProposalForView(Convert.ToInt32(param.month), Convert.ToInt32(param.year), week, param, userUnilever);
 
                 }
                 listData = Json(new
@@ -114,10 +114,11 @@ namespace FSAWebSystem.Controllers
         public async Task<IActionResult> GetProposalHistoryPagination(DataTableParam param)
         {
             var user = await _userManager.GetUserAsync(User);
+            var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
             var listData = Json(new { });
             try
             {
-                var listProposalHistory = _proposalService.GetProposalHistoryPagination(param, (Guid)user.UserUnileverId, Convert.ToInt32(param.month), Convert.ToInt32(param.year));
+                var listProposalHistory = _proposalService.GetProposalHistoryPagination(param, userUnilever, Convert.ToInt32(param.month), Convert.ToInt32(param.year));
                 listData = Json(new
                 {
                     draw = param.draw,

@@ -23,5 +23,6 @@
         public decimal DispatchConsume{ get; set; }
         public decimal ValidBJ{ get; set; }
         public decimal RemFSA{ get; set; }
+        public Guid SubmittedBy { get; set; }
     }
 }

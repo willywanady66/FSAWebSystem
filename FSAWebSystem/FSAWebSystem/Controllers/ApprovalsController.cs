@@ -548,9 +548,11 @@ namespace FSAWebSystem.Controllers
             var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
             var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
             var banners = _bannerService.GetAllActiveBanner();
+            var weeklyBuckets = _bucketService.GetWeeklyBuckets();
             var banner = await banners.SingleOrDefaultAsync(x => x.Id == weeklyBucket.BannerId);
-            
-
+            var currentBucketTargetId = proposal.ProposalDetails.Single(x=> x.ProposeAdditional < 0).WeeklyBucketId;
+            var currentBucketTarget = weeklyBuckets.Single(x => x.Id == currentBucketTargetId);
+            var currentBannerTarget = banners.Single(x => x.Id == currentBucketTarget.BannerId);
             if(approval.ProposalType == ProposalType.ReallocateAcrossKAM)
 			{
                 i = 0;
@@ -566,19 +568,21 @@ namespace FSAWebSystem.Controllers
 
             while (i != 3)
             {
-                var weeklyBucketTargets = _bucketService.GetWeeklyBuckets();
+                
                 switch (i)
                 {
                     //REALLOCATE ACROSS CDM
                     case 0:
-                        bucketTargetIds = await banners.Where(x => x.CDM == banner.CDM).Select(x => x.Id).ToListAsync();
-                        weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id);
+                        var bannerTargetIdsCDM = banners.Where(x => x.KAM != banner.KAM && x.CDM == banner.CDM).Select(x => x.Id);
+                        weeklyBuckets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id);
                         proposal.Type = ProposalType.ReallocateAcrossCDM;
                         
                         break;
                     //REALLOCATE ACROSS MT
                     case 1:
-                        weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => x.SKUId == sku.Id);
+                        var bannerTargetIds = banners.Where(x => x.KAM != banner.KAM && x.CDM != banner.CDM).Select(x => x.Id);
+                        weeklyBuckets = _bucketService.GetWeeklyBuckets().Where(x => x.SKUId == sku.Id && bannerTargetIds.Contains(x.BannerId));
+                        var zz = weeklyBuckets.ToList();
                         proposal.Type = ProposalType.ReallocateAcrossMT;
                         break;
                     default:
@@ -590,8 +594,8 @@ namespace FSAWebSystem.Controllers
 				{
                     approval.ProposalType = proposal.Type.Value;
                     var proposeAdditional = proposal.ProposalDetails.Single(x => x.ProposeAdditional > 0).ProposeAdditional;
-                    var weeklyBucketTargetByMonthly = await weeklyBucketTargets.Where(x => x.MonthlyBucket > proposeAdditional && x.Id != weeklyBucket.Id && x.Month == proposal.Month).OrderByDescending(x => x.MonthlyBucket).FirstOrDefaultAsync();
-                    var weeklyBucketTargetByRemFSA = await weeklyBucketTargets.Where(x => x.RemFSA > proposeAdditional && x.Id != weeklyBucket.Id && x.Month == proposal.Month).OrderByDescending(x => x.RemFSA).FirstOrDefaultAsync();
+                    var weeklyBucketTargetByMonthly = await weeklyBuckets.Where(x => x.MonthlyBucket > proposeAdditional && x.Id != weeklyBucket.Id && x.Month == proposal.Month).OrderByDescending(x => x.MonthlyBucket).FirstOrDefaultAsync();
+                    var weeklyBucketTargetByRemFSA = await weeklyBuckets.Where(x => x.RemFSA > proposeAdditional && x.Id != weeklyBucket.Id && x.Month == proposal.Month).OrderByDescending(x => x.RemFSA).FirstOrDefaultAsync();
                     if (weeklyBucketTargetByMonthly == null && weeklyBucketTargetByRemFSA == null)
                     {
                         proposal.Type = ProposalType.ProposeAdditional;

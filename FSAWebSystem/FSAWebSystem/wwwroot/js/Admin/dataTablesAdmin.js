@@ -186,6 +186,7 @@ $(document).ready(function () {
         "processing": true,
         "serverSide": true,
         "ajax": {
+            async: true,
             url: getUsersUrl,
             type: "POST"
         },
@@ -235,6 +236,7 @@ $(document).ready(function () {
         "processing": true,
         "serverSide": true,
         "ajax": {
+            async: true,
             url: getBannerUrl,
             type: "POST"
         },
@@ -311,6 +313,7 @@ $(document).ready(function () {
         "processing": true,
         "serverSide": true,
         "ajax": {
+
             url: getFSACal,
             type: "GET",
             data: function (d) {
