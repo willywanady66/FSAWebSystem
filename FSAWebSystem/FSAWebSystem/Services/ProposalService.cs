@@ -95,7 +95,7 @@ namespace FSAWebSystem.Services
             {
                 proposal2 = proposal2.Where(x => x.SubmittedBy == userUnilever.Id || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
             }
-          
+
 
             if (!string.IsNullOrEmpty(param.search.value))
             {
@@ -184,8 +184,9 @@ namespace FSAWebSystem.Services
                                          ApprovedBy = approval.ApprovedBy,
                                          ApprovalNote = approval.ApprovalNote,
                                          ApprovalStatus = approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel || approval.ApprovalStatus == ApprovalStatus.Pending ? approval.ApprovalStatus.ToString() + '(' + approval.ApproverWL + ')' : approval.ApprovalStatus.ToString(),
-                                         ApprovalId = approval.Id
-                                     }) ;
+                                         ApprovalId = approval.Id,
+                                         SubmittedBy = proposalHistory.SubmittedBy
+                                     });
 
             if (userUnilever.RoleUnilever.RoleName != "Master Requestor")
             {
@@ -239,7 +240,7 @@ namespace FSAWebSystem.Services
                     case 11:
                         proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.ApprovedBy) : proposalHistories.OrderBy(x => x.ApprovedBy);
                         break;
-                        default:
+                    default:
                         proposalHistories = proposalHistories.OrderByDescending(x => x.SubmittedAt).ThenBy(x => x.ApprovalId);
                         break;
 
@@ -331,6 +332,12 @@ namespace FSAWebSystem.Services
 
             data = data.Where(x => x.SubmittedBy == user.Id || x.SubmittedBy == Guid.Empty).ToList();
             return data;
+        }
+
+        public async Task<ProposalHistory> GetProposalHistory(Guid approvalId)
+        {
+            var proposalHistory = await _db.ProposalHistories.SingleAsync(x => x.ApprovalId == approvalId && x.ProposeAdditional < 0);
+            return proposalHistory;
         }
     }
 }

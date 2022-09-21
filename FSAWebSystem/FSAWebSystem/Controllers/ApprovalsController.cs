@@ -484,9 +484,31 @@ namespace FSAWebSystem.Controllers
 			{
                 var approval = await _approvalService.GetApprovalById(approvalId);
                 var proposal = await _proposalService.GetProposalByApprovalId(approvalId);
+                var proposalTypeInit = proposal.Type;
+                var proposalHistory = await _proposalService.GetProposalHistory(approvalId);
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
                 var weekBucketTarget = await GetWeeklyBucketTarget(approval, proposal);
+                proposalHistory.BannerId = weekBucketTarget.BannerId;
                 var proposalDetailTarget = proposal.ProposalDetails.Single(x => x.ProposeAdditional < 0);
+
+                if(((int)proposalTypeInit) + 1 != (int)proposal.Type)
+                {
+                    var message = string.Empty;
+                    if(proposal.Type == ProposalType.ReallocateAcrossCDM)
+                    {
+                        message = "Across CDM";
+                    }
+                    else if(proposal.Type == ProposalType.ReallocateAcrossMT)
+                    {
+                        message = "Across MT";
+                    }
+                    else
+                    {
+                        message = "Propose Additional";
+                    }
+                    approvalNote += " (Skipped to " + message + ")";
+                }
+
                 if(weekBucketTarget.Id == Guid.Empty)
                 {
                     proposal.ProposalDetails.Remove(proposalDetailTarget);
@@ -520,6 +542,7 @@ namespace FSAWebSystem.Controllers
                     approval.ApprovalNote += ";" + approvalNote;
                 }
 
+                
 
                 await _context.SaveChangesAsync();
                 
@@ -553,6 +576,7 @@ namespace FSAWebSystem.Controllers
             var currentBucketTargetId = proposal.ProposalDetails.Single(x=> x.ProposeAdditional < 0).WeeklyBucketId;
             var currentBucketTarget = weeklyBuckets.Single(x => x.Id == currentBucketTargetId);
             var currentBannerTarget = banners.Single(x => x.Id == currentBucketTarget.BannerId);
+       
             if(approval.ProposalType == ProposalType.ReallocateAcrossKAM)
 			{
                 i = 0;
@@ -576,7 +600,6 @@ namespace FSAWebSystem.Controllers
                         var bannerTargetIdsCDM = banners.Where(x => x.KAM != banner.KAM && x.CDM == banner.CDM).Select(x => x.Id);
                         weeklyBuckets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id);
                         proposal.Type = ProposalType.ReallocateAcrossCDM;
-                        
                         break;
                     //REALLOCATE ACROSS MT
                     case 1:
@@ -624,7 +647,6 @@ namespace FSAWebSystem.Controllers
                 {
                     break;
                 }
-                
             }
 
             return weeklyBucketTarget;
