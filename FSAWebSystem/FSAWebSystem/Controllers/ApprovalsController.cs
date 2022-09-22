@@ -404,6 +404,7 @@ namespace FSAWebSystem.Controllers
                 {
                     approval.ApprovalStatus = ApprovalStatus.Approved;
                     proposal.IsWaitingApproval = false;
+                    proposal.SubmittedBy = Guid.Empty;
                     await UpdateWeeklyBuckets(proposal.ProposalDetails, proposal.Type.Value, proposal.Week, approval.Id);
                 }
                 else

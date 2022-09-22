@@ -34,14 +34,11 @@ namespace FSAWebSystem.Services
             var banners = _db.Banners.Include(x => x.UserUnilevers).AsQueryable();
             var skus = _db.SKUs.Include(x => x.ProductCategory).AsQueryable();
             var workLevel = user.WLName;
-            //var userBannerIds = user.Banners.Select(x => x.Id);
-            //var userSkuIds = user.SKUs.Select(x => x.Id);
-            //var userCategIds = user.ProductCategories.Select(x => x.Id);
+
+            
             if (workLevel == "KAM WL 2")
             {
-                var z = banners.ToList();
                 banners = banners.Where(x => x.UserUnilevers.Any(y => y.Id == user.Id)).AsQueryable();
-                var zz = banners.ToList();
             }
 
             var approvals = _db.Approvals.AsQueryable();
@@ -151,55 +148,6 @@ namespace FSAWebSystem.Services
 
 
             approvals = approvals.Where(x => x.ApproverWL == workLevel);
-            //var approvals = (from approval in _db.Approvals
-            //                 join proposal in (from proposal in _db.Proposals
-            //                                   join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
-            //                                                             //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
-            //                                                         join banner in banners on weeklyBucket.BannerId equals banner.Id
-            //                                                         join sku in skus on weeklyBucket.SKUId equals sku.Id
-            //                                                         select new WeeklyBucket
-            //                                                         {
-            //                                                             Id = weeklyBucket.Id,
-            //                                                             ProductCategoryId = sku.ProductCategory.Id,
-            //                                                             BannerName = banner.BannerName,
-            //                                                             PlantName = banner.PlantName,
-            //                                                             PCMap = sku.PCMap,
-            //                                                             DescriptionMap = sku.DescriptionMap,
-            //                                                         }) on proposal.WeeklyBucketId equals weeklyBucket.Id
-            //                                   select new Proposal
-            //                                   {
-            //                                       Id = proposal.Id,
-            //                                       ApprovalId = proposal.ApprovalId,
-            //                                       BannerName = weeklyBucket.BannerName,
-            //                                       PlantName = weeklyBucket.PlantName,
-            //                                       PCMap = weeklyBucket.PCMap,
-            //                                       DescriptionMap = weeklyBucket.DescriptionMap,
-            //                                       ProposeAdditional = proposal.ProposeAdditional,
-            //                                       Rephase = proposal.Rephase,
-            //                                       Remark = proposal.Remark,
-            //                                       Type = proposal.Type,
-            //                                       Week = proposal.Week,
-            //                                       SubmittedAt = proposal.SubmittedAt
-            //                                   }) on approval.Id equals proposal.ApprovalId
-            //                 where approval.ApprovalStatus == ApprovalStatus.Pending || approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel
-            //                 select new Approval
-            //                 {
-            //                     ProposalId = proposal.Id,
-            //                     Proposal = proposal,
-            //                     ProposalType = proposal.Type.Value,
-            //                     Id = approval.Id,
-            //                     ProposalSubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
-            //                     BannerName = proposal.BannerName,
-            //                     PCMap = proposal.PCMap,
-            //                     DescriptionMap = proposal.DescriptionMap,
-            //                     ProposeAdditional = proposal.ProposeAdditional,
-            //                     Rephase = proposal.Rephase,
-            //                     Remark = proposal.Remark,
-            //                     Week = proposal.Week,
-            //                     Level = approval.Level,
-            //                     ApproverWL = approval.ApproverWL,
-            //                 });
-
 
             if (!string.IsNullOrEmpty(param.search.value))
             {

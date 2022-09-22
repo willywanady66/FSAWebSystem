@@ -37,7 +37,7 @@ namespace FSAWebSystem.Services
         public async Task AddRole(RoleUnilever role)
         {
             await _db.AddAsync(role);
-            await _db.SaveChangesAsync();
+            
         }
 
         public async Task<RoleUnilever> GetRoleByName(string roleName)
@@ -60,7 +60,6 @@ namespace FSAWebSystem.Services
         public async Task<RoleUnilever> Update(RoleUnilever role)
         {
             _db.RoleUnilevers.Update(role);
-            await _db.SaveChangesAsync();
             return role;
         }
     }

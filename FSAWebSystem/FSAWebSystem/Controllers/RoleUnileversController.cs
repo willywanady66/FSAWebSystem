@@ -53,7 +53,7 @@ namespace FSAWebSystem.Controllers
             ModelState.Remove("Menu");
             if (ModelState.IsValid)
             {
-                var savedRole = _roleService.GetRoleByName(roleUnilever.RoleName);
+                var savedRole = await _roleService.GetRoleByName(roleUnilever.RoleName);
                 if (savedRole != null)
                 {
                     ModelState.AddModelError(string.Empty, "Role " + roleUnilever.RoleName + " already exist");
@@ -77,6 +77,7 @@ namespace FSAWebSystem.Controllers
                     ModelState.AddModelError(string.Empty, ex.Message);
                 }
 
+                await _context.SaveChangesAsync();
                 _notyfService.Success("Role " + roleUnilever.RoleName + " successfully added");
                 return RedirectToAction("Index", "Admin");
             }
@@ -142,9 +143,6 @@ namespace FSAWebSystem.Controllers
 
                     List<Guid> selectedMenuId = (from menuId in menuIds select Guid.Parse(menuId)).ToList();
                     var selectedMenu = (_roleService.GetAllMenu().ToList()).Where(x => selectedMenuId.Contains(x.Id)).ToList();
-
-             
-
 
                     savedRole.RoleName = roleUnilever.RoleName;
                     savedRole.Menus = selectedMenu;

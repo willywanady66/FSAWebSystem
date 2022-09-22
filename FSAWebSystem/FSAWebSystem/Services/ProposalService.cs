@@ -91,7 +91,7 @@ namespace FSAWebSystem.Services
                                  SubmittedBy = proposal.SubmittedBy
                              });
 
-            if (userUnilever.RoleUnilever.RoleName != "Master Requestor")
+            if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
                 proposal2 = proposal2.Where(x => x.SubmittedBy == userUnilever.Id || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
             }
@@ -188,7 +188,7 @@ namespace FSAWebSystem.Services
                                          SubmittedBy = proposalHistory.SubmittedBy
                                      });
 
-            if (userUnilever.RoleUnilever.RoleName != "Master Requestor")
+            if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
                 proposalHistories = proposalHistories.Where(x => x.SubmittedBy == userUnilever.Id);
             }
