@@ -99,7 +99,6 @@ namespace FSAWebSystem.Services
                 approvals = (from approval in _db.Approvals
                              join proposal in (from proposal in _db.Proposals
                                                join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
-                                                                         //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userId)) on weeklyBucket.BannerId equals banner.Id
                                                                      join banner in banners on weeklyBucket.BannerId equals banner.Id
                                                                      join sku in skus on weeklyBucket.SKUId equals sku.Id
                                                                      select new WeeklyBucket
@@ -146,9 +145,11 @@ namespace FSAWebSystem.Services
                              });
             }
 
-
-            approvals = approvals.Where(x => x.ApproverWL == workLevel);
-
+            if (user.RoleUnilever.RoleName != "Administrator")
+            {
+                approvals = approvals.Where(x => x.ApproverWL == workLevel);
+            }
+            
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();

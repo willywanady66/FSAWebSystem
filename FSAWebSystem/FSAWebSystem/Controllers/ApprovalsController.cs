@@ -90,8 +90,7 @@ namespace FSAWebSystem.Controllers
 
                        
 
-                 
-                        canApprove = approval.ApproverWL == workLevel;
+                    
 
                         isApproved = approval.ApprovedBy.Contains(userUnilever.Email);
 
@@ -119,6 +118,10 @@ namespace FSAWebSystem.Controllers
                             canApprove = approval.ApproverWL == workLevel;
        
 
+                    }
+                    if (userUnilever.RoleUnilever.RoleName != "Administrator")
+                    {
+                        canApprove = approval.ApproverWL == workLevel;
                     }
 
                     var approvalNoteList = new List<Tuple<string, string, string>>();
@@ -181,8 +184,8 @@ namespace FSAWebSystem.Controllers
             try
             {
                 var user = await _userManager.GetUserAsync(User);
-                var userUnilever = await _userService.GetUserOnly((Guid)user.UserUnileverId);
-               userUnilever.WLName = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
+                var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
+                userUnilever.WLName = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
                 var currentDate = DateTime.Now;
             
                 var data = await _approvalService.GetApprovalPagination(param, currentDate.Month, currentDate.Year, userUnilever);
