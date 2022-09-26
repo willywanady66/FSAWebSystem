@@ -26,7 +26,7 @@ namespace FSAWebSystem.Services
                                  //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id)) on weeklyBucket.BannerId equals banner.Id
                              join banner in _db.Banners on weeklyBucket.BannerId equals banner.Id
                              join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
-                             join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
+                             join proposal in _db.Proposals.Where(x => x.IsWaitingApproval) on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
                              where weeklyBucket.Month == month && weeklyBucket.Year == year
                              select new Proposal
@@ -58,39 +58,40 @@ namespace FSAWebSystem.Services
                                  ApprovalId = p != null ? p.ApprovalId : Guid.Empty,
                              });
 
-            var zz = proposals.ToList();
-            var proposal2 = (from proposal in proposals
-                             join approval in _db.Approvals on proposal.ApprovalId equals approval.Id into approvalGroup
-                             from apprvl in approvalGroup.DefaultIfEmpty()
+            var proposal2 = proposals;
+            //var zz = proposals.ToList();
+            //var proposal2 = (from proposal in proposals
+            //                 join approval in _db.Approvals on proposal.ApprovalId equals approval.Id into approvalGroup
+            //                 from apprvl in approvalGroup.DefaultIfEmpty()
 
-                             select new Proposal
-                             {
-                                 Id = proposal.Id,
-                                 BannerId = proposal.BannerId,
-                                 WeeklyBucketId = proposal.WeeklyBucketId,
-                                 BannerName = proposal.BannerName,
-                                 Month = month,
-                                 Week = week,
-                                 Year = year,
-                                 PlantCode = proposal.PlantCode,
-                                 PlantName = proposal.PlantName,
-                                 PCMap = proposal.PCMap,
-                                 DescriptionMap = proposal.DescriptionMap,
-                                 RatingRate = proposal.RatingRate,
-                                 MonthlyBucket = proposal.MonthlyBucket,
-                                 ValidBJ = proposal.ValidBJ,
-                                 RemFSA = proposal.MonthlyBucket - proposal.ValidBJ,
-                                 CurrentBucket = proposal.CurrentBucket,
-                                 NextBucket = proposal.NextBucket,
-                                 Remark = proposal.IsWaitingApproval ? proposal.Remark : string.Empty,
-                                 Rephase = proposal.IsWaitingApproval ? proposal.Rephase : decimal.Zero,
-                                 ApprovedRephase = proposal.ApprovedRephase,
-                                 ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending,
-                                 ProposeAdditional = proposal.IsWaitingApproval ? proposal.ProposeAdditional : decimal.Zero,
-                                 ApprovedProposeAdditional = proposal.ApprovedProposeAdditional,
-                                 IsWaitingApproval = proposal.IsWaitingApproval,
-                                 SubmittedBy = proposal.SubmittedBy
-                             });
+            //                 select new Proposal
+            //                 {
+            //                     Id = proposal.Id,
+            //                     BannerId = proposal.BannerId,
+            //                     WeeklyBucketId = proposal.WeeklyBucketId,
+            //                     BannerName = proposal.BannerName,
+            //                     Month = month,
+            //                     Week = week,
+            //                     Year = year,
+            //                     PlantCode = proposal.PlantCode,
+            //                     PlantName = proposal.PlantName,
+            //                     PCMap = proposal.PCMap,
+            //                     DescriptionMap = proposal.DescriptionMap,
+            //                     RatingRate = proposal.RatingRate,
+            //                     MonthlyBucket = proposal.MonthlyBucket,
+            //                     ValidBJ = proposal.ValidBJ,
+            //                     RemFSA = proposal.MonthlyBucket - proposal.ValidBJ,
+            //                     CurrentBucket = proposal.CurrentBucket,
+            //                     NextBucket = proposal.NextBucket,
+            //                     Remark = proposal.IsWaitingApproval ? proposal.Remark : string.Empty,
+            //                     Rephase = proposal.IsWaitingApproval ? proposal.Rephase : decimal.Zero,
+            //                     ApprovedRephase = proposal.ApprovedRephase,
+            //                     ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending,
+            //                     ProposeAdditional = proposal.IsWaitingApproval ? proposal.ProposeAdditional : decimal.Zero,
+            //                     ApprovedProposeAdditional = proposal.ApprovedProposeAdditional,
+            //                     IsWaitingApproval = proposal.IsWaitingApproval,
+            //                     SubmittedBy = proposal.SubmittedBy
+            //                 });
 
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
@@ -194,7 +195,7 @@ namespace FSAWebSystem.Services
 
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
-                proposalHistories = proposalHistories.Where(x => userUnilever.Banners.Select(y => y.Id).Contains(x.BannerId));
+                //proposalHistories = proposalHistories.Where(x => userUnilever.Banners.Select(y => y.Id).Contains(x.BannerId));
                 proposalHistories = proposalHistories.Where(x => x.SubmittedBy == userUnilever.Id);
             }
 

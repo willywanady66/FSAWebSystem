@@ -98,7 +98,7 @@ namespace FSAWebSystem.Controllers
 
                     
 
-                        isApproved = approval.ApprovedBy.Contains(userUnilever.Email);
+                        isApproved = approval.ApprovedBy.Split(';').Last().Contains(userUnilever.Email);
 
 
                         if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
@@ -244,7 +244,7 @@ namespace FSAWebSystem.Controllers
                 var errorMessages = new List<string>();
                 var approvalIds = new List<Guid>();
                 approvalIds.Add(approvalId);
-                if(approval.ApprovedBy.Contains(User.Identity.Name))
+                if (approval.ApprovedBy.Split(';').Last().Contains(User.Identity.Name))
                 {
                     errorMessages.Add("You already approve this proposal");
                     _notyfService.Warning("Proposal Already Approved");
@@ -302,7 +302,7 @@ namespace FSAWebSystem.Controllers
                 };
                 var approval = await _approvalService.GetApprovalById(approvalId);
                 var errorMessages = new List<string>();
-                if (approval.ApprovedBy.Contains(User.Identity.Name))
+                if (approval.ApprovedBy.Split(';').Last().Contains(User.Identity.Name))
                 {
                     var type = string.Empty;
                     if (approval.ApprovalStatus ==ApprovalStatus.Rejected)
