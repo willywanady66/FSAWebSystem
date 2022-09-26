@@ -202,6 +202,7 @@ namespace FSAWebSystem.Services
                     var banner = await _db.Banners.SingleAsync(x => x.Id == weeklyBucket.BannerId);
                     var sku = await _db.SKUs.SingleAsync(x => x.Id == weeklyBucket.SKUId);
                     approvalDetail.BannerName = banner.BannerName;
+                    approvalDetail.PlantName = banner.PlantName;
                     approvalDetail.CDM = banner.CDM;
                     approvalDetail.KAM = banner.KAM;
                     approvalDetail.PCMap = sku.PCMap;

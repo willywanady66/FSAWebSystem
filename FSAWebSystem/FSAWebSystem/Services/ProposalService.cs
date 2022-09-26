@@ -23,7 +23,8 @@ namespace FSAWebSystem.Services
             _db.ChangeTracker.AutoDetectChangesEnabled = false;
 
             var proposals = (from weeklyBucket in _db.WeeklyBuckets
-                             join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id)) on weeklyBucket.BannerId equals banner.Id
+                                 //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id)) on weeklyBucket.BannerId equals banner.Id
+                             join banner in _db.Banners on weeklyBucket.BannerId equals banner.Id
                              join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
                              join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
@@ -59,7 +60,7 @@ namespace FSAWebSystem.Services
 
             var zz = proposals.ToList();
             var proposal2 = (from proposal in proposals
-                             join approval in _db.Approvals.Where(x => x.ApprovalStatus == ApprovalStatus.Pending) on proposal.ApprovalId equals approval.Id into approvalGroup
+                             join approval in _db.Approvals on proposal.ApprovalId equals approval.Id into approvalGroup
                              from apprvl in approvalGroup.DefaultIfEmpty()
 
                              select new Proposal
@@ -93,6 +94,7 @@ namespace FSAWebSystem.Services
 
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
+                proposal2 = proposal2.Where(x => userUnilever.Banners.Select(y => y.Id).Contains(x.BannerId));
                 proposal2 = proposal2.Where(x => x.SubmittedBy == userUnilever.Id || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
             }
 
@@ -167,10 +169,12 @@ namespace FSAWebSystem.Services
 
             var proposalHistories = (from proposalHistory in _db.ProposalHistories
                                      join sku in _db.SKUs.Where(x => x.IsActive) on proposalHistory.SKUId equals sku.Id
-                                     join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id) && x.IsActive) on proposalHistory.BannerId equals banner.Id
+                                     //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id) && x.IsActive) on proposalHistory.BannerId equals banner.Id
+                                     join banner in _db.Banners on proposalHistory.BannerId equals banner.Id
                                      join approval in _db.Approvals on proposalHistory.ApprovalId equals approval.Id
                                      select new ProposalHistory
                                      {
+                                         BannerId = banner.Id,
                                          Week = proposalHistory.Week,
                                          BannerName = banner.BannerName,
                                          PlantName = banner.PlantName,
@@ -190,6 +194,7 @@ namespace FSAWebSystem.Services
 
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
+                proposalHistories = proposalHistories.Where(x => userUnilever.Banners.Select(y => y.Id).Contains(x.BannerId));
                 proposalHistories = proposalHistories.Where(x => x.SubmittedBy == userUnilever.Id);
             }
 

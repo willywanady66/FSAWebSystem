@@ -143,10 +143,11 @@ namespace FSAWebSystem.Controllers
         public async Task<IActionResult> GetMonthlyBucketHistoryPagination(DataTableParam param)
         {
             var user = await _userManager.GetUserAsync(User);
+            var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
             var listData = Json(new { });
             try
             {
-                var listMonthlyBucketHistory = await _bucketService.GetMonthlyBucketHistoryPagination(param, (Guid)user.UserUnileverId);
+                var listMonthlyBucketHistory = await _bucketService.GetMonthlyBucketHistoryPagination(param, userUnilever);
                 listData = Json(new
                 {
                     draw = param.draw,
@@ -169,10 +170,11 @@ namespace FSAWebSystem.Controllers
         public async Task<IActionResult> GetWeeklyBucketHistoryPagination(DataTableParam param)
         {
             var user = await _userManager.GetUserAsync(User);
+            var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
             var listData = Json(new { });
             try
             {
-                var listWeeklyBucketHistory = await _bucketService.GetWeeklyBucketHistoryPagination(param, (Guid)user.UserUnileverId);
+                var listWeeklyBucketHistory = await _bucketService.GetWeeklyBucketHistoryPagination(param, userUnilever);
                 listData = Json(new
                 {
                     draw = param.draw,

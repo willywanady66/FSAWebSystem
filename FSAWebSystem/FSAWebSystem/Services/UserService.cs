@@ -109,7 +109,7 @@ namespace FSAWebSystem.Services
 
         public async Task<UserUnilever> GetUser(Guid id)
         {
-            var userUnilever = await _db.UsersUnilever.Include(x => x.Banners).Include(x => x.RoleUnilever.Menus).Include(x => x.SKUs).Include(x => x.ProductCategories).SingleOrDefaultAsync(x => x.Id == id);
+            var userUnilever = await _db.UsersUnilever.Include(x => x.Banners.Where(x => x.IsActive)).Include(x => x.RoleUnilever.Menus).Include(x => x.SKUs).Include(x => x.ProductCategories).SingleOrDefaultAsync(x => x.Id == id);
             return userUnilever;
         }
 

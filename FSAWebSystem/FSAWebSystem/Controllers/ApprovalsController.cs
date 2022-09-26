@@ -68,12 +68,18 @@ namespace FSAWebSystem.Controllers
 
             try
             {
+                var workLevel = string.Empty;
                 var approval = await _approvalService.GetApprovalDetails((Guid)id);
                 if (approval != null)
                 {
                     var user = await _userManager.GetUserAsync(User);
                     var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
-                    var workLevel = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
+                    var wl = (await _userService.GetAllWorkLevel().SingleOrDefaultAsync(x => x.Id == userUnilever.WLId));
+                    if(wl != null)
+                    {
+                        workLevel = wl.WL;
+                    }
+                    
                     if (approval.ProposalType != ProposalType.Rephase)
                     {
                         var appovaldetailTarget = approval.ApprovalDetails.SingleOrDefault(x => x.ProposeAdditional > 0);
@@ -112,13 +118,7 @@ namespace FSAWebSystem.Controllers
                             ViewData["Type"] = "Propose Additional";
                         }
                     }
-                    else
-                    {
 
-                            canApprove = approval.ApproverWL == workLevel;
-       
-
-                    }
                     if (userUnilever.RoleUnilever.RoleName != "Administrator")
                     {
                         canApprove = approval.ApproverWL == workLevel;
@@ -185,7 +185,12 @@ namespace FSAWebSystem.Controllers
             {
                 var user = await _userManager.GetUserAsync(User);
                 var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
-                userUnilever.WLName = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
+                var wl = (await _userService.GetAllWorkLevel().SingleOrDefaultAsync(x => x.Id == userUnilever.WLId));
+                if (wl != null)
+                {
+                    userUnilever.WLName = wl.WL;
+                }
+                   
                 var currentDate = DateTime.Now;
             
                 var data = await _approvalService.GetApprovalPagination(param, currentDate.Month, currentDate.Year, userUnilever);
@@ -467,6 +472,7 @@ namespace FSAWebSystem.Controllers
                 approval.ApprovedAt = DateTime.Now;
                 approval.ApproverWL = string.Empty;
                 proposal.IsWaitingApproval = false;
+                proposal.SubmittedBy = Guid.Empty;
                 approval.RequestedBy = userRequestor.Email;
 
                 listApproval.Add(approval);

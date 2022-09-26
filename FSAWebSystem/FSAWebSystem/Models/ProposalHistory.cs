@@ -37,5 +37,6 @@ namespace FSAWebSystem.Models
         public string ApprovalStatus { get; set; }
         [NotMapped]
         public string ULIWeek { get; set; }
+       
     }
 }

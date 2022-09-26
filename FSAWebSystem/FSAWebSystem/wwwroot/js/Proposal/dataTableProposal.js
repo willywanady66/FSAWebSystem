@@ -246,7 +246,7 @@
         columns: [
             { "data": "submittedAt" }, //0
             { "data": "week" }, //1
-            { "data": "uliWeek" }, //2
+            { "data": "uliWeek", orderable:false }, //2
             { "data": "bannerName" }, //3
             { "data": "plantName" },  //4
             { "data": "pcMap" },       //5
@@ -336,7 +336,7 @@
             { "data": "year" },
             { "data": "month" },
             { "data": "week" },
-            { "data": "uliWeek" },
+            { "data": "uliWeek", orderable:false },
             { "data": "bannerName" },
             { "data": "plantName" },
             { "data": "pcMap" },
