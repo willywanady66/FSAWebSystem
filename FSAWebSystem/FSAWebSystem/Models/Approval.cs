@@ -86,6 +86,12 @@ namespace FSAWebSystem.Models
         public ProposalType NextProposalType { get; set; }
         [NotMapped]
         public List<string> EmailApprover { get; set; }
+        [NotMapped]
+        public decimal WeekCover { get; set; }
+        [NotMapped]
+        public decimal DistStock { get; set; }
+        [NotMapped]
+        public string BotPrcRemark { get; set; }
     }
 
     public enum ApprovalStatus

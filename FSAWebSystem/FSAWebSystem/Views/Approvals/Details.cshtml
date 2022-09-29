@@ -94,15 +94,15 @@
                             <ul>
                                 @if (Model.IsAndromedaPassed.HasValue)
                                 {
-                                    <li><span style="color: @(Model.IsAndromedaPassed.Value ? "Green" : "Red")">Andromeda (Nat Stock)</span></li>
+                                    <li><span style="color: @(Model.IsAndromedaPassed.Value ? "Green" : "Red")">Andromeda (Nat Stock) - @(Model.WeekCover)</span></li>
                                 }
                                 @if (Model.IsITrustPassed.HasValue)
                                 {
-                                    <li><span style="color: @(Model.IsITrustPassed.Value ? "Green" : "Red")">I-Trust (Dist Stock)</span></li>
+                                    <li><span style="color: @(Model.IsITrustPassed.Value ? "Green" : "Red")">I-Trust (Dist Stock) - @(Model.DistStock)</span></li>
                                 }
                                 @if (Model.IsBottomPricePassed.HasValue)
                                 {
-                                    <li><span style="color: @(Model.IsBottomPricePassed.Value ? "Green" : "Red")">Bottom Price</span></li>
+                                    <li><span style="color: @(Model.IsBottomPricePassed.Value ? "Green" : "Red")">Bottom Price - @(Model.BotPrcRemark)</span></li>
                                 }
                             </ul>
                         </div>

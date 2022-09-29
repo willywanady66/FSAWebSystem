@@ -309,7 +309,7 @@ namespace FSAWebSystem.Controllers
 
                         
                     }
-                    var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals");
+                    var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Index", "Approvals");
                     var emails = await _approvalService.GenerateCombinedEmailProposal(listApproval, baseUrl, User.Identity.Name);
                     listEmail.AddRange(emails);
 

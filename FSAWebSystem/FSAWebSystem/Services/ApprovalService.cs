@@ -35,7 +35,7 @@ namespace FSAWebSystem.Services
             var skus = _db.SKUs.Include(x => x.ProductCategory).AsQueryable();
             var workLevel = user.WLName;
 
-            
+
             if (workLevel == "KAM WL 2")
             {
                 banners = banners.Where(x => x.UserUnilevers.Any(y => y.Id == user.Id)).AsQueryable();
@@ -43,7 +43,7 @@ namespace FSAWebSystem.Services
 
             var approvals = _db.Approvals.AsQueryable();
 
-            if(workLevel == "CCD")
+            if (workLevel == "CCD")
             {
                 approvals = (from approval in _db.Approvals
                              join proposal in (from proposal in _db.Proposals
@@ -149,7 +149,7 @@ namespace FSAWebSystem.Services
             {
                 approvals = approvals.Where(x => x.ApproverWL == workLevel);
             }
-            
+
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
@@ -180,19 +180,22 @@ namespace FSAWebSystem.Services
                 apprvl.Remark = proposalThisApproval.Remark;
 
                 var andromeda = await _db.Andromedas.SingleOrDefaultAsync(x => x.SKUId == weeklyBucketProposal.SKUId);
-                if(andromeda != null)
+                if (andromeda != null)
                 {
-                    apprvl.IsAndromedaPassed = andromeda.WeekCover > 2; 
+                    apprvl.IsAndromedaPassed = andromeda.WeekCover > 2;
+                    apprvl.WeekCover = andromeda.WeekCover;
                 }
                 var bottomPrice = await _db.BottomPrices.SingleOrDefaultAsync(x => x.SKUId == weeklyBucketProposal.SKUId);
                 if (bottomPrice != null)
                 {
                     apprvl.IsBottomPricePassed = bottomPrice.Remarks.ToUpper() == "ABOVE" || bottomPrice.Remarks.ToUpper() == "NORMAL";
+                    apprvl.BotPrcRemark = bottomPrice.Remarks;
                 }
                 var iTrust = await _db.ITrusts.SingleOrDefaultAsync(x => x.SKUId == weeklyBucketProposal.SKUId);
-                if(iTrust != null)
+                if (iTrust != null)
                 {
                     apprvl.IsITrustPassed = iTrust.DistStock > 3;
+                    apprvl.DistStock = iTrust.DistStock;
                 }
 
                 foreach (var detail in proposalThisApproval.ProposalDetails)
@@ -321,7 +324,7 @@ namespace FSAWebSystem.Services
         public async Task<List<EmailApproval>> GenerateCombinedEmailProposal(List<Approval> approvals, string baseUrl, string? requestor = "")
         {
             var listEmail = new List<EmailApproval>();
-            
+
             var approvalIds = approvals.Select(x => x.Id);
             var approvalGroupsSku = approvals.GroupBy(x => x.SKUId).ToList();
 
@@ -332,36 +335,42 @@ namespace FSAWebSystem.Services
             }
 
             var emailGrps = emails2.GroupBy(x => new { x.Item1, x.Item2 }).ToList();
-            foreach(var emailGroup in emailGrps)
+            foreach (var emailGroup in emailGrps)
             {
                 var emailApproval = new EmailApproval();
                 emailApproval.RecipientEmail = emailGroup.Key.Item1;
                 emailApproval.Requestor = requestor;
                 emailApproval.Subject = $"FSA Approval Request";
                 emailApproval.Body = $"Hi, {emailGroup.Key.Item1}, " +
-                                     $"<br> Please approve Proposal Request: ";
-                                        
+                                     $"<br> Please approve Proposal Request: <br>";
+
+                var typeGrp = emailGroup.GroupBy(x =>  x.Item4 ).ToList();
+                if(typeGrp.Count == 1)
+                {
+                    emailApproval.Body += emailGroup.First().Item4;
+                }
                 foreach (var email in emailGroup)
-                { 
+                {
                     var approval = email.Item3;
-                    emailApproval.ApprovalUrl = baseUrl + "/" + approval.Id;
+                    emailApproval.ApprovalUrl = baseUrl;
                     var banner = await _db.Banners.SingleOrDefaultAsync(x => x.Id == approval.BannerId);
                     var sku = await _db.SKUs.SingleOrDefaultAsync(x => x.Id == approval.SKUId);
-                    emailApproval.Body +=  $"<br><br> {email.Item4} <br> <br> Banner: {banner.BannerName} " +
-                                 $"<br> " +
-                                 $"Plant Code: {banner.PlantCode} " +
-                                 $"<br> " +
-                                 $"Plant Name: {banner.PlantName} " +
+                    var type = string.Empty;
+                    if(typeGrp.Count > 1)
+                    {
+                        type = email.Item4;
+                    }
+                    emailApproval.Body += $"<br> {type} <br> Banner: {banner.BannerName}" +
                                  $"<br> " +
                                  $"PC Code: {sku.PCMap}" +
                                  $"<br>" +
                                  $"Description Map: {sku.DescriptionMap} " +
                                  $"<br>" +
-                                 $"Link: <a href='{HtmlEncoder.Default.Encode(emailApproval.ApprovalUrl)}'>Detail</a> <br> <br>";
+                                 $"Link: <a href='{HtmlEncoder.Default.Encode(emailApproval.ApprovalUrl)}'>Detail</a> <br>";
                 }
                 listEmail.Add(emailApproval);
             }
-           
+
             return listEmail;
         }
 
@@ -405,10 +414,6 @@ namespace FSAWebSystem.Services
                                      $"<br> " +
                                      $"Banner: {banner.BannerName} " +
                                      $"<br> " +
-                                     $"Plant Code: {banner.PlantCode} " +
-                                     $"<br> " +
-                                     $"Plant Name: {banner.PlantName} " +
-                                     $"<br> " +
                                      $"PC Code: {sku.PCMap}" +
                                      $"<br>" +
                                      $"Description Map: {sku.DescriptionMap} <br>" +
@@ -448,75 +453,44 @@ namespace FSAWebSystem.Services
             emailApproval.RecipientEmail = requestorEmail;
             emailApproval.Name = requestorEmail;
             emailApproval.Subject = $"FSA {type} Proposal Request";
-
-            if (approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel)
-            {
-                emailApproval.Body = $"Hi, {requestorEmail}, " +
+            emailApproval.Body = $"Hi, {requestorEmail}, " +
                                      $"<br> " +
                                      $"Your Proposal Request on " +
                                      $"<br> " +
                                      $"Banner: {banner.BannerName} " +
                                      $"<br> " +
-                                     $"Plant Code: {banner.PlantCode} " +
-                                        $"<br> " +
-                                     $"Plant Name: {banner.PlantName} " +
-                                        $"<br> " +
-                                        $"PC Code: {sku.PCMap}" +
-                                        $"<br>" +
-                                        $"Description Map: {sku.DescriptionMap}" +
-                                        $"<br>" +
-                                     $"has been approved by {userApproverEmail} and now waiting for next level approval. <br><br><br> Thank You";
+                                     $"PC Code: {sku.PCMap}" +
+                                     $"<br>" +
+                                     $"Description Map: {sku.DescriptionMap}" +
+                                     $"<br>";
+
+            if (approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel)
+            {
+                emailApproval.Body += $"has been approved by {userApproverEmail} and now waiting for next level approval. <br><br><br> Thank You";
             }
             else if (approval.ApprovalStatus == ApprovalStatus.Rejected)
             {
-                emailApproval.Body = $"Hi, {requestorEmail}, " +
-                                    $"<br><br> " +
-                                    $"Your Proposal Request on " +
-                                    $"<br> " +
-                                    $"Banner: {banner.BannerName} " +
-                                    $"<br> " +
-                                    $"Plant Code: {banner.PlantCode} " +
-                                    $"<br> " +
-                                    $"Plant Name: {banner.PlantName} " +
-                                    $"<br> " +
-                                    $"PC Code: {sku.PCMap} " +
-                                    $"<br>" +
-                                    $"Description Map: {sku.DescriptionMap} " +
-                                    $"<br>" +
-                                    $"has been rejected by {userApproverEmail} because of {approvalNote}. <br><br><br> Thank You";
+                emailApproval.Body += $"has been rejected by {userApproverEmail} because of {approvalNote}. <br><br><br> Thank You";
             }
             else
             {
                 var note = !string.IsNullOrEmpty(approvalNote) ? $"Approval Note: {approvalNote} <br>" : string.Empty;
-                emailApproval.Body = $"Hi, {requestorEmail}, " +
-                                    $"<br> " +
-                                    $"Your Proposal Request on " +
-                                    $"<br> " +
-                                    $"Banner: {banner.BannerName} " +
-                                    $"<br> " +
-                                    $"Plant Code: {banner.PlantCode} " +
-                                    $"<br> " +
-                                    $"Plant Name: {banner.PlantName} " +
-                                    $"<br> " +
-                                    $"PC Code: {sku.PCMap} " +
-                                    $"<br>" +
-                                    $"Description Map: {sku.DescriptionMap} " +
-                                    $"<br>" +
-                                    note +
-                                    $"has been approved by {userApproverEmail}. <br><br><br> Thank You";
+                emailApproval.Body += note +
+                                      $"<br> has been approved by {userApproverEmail}. <br><br><br> Thank You";
             }
 
 
             return emailApproval;
         }
 
-        public async Task<List<EmailApproval>> GenerateCombinedEmailApproval(List<Approval> approvals, string userApproverEmail, string approvalNote){
+        public async Task<List<EmailApproval>> GenerateCombinedEmailApproval(List<Approval> approvals, string userApproverEmail, string approvalNote)
+        {
             var listEmailApproval = new List<EmailApproval>();
             var banners = _db.Banners;
             var skus = _db.SKUs;
             var proposals = _db.Proposals;
             var approvalGroups = approvals.GroupBy(x => new { x.RequestedBy, x.SKUId }).ToList();
-            foreach(var approvalGroup in approvalGroups)
+            foreach (var approvalGroup in approvalGroups)
             {
                 var emailApproval = new EmailApproval();
                 emailApproval.Requestor = approvalGroup.Key.RequestedBy;
@@ -562,60 +536,33 @@ namespace FSAWebSystem.Services
                 type = "Propose Additional";
             }
 
+            body = $"Your Proposal Request on " +
+                   $"<br> " +
+                   $"Banner: {banner.BannerName} " +
+                   $"<br> " +
+                   $"PC Code: {sku.PCMap}" +
+                   $"<br>" +
+                   $"Description Map: {sku.DescriptionMap}" +
+                   $"<br>";
+
             if (approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel)
             {
-                body = $"Your Proposal Request on " +
-                                     $"<br> " +
-                                     $"Banner: {banner.BannerName} " +
-                                     $"<br> " +
-                                     $"Plant Code: {banner.PlantCode} " +
-                                        $"<br> " +
-                                     $"Plant Name: {banner.PlantName} " +
-                                        $"<br> " +
-                                        $"PC Code: {sku.PCMap}" +
-                                        $"<br>" +
-                                        $"Description Map: {sku.DescriptionMap}" +
-                                        $"<br>" +
-                                     $"has been approved by {userApproverEmail} and now waiting for next level approval. <br><br>";
+                body += $"has been approved by {userApproverEmail} and now waiting for next level approval. <br><br>";
             }
             else if (approval.ApprovalStatus == ApprovalStatus.Rejected)
             {
-                body = $"Your Proposal Request on " +
-                                    $"<br> " +
-                                    $"Banner: {banner.BannerName} " +
-                                    $"<br> " +
-                                    $"Plant Code: {banner.PlantCode} " +
-                                    $"<br> " +
-                                    $"Plant Name: {banner.PlantName} " +
-                                    $"<br> " +
-                                    $"PC Code: {sku.PCMap} " +
-                                    $"<br>" +
-                                    $"Description Map: {sku.DescriptionMap} " +
-                                    $"<br>" +
-                                    $"has been rejected by {userApproverEmail} because of {approvalNote}. <br><br>";
+                body += $"has been rejected by {userApproverEmail} because of {approvalNote}. <br><br>";
             }
             else
             {
                 var note = !string.IsNullOrEmpty(approvalNote) ? $"Approval Note: {approvalNote} <br>" : string.Empty;
-                body = $"Your Proposal Request on " +
-                                    $"<br> " +
-                                    $"Banner: {banner.BannerName} " +
-                                    $"<br> " +
-                                    $"Plant Code: {banner.PlantCode} " +
-                                    $"<br> " +
-                                    $"Plant Name: {banner.PlantName} " +
-                                    $"<br> " +
-                                    $"PC Code: {sku.PCMap} " +
-                                    $"<br>" +
-                                    $"Description Map: {sku.DescriptionMap} " +
-                                    $"<br>" +
-                                    note +
-                                    $"has been approved by {userApproverEmail}. <br><br>";
+                body += note +
+                       $"<br> has been approved by {userApproverEmail}. <br><br>";
             }
             return body;
         }
     }
 
- 
+
 }
 

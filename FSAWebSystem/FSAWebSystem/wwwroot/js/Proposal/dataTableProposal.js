@@ -19,7 +19,7 @@
     var month = $('#dropDownMonth option:selected').val();
     var year = $('#dropDownYear option:selected').val();
     let proposalInputs = new Array();
-    let remarks = ["Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year"];
+    let remarks = ["Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year", "Other"];
     //var proposals = getUserInput(proposalInputs);
 
 
@@ -106,7 +106,9 @@
                 "targets": 12,
                 "render": function (data, type, full, meta) {
                     var options = "";
+                    //var remarks2 = ["Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year"];
 
+                        
                     remarks.forEach(function (item) {
                         var remark = item;
                         if (remark == full.remark) {
@@ -115,14 +117,24 @@
                         else {
                             options += `<option>${remark}</option>`
                         }
-                    })
+                    });
 
                     var select = '';
                     if (full.isWaitingApproval) {
+
+                        if (!remarks.includes(full.remark)) {
+                            options += `<option selected>Other</option>`
+                        }                        
+
                         select = `<select class="form-control form-select" style="width:100%" disabled id="row-${meta.row}-remark" name="row-${meta.row}-remark">${options}</select>`;
+                        if (!remarks.includes(full.remark)) {
+
+                            select += `<input type="text" class="form-control mt-2" disabled value="${full.remark}" id="row-${meta.row}-otherRemark" name="row-${meta.row}-otherRemark">`;
+                        }
                     }
                     else {
-                        select = `<select class="form-control form-select" style="width:100%" id="row-${meta.row}-remark" name="row-${meta.row}-remark">${options}</select>`;
+                        select = `<select class="form-control form-select" onChange="remarkChanged(this)" style="width:100%" id="row-${meta.row}-remark" name="row-${meta.row}-remark">${options}</select>
+                                  <input type="text" class="form-control mt-2" style="display:none" id="row-${meta.row}-otherRemark" name="row-${meta.row}-otherRemark">`;
                     }
                     return select;
                 },
@@ -157,6 +169,9 @@
             proposal.Rephase = row.find("TD").eq(10).find("INPUT").val();
             proposal.ProposeAdditional = row.find("TD").eq(11).find("INPUT").val();
             proposal.Remark = row.find("TD").eq(12).find("SELECT").val();
+            if (proposal.Remark == "Other") {
+                proposal.Remark = row.find("TD").eq(12).find("INPUT").val();
+            }
             proposal.BannerName = row.find("TD").eq(0).html();
             proposal.PcMap = row.find("TD").eq(2).html();
             proposal.PlantName = row.find("TD").eq(1).html();
@@ -183,6 +198,8 @@
     $('#dataTableProposal').on('change', 'input', function () {
         $(this).attr('value', $(this).val());
     });
+
+
 
     $('#submitProposalBtn').click(function () {
         let proposals = getUserInput(proposalInputs);
@@ -366,3 +383,17 @@
         }
     });
 });
+
+function remarkChanged(obj) {
+    var index = obj.selectedIndex;
+    var id = obj.id.split('-');
+    var inputRemarkId = '#' + id[0] + '-' + id[1] + '-' + 'otherRemark';
+    if (obj.options[index].text == "Other") {
+        
+        $(`#dataTableProposal ${inputRemarkId}`).show();
+    }
+    else {
+        $(`#dataTableProposal ${inputRemarkId}`).hide();
+    }
+
+}

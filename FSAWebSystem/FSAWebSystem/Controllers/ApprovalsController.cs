@@ -557,7 +557,7 @@ namespace FSAWebSystem.Controllers
                 await _context.SaveChangesAsync();
                 
                 var listEmail = new List<EmailApproval>();
-                var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals");
+                var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Index", "Approvals");
                 var proposalEmails = await _approvalService.GenerateEmailProposal(approval, baseUrl, userRequestor.Email);
                 listEmail.AddRange(proposalEmails);
                 foreach (var email in listEmail)
