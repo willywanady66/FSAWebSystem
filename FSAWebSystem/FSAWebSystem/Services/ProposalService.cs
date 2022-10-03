@@ -24,7 +24,7 @@ namespace FSAWebSystem.Services
 
             var proposals = (from weeklyBucket in _db.WeeklyBuckets
                                  //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id)) on weeklyBucket.BannerId equals banner.Id
-                             join banner in _db.Banners on weeklyBucket.BannerId equals banner.Id
+                             join bannerPlant in _db.BannerPlants.Include(x => x.Plant) on weeklyBucket.BannerId equals bannerPlant.Id
                              join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
                              join proposal in _db.Proposals.Where(x => x.IsWaitingApproval) on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
@@ -33,13 +33,13 @@ namespace FSAWebSystem.Services
                              {
                                  Id = p != null ? p.Id : Guid.Empty,
                                  WeeklyBucketId = weeklyBucket.Id,
-                                 BannerName = banner.BannerName,
-                                 BannerId = banner.Id,
+                                 BannerName = bannerPlant.Banner.BannerName,
+                                 BannerId = bannerPlant.Id,
                                  Month = month,
                                  Week = week,
                                  Year = year,
-                                 PlantCode = banner.PlantCode,
-                                 PlantName = banner.PlantName,
+                                 PlantCode = bannerPlant.Plant.PlantCode,
+                                 PlantName = bannerPlant.Plant.PlantName,
                                  PCMap = sku.PCMap,
                                  DescriptionMap = sku.DescriptionMap,
                                  RatingRate = weeklyBucket.RatingRate,
@@ -95,7 +95,7 @@ namespace FSAWebSystem.Services
 
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
-                proposal2 = proposal2.Where(x => userUnilever.Banners.Select(y => y.Id).Contains(x.BannerId));
+                proposal2 = proposal2.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BannerId));
                 proposal2 = proposal2.Where(x => x.SubmittedBy == userUnilever.Id || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
             }
 
@@ -171,14 +171,14 @@ namespace FSAWebSystem.Services
             var proposalHistories = (from proposalHistory in _db.ProposalHistories
                                      join sku in _db.SKUs.Where(x => x.IsActive) on proposalHistory.SKUId equals sku.Id
                                      //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id) && x.IsActive) on proposalHistory.BannerId equals banner.Id
-                                     join banner in _db.Banners on proposalHistory.BannerId equals banner.Id
+                                     join banner in _db.BannerPlants.Include(x => x.Plant).Include(x => x.Banner) on proposalHistory.BannerId equals banner.Id
                                      join approval in _db.Approvals on proposalHistory.ApprovalId equals approval.Id
                                      where proposalHistory.Month == month && proposalHistory.Year == year
                                      select new ProposalHistory
                                      {
                                          BannerId = banner.Id,
                                          Week = proposalHistory.Week,
-                                         BannerName = banner.BannerName,
+                                         BannerName = banner.Banner.BannerName,
                                          PlantName = banner.PlantName,
                                          PCMap = sku.PCMap,
                                          DescriptionMap = sku.DescriptionMap,
@@ -308,7 +308,7 @@ namespace FSAWebSystem.Services
         {
 
             var data = (from weeklyBucket in _db.WeeklyBuckets
-                        join banner in _db.Banners.Include(x => x.UserUnilevers).Where(y => y.UserUnilevers.Any(z => z.Id == user.Id)) on weeklyBucket.BannerId equals banner.Id
+                        join bannerPlant in _db.BannerPlants.Include(x => x.UserUnilevers).Include(x => x.Plant).Where(y => y.UserUnilevers.Any(z => z.Id == user.Id)) on weeklyBucket.BannerId equals bannerPlant.Id
                         join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
                         join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
                         from p in proposalGroups.DefaultIfEmpty()
@@ -316,11 +316,11 @@ namespace FSAWebSystem.Services
                         select new ProposalExcelModel
                         {
                             Month = month,
-                            KAM = banner.KAM,
-                            CDM = banner.CDM,
-                            BannerName = banner.BannerName,
-                            PlantCode = banner.PlantCode,
-                            PlantName = banner.PlantName,
+                            KAM = bannerPlant.KAM,
+                            CDM = bannerPlant.CDM,
+                            BannerName = bannerPlant.Banner.BannerName,
+                            PlantCode = bannerPlant.Plant.PlantCode,
+                            PlantName = bannerPlant.Plant.PlantName,
                             PCMap = sku.PCMap,
                             DescriptionMap = sku.DescriptionMap,
                             MonthlyBucket = weeklyBucket.MonthlyBucket,

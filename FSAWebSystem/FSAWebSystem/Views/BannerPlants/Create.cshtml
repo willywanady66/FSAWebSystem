@@ -1,40 +1,39 @@
-﻿@model FSAWebSystem.Models.Banner
+﻿@model FSAWebSystem.Models.BannerPlant
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Create";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Edit</h1>
+<h1>Create</h1>
 
 <h4>Banner</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
             <div class="form-group">
                 <label asp-for="Trade" class="control-label"></label>
                 <input asp-for="Trade" class="form-control" />
                 <span asp-validation-for="Trade" class="text-danger"></span>
             </div>
-            <div class="form-group">
+             <div class="form-group">
                 <label asp-for="CDM" class="control-label"></label>
                 <input asp-for="CDM" class="form-control" />
                 <span asp-validation-for="CDM" class="text-danger"></span>
             </div>
-            <div class="form-group">
+             <div class="form-group">
                 <label asp-for="KAM" class="control-label"></label>
                 <input asp-for="KAM" class="form-control" />
                 <span asp-validation-for="KAM" class="text-danger"></span>
             </div>
-            <div class="form-group">
+@*            <div class="form-group">
                 <label asp-for="BannerName" class="control-label"></label>
                 <input asp-for="BannerName" class="form-control" />
-                <span asp-validation-for="BannerName" class="text-danger readonly"></span>
-            </div>
-            <div class="form-group">
+                <span asp-validation-for="BannerName" class="text-danger"></span>
+            </div>*@
+@*            <div class="form-group">
                 <label asp-for="PlantName" class="control-label"></label>
                 <input asp-for="PlantName" class="form-control" />
                 <span asp-validation-for="PlantName" class="text-danger"></span>
@@ -42,16 +41,16 @@
             <div class="form-group">
                 <label asp-for="PlantCode" class="control-label"></label>
                 <input asp-for="PlantCode" class="form-control" />
-                <span asp-validation-for="PlantCode" class="text-danger" readonly></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
-                </label>
-            </div>
+                <span asp-validation-for="PlantCode" class="text-danger"></span>
+            </div>*@
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

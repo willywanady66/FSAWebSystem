@@ -33,13 +33,13 @@ namespace FSAWebSystem.Controllers
         private readonly IUserService _userService;
         private readonly INotyfService _notyfService;
         private readonly IApprovalService _approvalService;
-        private readonly IBannerService _bannerService;
+        private readonly IBannerPlantService _bannerPlantService;
         private readonly ISKUService _skuService;
         private readonly IEmailService _emailService;
         private readonly UserManager<FSAWebSystemUser> _userManager;
 
         public ProposalsController(FSAWebSystemDbContext db, IProposalService proposalService, IBucketService bucketService, ICalendarService calendarService, UserManager<FSAWebSystemUser> userManager, IUserService userService, INotyfService notyfService,
-            IBannerService bannerService, IApprovalService approvalService, ISKUService skuService, IEmailService emailService)
+            IBannerPlantService bannerService, IApprovalService approvalService, ISKUService skuService, IEmailService emailService)
         {
             _db = db;
             _proposalService = proposalService;
@@ -49,7 +49,7 @@ namespace FSAWebSystem.Controllers
             _userService = userService;
             _notyfService = notyfService;
             _approvalService = approvalService;
-            _bannerService = bannerService;
+            _bannerPlantService = bannerService;
             _skuService = skuService;
             _emailService = emailService;
         }
@@ -212,7 +212,7 @@ namespace FSAWebSystem.Controllers
             {
                 try
                 {
-                    var banners = _bannerService.GetAllActiveBanner();  
+                    var banners = _bannerPlantService.GetAllActiveBannerPlant();  
                     var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
 
 
@@ -304,7 +304,7 @@ namespace FSAWebSystem.Controllers
                   
 
                             
-                        var banner = await _bannerService.GetBanner(Guid.Parse(proposalInput.bannerId));
+                        var banner = await _bannerPlantService.GetBannerPlant(Guid.Parse(proposalInput.bannerId));
                         var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
 
                         
@@ -378,14 +378,14 @@ namespace FSAWebSystem.Controllers
 
             return proposal;
         }
-        public async Task<WeeklyBucket> GetWeeklyBucketTarget(IQueryable<Banner> banners, IQueryable<SKU> skus, decimal proposeAdditional, Guid weeklyBucketId, Proposal proposal, int month, int year)
+        public async Task<WeeklyBucket> GetWeeklyBucketTarget(IQueryable<BannerPlant> bannerPlants, IQueryable<SKU> skus, decimal proposeAdditional, Guid weeklyBucketId, Proposal proposal, int month, int year)
         {
             var i = 0;
             var bucketTargetIds = new List<Guid>();
             var weeklyBucketTarget = new WeeklyBucket();
             var weeklyBucket = await _bucketService.GetWeeklyBucket(weeklyBucketId);
             var sku = await skus.SingleAsync(x => x.Id == weeklyBucket.SKUId);
-            var banner = await banners.SingleAsync(x => x.Id == weeklyBucket.BannerId);
+            var banner = await bannerPlants.SingleAsync(x => x.Id == weeklyBucket.BannerId);
 
             while (i != 3)
             {
@@ -394,13 +394,13 @@ namespace FSAWebSystem.Controllers
                 {
                     //REALLOCATE ACROSS KAM
                     case 0:
-                        bucketTargetIds = await banners.Where(x => x.KAM == banner.KAM && x.CDM == banner.CDM).Select(x => x.Id).ToListAsync();
+                        bucketTargetIds = await bannerPlants.Where(x => x.KAM == banner.KAM && x.CDM == banner.CDM).Select(x => x.Id).ToListAsync();
                         weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id && x.Month == month && x.Year == year);
                         proposal.Type = ProposalType.ReallocateAcrossKAM;
                         break;
                     //REALLOCATE ACROSS CDM
                     case 1:
-                        bucketTargetIds = await banners.Where(x => x.CDM == banner.CDM).Select(x => x.Id).ToListAsync();
+                        bucketTargetIds = await bannerPlants.Where(x => x.CDM == banner.CDM).Select(x => x.Id).ToListAsync();
                         weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerId) && x.SKUId == sku.Id);
                         proposal.Type = ProposalType.ReallocateAcrossCDM;
                         break;
@@ -444,7 +444,7 @@ namespace FSAWebSystem.Controllers
             return weeklyBucketTarget;
         }
 
-        public async Task<Proposal> CreateProposalProposeAdditional(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId, Guid approvalId, IQueryable<Banner> banners, IQueryable<SKU> skus)
+        public async Task<Proposal> CreateProposalProposeAdditional(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId, Guid approvalId, IQueryable<BannerPlant> bannerPlants, IQueryable<SKU> skus)
         {
 
             var listProposalDetail = new List<ProposalDetail>();
@@ -455,7 +455,7 @@ namespace FSAWebSystem.Controllers
 
             var weeklyBucketTarget = new WeeklyBucket();
 
-            weeklyBucketTarget = await GetWeeklyBucketTarget(banners, skus, proposeAdditional, weeklyBucketId, proposal, fsaDetail.Month, fsaDetail.Year);
+            weeklyBucketTarget = await GetWeeklyBucketTarget(bannerPlants, skus, proposeAdditional, weeklyBucketId, proposal, fsaDetail.Month, fsaDetail.Year);
 
             var proposalDetailTarget = new ProposalDetail();
 

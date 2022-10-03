@@ -29,10 +29,10 @@ namespace FSAWebSystem.Controllers
         private readonly INotyfService _notyfService;
         private readonly IUserService _userService;
         private readonly IEmailService _emailService; 
-        private readonly IBannerService _bannerService;
+        private readonly IBannerPlantService _bannerPlantService;
         private readonly ISKUService _skuService;
         
-        public ApprovalsController(FSAWebSystemDbContext context, IApprovalService approvalService, IProposalService proposalService, IBucketService bucketService, INotyfService notyfService, UserManager<FSAWebSystemUser> userManager, IUserService userService, IEmailService emailService, IBannerService bannerService, ISKUService skuService)
+        public ApprovalsController(FSAWebSystemDbContext context, IApprovalService approvalService, IProposalService proposalService, IBucketService bucketService, INotyfService notyfService, UserManager<FSAWebSystemUser> userManager, IUserService userService, IEmailService emailService, IBannerPlantService bannerService, ISKUService skuService)
         {
             _context = context;
             _approvalService = approvalService;
@@ -42,7 +42,7 @@ namespace FSAWebSystem.Controllers
             _userManager = userManager;
             _userService = userService;
             _emailService = emailService;
-            _bannerService = bannerService;
+            _bannerPlantService = bannerService;
             _skuService = skuService;
         }
 
@@ -379,7 +379,7 @@ namespace FSAWebSystem.Controllers
                 var approval = await _approvalService.GetApprovalById(approvalId);
                 var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
-                //var banner = await _bannerService.GetBanner(weeklyBucket.BannerId);
+                //var banner = await _bannerPlantService.GetBannerPlant(weeklyBucket.BannerId);
                 //var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
                 var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
                 approval.ApprovedAt = currDate;
@@ -580,7 +580,7 @@ namespace FSAWebSystem.Controllers
             var weeklyBucketTarget = new WeeklyBucket();
             var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
             var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
-            var banners = _bannerService.GetAllActiveBanner();
+            var banners = _bannerPlantService.GetAllActiveBannerPlant();
             var weeklyBuckets = _bucketService.GetWeeklyBuckets();
             var banner = await banners.SingleOrDefaultAsync(x => x.Id == weeklyBucket.BannerId);
             var currentBucketTargetId = proposal.ProposalDetails.Single(x=> x.ProposeAdditional < 0).WeeklyBucketId;

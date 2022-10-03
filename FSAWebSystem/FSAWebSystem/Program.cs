@@ -37,6 +37,7 @@ builder.Services.AddScoped<IApprovalService, ApprovalService>();
 builder.Services.AddScoped<IUploadDocumentService, UploadDocumentService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IBannerPlantService, BannerPlantService>();
 builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISKUService, SKUService>();

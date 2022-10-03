@@ -17,18 +17,20 @@ namespace FSAWebSystem.Controllers
     {
         private readonly FSAWebSystemDbContext _db;
         private IUserService _userService;
-        private IBannerService _bannerService;
+        private IBannerPlantService _bannerPlantService;
         private IRoleService _roleServices;
         private ISKUService _skuService;
         private ICalendarService _calendarService;
-        public AdminController(FSAWebSystemDbContext db, IUserService userSvc, IBannerService bannerSvc, IRoleService roleSvc, ISKUService skuService, ICalendarService calendarService)
+        private IBannerService _bannerService;
+        public AdminController(FSAWebSystemDbContext db, IUserService userSvc, IBannerPlantService bannerSvc, IRoleService roleSvc, ISKUService skuService, ICalendarService calendarService, IBannerService bannerService)
         {
             _db = db;
             _userService = userSvc;
-            _bannerService = bannerSvc;
+            _bannerPlantService = bannerSvc;
             _roleServices = roleSvc;
             _skuService = skuService;
             _calendarService = calendarService;
+            _bannerService = bannerService;
         }
 
         [Authorize(Policy = "AdminPage")]
@@ -142,18 +144,18 @@ namespace FSAWebSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> GetUserPagination(DataTableParam param)
         {
-            List<Banner> listBanners = await _bannerService.GetAllBanner().ToListAsync();
+            List<BannerPlant> listBanners = await _bannerPlantService.GetAllBannerPlant().ToListAsync();
             var data = await _userService.GetAllUsersPagination(param);
 
             foreach (var user in data.userUnilevers)
             {
-                if (user.Banners.Where(x => x.IsActive).Count() == listBanners.Where(x => x.IsActive).Count() && user.Banners.Count>1)
+                if (user.BannerPlants.Where(x => x.IsActive).Count() == listBanners.Where(x => x.IsActive).Count() && user.BannerPlants.Count>1)
                 {
                     user.BannerName = "All Banners";
                 }
                 else
                 {
-                    user.BannerName = String.Join(", ", user.Banners.Select(x => x.BannerName));
+                    user.BannerName = String.Join(", ", user.BannerPlants.Select(x => x.Banner.BannerName));
                 }
             }
             var listData = Json(new
@@ -168,16 +170,44 @@ namespace FSAWebSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetBannerPagination(DataTableParam param)
+        public async Task<IActionResult> GetBannerPlantPagination(DataTableParam param)
         {
 
-            var data = await _bannerService.GetBannerPagination(param);
+            var data = await _bannerPlantService.GetBannerPlantPagination(param);
+            var listData = Json(new
+            {
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.bannerPlants
+            });
+            return listData;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetBannersPagination(DataTableParam param)
+        {
+            var data = await _bannerService.GetBannersPagination(param);
             var listData = Json(new
             {
                 draw = param.draw,
                 recordsTotal = data.totalRecord,
                 recordsFiltered = data.totalRecord,
                 data = data.banners
+            });
+            return listData;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetPlantsPagination(DataTableParam param)
+        {
+            var data = await _bannerService.GetPlantsPagination(param);
+            var listData = Json(new
+            {
+                draw = param.draw,
+                recordsTotal = data.totalRecord,
+                recordsFiltered = data.totalRecord,
+                data = data.plants
             });
             return listData;
         }
@@ -279,7 +309,8 @@ namespace FSAWebSystem.Controllers
         public class AdminModel
         {
             public List<UserUnilever> Users { get; set; }
-            public List<Banner> Banners { get; set; }
+            //public List<Banner> Banners { get; set; }
+            public List<BannerPlant> BannerPlants { get; set; }
             public List<SKU> SKUs { get; set; }
             public List<RoleUnilever> Roles { get; set; }
             public List<ProductCategory> Categories { get; set; }

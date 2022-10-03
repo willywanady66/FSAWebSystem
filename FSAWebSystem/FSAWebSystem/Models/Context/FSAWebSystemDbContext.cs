@@ -25,7 +25,7 @@ namespace FSAWebSystem.Models.Context
                 .Property(x => x.IsActive)
                 .HasDefaultValue(true);
 
-            builder.Entity<Banner>()
+            builder.Entity<BannerPlant>()
                 .Property(x => x.IsActive)
                 .HasDefaultValue(true);
 
@@ -40,6 +40,8 @@ namespace FSAWebSystem.Models.Context
 
         public DbSet<UserUnilever> UsersUnilever { get; set; }
         public DbSet<Banner> Banners { get; set; }
+        public DbSet<Plant> Plants { get; set; }
+        public DbSet<BannerPlant> BannerPlants { get; set; }
         public DbSet<SKU> SKUs { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<RoleUnilever> RoleUnilevers { get; set; }

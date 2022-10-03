@@ -31,14 +31,14 @@ namespace FSAWebSystem.Services
         {
 
 
-            var banners = _db.Banners.Include(x => x.UserUnilevers).AsQueryable();
+            var bannerPlants = _db.BannerPlants.Include(x => x.UserUnilevers).Include(x => x.Banner).Include(x => x.Plant).AsQueryable();
             var skus = _db.SKUs.Include(x => x.ProductCategory).AsQueryable();
             var workLevel = user.WLName;
 
 
             if (workLevel == "KAM WL 2")
             {
-                banners = banners.Where(x => x.UserUnilevers.Any(y => y.Id == user.Id)).AsQueryable();
+                bannerPlants = bannerPlants.Where(x => x.UserUnilevers.Any(y => y.Id == user.Id)).AsQueryable();
             }
 
             var approvals = _db.Approvals.AsQueryable();
@@ -48,15 +48,15 @@ namespace FSAWebSystem.Services
                 approvals = (from approval in _db.Approvals
                              join proposal in (from proposal in _db.Proposals
                                                join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
-                                                                     join banner in banners on weeklyBucket.BannerId equals banner.Id
+                                                                     join bannerPlant in bannerPlants on weeklyBucket.BannerId equals bannerPlant.Id
                                                                      join sku in skus.Include(x => x.ProductCategory).ThenInclude(cat => cat.UserUnilevers)
                                                                                      .Include(x => x.UserUnilevers).Where(y => y.UserUnilevers.Any(z => z.Id == user.Id) || y.ProductCategory.UserUnilevers.Any(u => u.Id == user.Id)) on weeklyBucket.SKUId equals sku.Id
                                                                      select new WeeklyBucket
                                                                      {
                                                                          Id = weeklyBucket.Id,
                                                                          ProductCategoryId = sku.ProductCategory.Id,
-                                                                         BannerName = banner.BannerName,
-                                                                         PlantName = banner.PlantName,
+                                                                         BannerName = bannerPlant.Banner.BannerName,
+                                                                         PlantName = bannerPlant.Plant.PlantName,
                                                                          PCMap = sku.PCMap,
                                                                          DescriptionMap = sku.DescriptionMap,
                                                                      }) on proposal.WeeklyBucketId equals weeklyBucket.Id
@@ -99,14 +99,14 @@ namespace FSAWebSystem.Services
                 approvals = (from approval in _db.Approvals
                              join proposal in (from proposal in _db.Proposals
                                                join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
-                                                                     join banner in banners on weeklyBucket.BannerId equals banner.Id
+                                                                     join bannerPlant in bannerPlants on weeklyBucket.BannerId equals bannerPlant.Id
                                                                      join sku in skus on weeklyBucket.SKUId equals sku.Id
                                                                      select new WeeklyBucket
                                                                      {
                                                                          Id = weeklyBucket.Id,
                                                                          ProductCategoryId = sku.ProductCategory.Id,
-                                                                         BannerName = banner.BannerName,
-                                                                         PlantName = banner.PlantName,
+                                                                         BannerName = bannerPlant.Banner.BannerName,
+                                                                         PlantName = bannerPlant.Plant.PlantName,
                                                                          PCMap = sku.PCMap,
                                                                          DescriptionMap = sku.DescriptionMap,
                                                                      }) on proposal.WeeklyBucketId equals weeklyBucket.Id
@@ -202,12 +202,12 @@ namespace FSAWebSystem.Services
                 {
                     var approvalDetail = new ApprovalDetail();
                     var weeklyBucket = await _db.WeeklyBuckets.SingleAsync(x => x.Id == detail.WeeklyBucketId);
-                    var banner = await _db.Banners.SingleAsync(x => x.Id == weeklyBucket.BannerId);
+                    var bannerPlant = await _db.BannerPlants.SingleAsync(x => x.Id == weeklyBucket.BannerId);
                     var sku = await _db.SKUs.SingleAsync(x => x.Id == weeklyBucket.SKUId);
-                    approvalDetail.BannerName = banner.BannerName;
-                    approvalDetail.PlantName = banner.PlantName;
-                    approvalDetail.CDM = banner.CDM;
-                    approvalDetail.KAM = banner.KAM;
+                    approvalDetail.BannerName = bannerPlant.Banner.BannerName;
+                    approvalDetail.PlantName = bannerPlant.PlantName;
+                    approvalDetail.CDM = bannerPlant.CDM;
+                    approvalDetail.KAM = bannerPlant.KAM;
                     approvalDetail.PCMap = sku.PCMap;
                     approvalDetail.DescriptionMap = sku.DescriptionMap;
                     approvalDetail.MonthlyBucket = weeklyBucket.MonthlyBucket;
@@ -286,10 +286,10 @@ namespace FSAWebSystem.Services
         public async Task<List<Tuple<string, Guid, Approval, string>>> GetRecipientEmail(Approval approval)
         {
             var worklevel = await _db.WorkLevels.SingleAsync(x => x.WL == approval.ApproverWL);
-            var users = await _db.UsersUnilever.Include(x => x.Banners).Where(x => x.WLId == worklevel.Id).ToListAsync();
+            var users = await _db.UsersUnilever.Include(x => x.BannerPlants).Where(x => x.WLId == worklevel.Id).ToListAsync();
             if (approval.ApproverWL == "KAM WL 2")
             {
-                users = users.Where(x => x.Banners.Select(x => x.Id).Contains(approval.BannerId)).ToList();
+                users = users.Where(x => x.BannerPlants.Select(x => x.Id).Contains(approval.BannerId)).ToList();
             }
 
 
@@ -353,14 +353,14 @@ namespace FSAWebSystem.Services
                 {
                     var approval = email.Item3;
                     emailApproval.ApprovalUrl = baseUrl;
-                    var banner = await _db.Banners.SingleOrDefaultAsync(x => x.Id == approval.BannerId);
+                    var banner = await _db.BannerPlants.Include(x => x.Banner).SingleOrDefaultAsync(x => x.Id == approval.BannerId);
                     var sku = await _db.SKUs.SingleOrDefaultAsync(x => x.Id == approval.SKUId);
                     var type = string.Empty;
                     if(typeGrp.Count > 1)
                     {
                         type = email.Item4;
                     }
-                    emailApproval.Body += $"<br> {type} <br> Banner: {banner.BannerName}" +
+                    emailApproval.Body += $"<br> {type} <br> Banner: {banner.Banner.BannerName}" +
                                  $"<br> " +
                                  $"PC Code: {sku.PCMap}" +
                                  $"<br>" +
@@ -401,7 +401,7 @@ namespace FSAWebSystem.Services
             }
             foreach (var email in emails)
             {
-                var banner = _db.Banners.Single(x => x.Id == approval.BannerId);
+                var banner = _db.BannerPlants.Include(x => x.Banner).Single(x => x.Id == approval.BannerId);
                 var sku = _db.SKUs.Single(x => x.Id == approval.SKUId);
                 var emailApproval = new EmailApproval();
                 emailApproval.RecipientEmail = email.Item1;
@@ -412,7 +412,7 @@ namespace FSAWebSystem.Services
                 emailApproval.Body = $"Hi, {emailApproval.RecipientEmail}, " +
                                      $"<br> Please approve {type} Proposal Request: " +
                                      $"<br> " +
-                                     $"Banner: {banner.BannerName} " +
+                                     $"Banner: {banner.Banner.BannerName} " +
                                      $"<br> " +
                                      $"PC Code: {sku.PCMap}" +
                                      $"<br>" +
@@ -424,7 +424,7 @@ namespace FSAWebSystem.Services
             return listEmail;
         }
 
-        public async Task<EmailApproval> GenerateEmailApproval(Approval approval, string userApproverEmail, string requestorEmail, string approvalNote, Banner banner, SKU sku)
+        public async Task<EmailApproval> GenerateEmailApproval(Approval approval, string userApproverEmail, string requestorEmail, string approvalNote, BannerPlant bannerPlant, SKU sku)
         {
             var emailApproval = new EmailApproval();
             var type = string.Empty;
@@ -457,7 +457,7 @@ namespace FSAWebSystem.Services
                                      $"<br> " +
                                      $"Your Proposal Request on " +
                                      $"<br> " +
-                                     $"Banner: {banner.BannerName} " +
+                                     $"Banner: {bannerPlant.Banner.BannerName} " +
                                      $"<br> " +
                                      $"PC Code: {sku.PCMap}" +
                                      $"<br>" +
@@ -486,7 +486,7 @@ namespace FSAWebSystem.Services
         public async Task<List<EmailApproval>> GenerateCombinedEmailApproval(List<Approval> approvals, string userApproverEmail, string approvalNote)
         {
             var listEmailApproval = new List<EmailApproval>();
-            var banners = _db.Banners;
+            var bannerPlants = _db.BannerPlants;
             var skus = _db.SKUs;
             var proposals = _db.Proposals;
             var approvalGroups = approvals.GroupBy(x => new { x.RequestedBy, x.SKUId }).ToList();
@@ -501,8 +501,8 @@ namespace FSAWebSystem.Services
                 {
                     var type = string.Empty;
                     var sku = skus.SingleOrDefault(x => x.Id == approval.SKUId);
-                    var banner = banners.SingleOrDefault(x => x.Id == approval.BannerId);
-                    var emailBody = GenerateApprovalEmailBody(approval, approval.ProposalType, userApproverEmail, approvalNote, banner, sku);
+                    var bannerPlant = bannerPlants.SingleOrDefault(x => x.Id == approval.BannerId);
+                    var emailBody = GenerateApprovalEmailBody(approval, approval.ProposalType, userApproverEmail, approvalNote, bannerPlant, sku);
                     emailApproval.Body += emailBody;
                 }
                 emailApproval.Body += "<br> Thank You.";
@@ -511,7 +511,7 @@ namespace FSAWebSystem.Services
             return listEmailApproval;
         }
 
-        public string GenerateApprovalEmailBody(Approval approval, ProposalType proposalType, string userApproverEmail, string approvalNote, Banner banner, SKU sku)
+        public string GenerateApprovalEmailBody(Approval approval, ProposalType proposalType, string userApproverEmail, string approvalNote, BannerPlant bannerPlant, SKU sku)
         {
             var body = string.Empty;
             var type = string.Empty;
@@ -538,7 +538,7 @@ namespace FSAWebSystem.Services
 
             body = $"Your Proposal Request on " +
                    $"<br> " +
-                   $"Banner: {banner.BannerName} " +
+                   $"Banner: {bannerPlant.Banner.BannerName} " +
                    $"<br> " +
                    $"PC Code: {sku.PCMap}" +
                    $"<br>" +

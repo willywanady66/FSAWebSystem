@@ -16,7 +16,7 @@ namespace FSAWebSystem.Services.Interface
         public Task SaveUsers(List<UserUnilever> users);    
         public Task<UserUnilever> Update(UserUnilever user, string loggedUser);
 
-        public Task<List<Banner>> GetUserBanners (Guid id);
+        public Task<List<BannerPlant>> GetUserBanners (Guid id);
 
         public Task<UserUnilever> CreateUser(string name, string email, string password, string[] bannerIds, string roleId, string worklevelId, string loggedUser, IUserStore<FSAWebSystemUser> userStore, IUserEmailStore<FSAWebSystemUser> _emailStore, string[] skuIds, string[] categoryIds);
         public IQueryable<WorkLevel> GetAllWorkLevel();

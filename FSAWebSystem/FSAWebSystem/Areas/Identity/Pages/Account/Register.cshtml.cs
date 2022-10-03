@@ -38,7 +38,7 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly FSAWebSystemDbContext _db;
-        private readonly IBannerService _bannerService;
+        private readonly IBannerPlantService _bannerPlantService;
         private readonly IRoleService _roleService;
         private readonly IUserService _userService;
         private readonly INotyfService _notyfService;
@@ -49,7 +49,7 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             SignInManager<FSAWebSystemUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            FSAWebSystemDbContext db, IBannerService bannerService, IRoleService roleService, IUserService userService, INotyfService notyfService, ISKUService skuService)
+            FSAWebSystemDbContext db, IBannerPlantService bannerService, IRoleService roleService, IUserService userService, INotyfService notyfService, ISKUService skuService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -58,7 +58,7 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _db = db;
-            _bannerService = bannerService;
+            _bannerPlantService = bannerService;
             _roleService = roleService;
             _userService = userService;
             _notyfService = notyfService;
@@ -124,7 +124,7 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
 
 
             public string Roles { get; set; }
-            public List<Banner> Banners { get; set; }
+            public List<BannerPlant> Banners { get; set; }
             public List<SelectListItem> ListBanners { get; set; }
             [BindProperty]
             public string[] SelectedId { get; set; }
@@ -197,7 +197,7 @@ namespace FSAWebSystem.Areas.Identity.Pages.Account
 
         private async Task FillDropdowns(ViewDataDictionary viewData)
         {
-            await _bannerService.FillBannerDropdown(viewData);
+            await _bannerPlantService.FillBannerPlantDropdown(viewData);
             await _roleService.FillRoleDropdown(viewData);
             await _userService.FillWorkLevelDropdown(viewData);
             await _skuService.FillSKUDropdown(viewData);

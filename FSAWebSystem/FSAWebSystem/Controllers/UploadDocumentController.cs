@@ -30,7 +30,7 @@ namespace FSAWebSystem.Controllers
     {
 
         public ISKUService _skuService;
-        public IBannerService _bannerService;
+        public IBannerPlantService _bannerPlantService;
         public IUploadDocumentService _uploadDocService;
         public IRoleService _roleService;
         public IUserService _userService;
@@ -39,12 +39,12 @@ namespace FSAWebSystem.Controllers
         private readonly FSAWebSystemDbContext _db;
         private readonly INotyfService _notyfService;
         private readonly ICalendarService _calendarService;
-        public UploadDocumentController(ISKUService skuService, IBannerService bannerService, IUploadDocumentService uploadDocService, IRoleService roleService, IUserService userService, IBucketService bucketService,
+        public UploadDocumentController(ISKUService skuService, IBannerPlantService bannerService, IUploadDocumentService uploadDocService, IRoleService roleService, IUserService userService, IBucketService bucketService,
             UserManager<FSAWebSystemUser> userManager, FSAWebSystemDbContext db, INotyfService notyfService, ICalendarService calendarService)
         {
             _db = db;
             _skuService = skuService;
-            _bannerService = bannerService;
+            _bannerPlantService = bannerService;
             _uploadDocService = uploadDocService;
             _notyfService = notyfService;
             _roleService = roleService;
@@ -461,17 +461,17 @@ namespace FSAWebSystem.Controllers
 
                 var savedWorkLevels = _userService.GetAllWorkLevel() as IEnumerable<WorkLevel>;
 
-                var savedBanners = _bannerService.GetAllActiveBanner();
+                var savedBanners = _bannerPlantService.GetAllActiveBannerPlant();
                 var groupUser = listUser.GroupBy(x => x.Email);
                 foreach (var group in groupUser)
                 {
                     var savedUser = await _userService.GetUserByEmail(group.Key);
-                    List<Banner> banners = new List<Banner>();
+                    List<BannerPlant> bannerPlants = new List<BannerPlant>();
                     var savedUserLogin = await _userManager.FindByEmailAsync(group.First().Email);
                     foreach (var user in group)
                     {
-                        var userBanner = savedBanners.Single(x => x.BannerName == user.BannerName && x.PlantCode == user.PlantCode);
-                        banners.Add(userBanner);
+                        var userBanner = savedBanners.Single(x => x.Banner.BannerName == user.BannerName && x.Plant.PlantCode == user.PlantCode);
+                        bannerPlants.Add(userBanner);
                     }
                     var userRole = await _roleService.GetRoleByName(group.First().Role);
                     var workLevelId = savedWorkLevels.Single(x => x.WL == group.First().WLName).Id;
@@ -484,7 +484,7 @@ namespace FSAWebSystem.Controllers
                         newUser.Name = group.First().Name;
                         newUser.RoleUnilever = userRole;
                         newUser.WLId = workLevelId;
-                        newUser.Banners = banners;
+                        newUser.BannerPlants = bannerPlants;
                         newUser.IsActive = true;
                         newUser.FSADocumentId = fSADocument.Id;
                         newUser.CreatedAt = DateTime.Now;
@@ -500,7 +500,7 @@ namespace FSAWebSystem.Controllers
                         savedUser.ModifiedBy = loggedUser;
                         savedUser.FSADocumentId = fSADocument.Id;
                         savedUser.WLId = workLevelId;
-                        savedUser.Banners = banners;
+                        savedUser.BannerPlants = bannerPlants;
                         savedUser.Password = group.First().Password;
                         savedUserLogin.Role = userRole.RoleName;
 
@@ -639,7 +639,7 @@ namespace FSAWebSystem.Controllers
         {
             List<MonthlyBucket> listMonthlyBucket = new List<MonthlyBucket>();
 
-            IQueryable<Banner> banners = _bannerService.GetAllBanner();
+            IQueryable<BannerPlant> bannerPlants = _bannerPlantService.GetAllBannerPlant();
             IQueryable<SKU> skus = _skuService.GetAllProducts();
             //List<ProductCategory> categories = _skuService.GetAllProductCategories().ToList();
 
@@ -688,7 +688,7 @@ namespace FSAWebSystem.Controllers
                 foreach (var monthlyBucket in listMonthlyBucket)
                 {
                     var sku = skus.Single(x => x.PCMap == monthlyBucket.PCMap);
-                    var banner = banners.Single(x => x.BannerName == monthlyBucket.BannerName && x.PlantCode == monthlyBucket.PlantCode);
+                    var banner = bannerPlants.Single(x => x.Banner.BannerName == monthlyBucket.BannerName && x.Plant.PlantCode == monthlyBucket.PlantCode);
 
                     monthlyBucket.SKUId = sku.Id;
                     monthlyBucket.BannerId = banner.Id;
@@ -701,62 +701,62 @@ namespace FSAWebSystem.Controllers
 
         private async Task SaveBanners(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
         {
-            List<Banner> banners = new List<Banner>();
-            FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
-            foreach (DataRow dr in dt.Rows)
-            {
-                var banner = new Banner
-                {
-                    Id = Guid.NewGuid(),
-                    Trade = dr["Trade"].ToString(),
-                    CDM = dr["CDM"].ToString(),
-                    KAM = dr["KAM"].ToString(),
-                    BannerName = dr["Banner Name"].ToString(),
-                    PlantCode = dr["Plant Code"].ToString(),
-                    PlantName = dr["Plant Name"].ToString(),
-                    CreatedAt = DateTime.Now,
-                    CreatedBy = loggedUser,
-                    FSADocumentId = fsaDoc.Id
-                };
+            //List<BannerPlant> bannerPlants = new List<BannerPlant>();
+            //FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
+            //foreach (DataRow dr in dt.Rows)
+            //{
+            //    var bannerPlant = new BannerPlant
+            //    {
+            //        Id = Guid.NewGuid(),
+            //        Trade = dr["Trade"].ToString(),
+            //        CDM = dr["CDM"].ToString(),
+            //        KAM = dr["KAM"].ToString(),
+            //        BannerName = dr["Banner Name"].ToString(),
+            //        PlantCode = dr["Plant Code"].ToString(),
+            //        PlantName = dr["Plant Name"].ToString(),
+            //        CreatedAt = DateTime.Now,
+            //        CreatedBy = loggedUser,
+            //        FSADocumentId = fsaDoc.Id
+            //    };
 
-                banners.Add(banner);
-            }
-            ValidateBannerExcel(banners, errorMessages);
+            //    bannerPlants.Add(bannerPlant);
+            //}
+            //ValidateBannerExcel(bannerPlants, errorMessages);
 
-            if (!errorMessages.Any())
-            {
-                var savedBanners = _bannerService.GetAllBanner().Where(x => x.IsActive);
-                var bannersToAdd = new List<Banner>();
+            //if (!errorMessages.Any())
+            //{
+            //    var savedBanners = _bannerPlantService.GetAllBannerPlant().Where(x => x.IsActive);
+            //    var bannersToAdd = new List<BannerPlant>();
 
-                foreach (var banner in banners)
-                {
-                    var savedBanner = await savedBanners.SingleOrDefaultAsync(x => x.BannerName == banner.BannerName && x.PlantCode == banner.PlantCode);
-                    if (savedBanner != null)
-                    {
-                        if (savedBanner.PlantName != banner.PlantName || savedBanner.Trade != banner.Trade)
-                        {
-                            savedBanner.Trade = banner.Trade;
-                            savedBanner.PlantName = banner.PlantName;
-                            savedBanner.ModifiedAt = DateTime.Now;
-                            savedBanner.ModifiedBy = loggedUser;
-                            savedBanner.FSADocumentId = fsaDoc.Id;
-                        }
-                    }
-                    else
-                    {
-                        banner.Id = Guid.NewGuid();
-                        banner.CreatedAt = DateTime.Now;
-                        banner.CreatedBy = loggedUser;
-                        banner.FSADocumentId = fsaDoc.Id;
-                        bannersToAdd.Add(banner);
-                    }
-                }
+            //    foreach (var bannerPlant in bannerPlants)
+            //    {
+            //        var savedBanner = await savedBanners.SingleOrDefaultAsync(x => x.BannerName == banner.BannerName && x.PlantCode == banner.PlantCode);
+            //        if (savedBanner != null)
+            //        {
+            //            if (savedBanner.PlantName != banner.PlantName || savedBanner.Trade != banner.Trade)
+            //            {
+            //                savedBanner.Trade = banner.Trade;
+            //                savedBanner.PlantName = banner.PlantName;
+            //                savedBanner.ModifiedAt = DateTime.Now;
+            //                savedBanner.ModifiedBy = loggedUser;
+            //                savedBanner.FSADocumentId = fsaDoc.Id;
+            //            }
+            //        }
+            //        else
+            //        {
+            //            banner.Id = Guid.NewGuid();
+            //            banner.CreatedAt = DateTime.Now;
+            //            banner.CreatedBy = loggedUser;
+            //            banner.FSADocumentId = fsaDoc.Id;
+            //            bannersToAdd.Add(banner);
+            //        }
+            //    }
 
-                await _uploadDocService.SaveDocument(fsaDoc);
-                await _bannerService.SaveBanners(bannersToAdd);
+                //await _uploadDocService.SaveDocument(fsaDoc);
+                //await _bannerPlantService.SaveBanners(bannersToAdd);
 
 
-            }
+            //}
         }
 
         private async Task SaveWeeklyBucket(DataTable dt, string fileName, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
@@ -786,12 +786,12 @@ namespace FSAWebSystem.Controllers
             {
                 var calendarDetail = await _calendarService.GetCalendarDetail(currentDate);
                 var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
-                var banners = _bannerService.GetAllActiveBanner();
+                var banners = _bannerPlantService.GetAllActiveBannerPlant();
                 var savedWeeklyBuckets = _bucketService.GetWeeklyBuckets().Where(x => x.Year == currentDate.Year && x.Month == currentDate.Month);
                 List<WeeklyBucketHistory> weeklyBucketHistories = new List<WeeklyBucketHistory>();
                 foreach (var weeklyBucket in weeklyBuckets)
                 {
-                    var bannerId = banners.Single(x => x.BannerName == weeklyBucket.BannerName && x.PlantCode == weeklyBucket.PlantCode).Id;
+                    var bannerId = banners.Single(x => x.Banner.BannerName == weeklyBucket.BannerName && x.PlantCode == weeklyBucket.PlantCode).Id;
                     var skuId = skus.Single(x => x.PCMap == weeklyBucket.PCMap).Id;
                     var weeklyBucketHistory = new WeeklyBucketHistory();
 
@@ -869,12 +869,12 @@ namespace FSAWebSystem.Controllers
 
             if (!errorMessages.Any())
             {
-                var banners = _bannerService.GetAllActiveBanner();
+                var banners = _bannerPlantService.GetAllActiveBannerPlant();
                 var weeklyBuckets = _bucketService.GetWeeklyBuckets();
                 var skus = _skuService.GetAllProducts();
                 foreach (var dailyOrder in dailyOrders)
                 {
-                    var bannerId = (await banners.SingleAsync(x => x.BannerName == dailyOrder.BannerName && x.PlantCode == dailyOrder.PlantCode)).Id;
+                    var bannerId = (await banners.SingleAsync(x => x.Banner.BannerName == dailyOrder.BannerName && x.PlantCode == dailyOrder.PlantCode)).Id;
                     var skuId = (await skus.SingleAsync(x => x.PCMap == dailyOrder.PCMap)).Id;
                     var weeklyBucket = await weeklyBuckets.SingleAsync(x => x.BannerId == bannerId && x.SKUId == skuId && x.Year == dailyOrder.Year && x.Month == dailyOrder.Month);
                     weeklyBucket.ValidBJ += dailyOrder.ValidBJ;
@@ -914,7 +914,7 @@ namespace FSAWebSystem.Controllers
 
         private void ValidateMonthlyBucketExcel(List<MonthlyBucket> listMonthlyBucket, IQueryable<MonthlyBucket> savedMonthlyBuckets, List<string> errorMessages)
         {
-            var banners = _bannerService.GetAllActiveBanner();
+            var banners = _bannerPlantService.GetAllActiveBannerPlant();
             var skus = _skuService.GetAllProducts();
             if (listMonthlyBucket.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
             {
@@ -926,7 +926,7 @@ namespace FSAWebSystem.Controllers
             var bannerPlantCodesFromExcel = listMonthlyBucket.Select(x => new { x.BannerName, x.PlantCode }).Distinct().ToList();
 
             var bannersNameNotInDb = (from monthlyBucket in bannerPlantCodesFromExcel
-                                      where !banners.Any(x => x.BannerName == monthlyBucket.BannerName && x.PlantCode == monthlyBucket.PlantCode)
+                                      where !banners.Any(x => x.Banner.BannerName == monthlyBucket.BannerName && x.PlantCode == monthlyBucket.PlantCode)
                                       select monthlyBucket).ToList();
             foreach (var bannerNotInDb in bannersNameNotInDb)
             {
@@ -951,7 +951,7 @@ namespace FSAWebSystem.Controllers
                 }
 
                 var sku = skus.Single(x => x.PCMap == skuGrp.Key.PCMap);
-                var banner = banners.SingleOrDefault(x => x.BannerName == skuGrp.Key.BannerName && x.PlantCode == skuGrp.Key.PlantCode);
+                var banner = banners.SingleOrDefault(x => x.Banner.BannerName == skuGrp.Key.BannerName && x.PlantCode == skuGrp.Key.PlantCode);
                 if (banner != null)
                 {
                     if (savedMonthlyBuckets.Any(x => x.SKUId == sku.Id && x.BannerId == banner.Id))
@@ -974,10 +974,10 @@ namespace FSAWebSystem.Controllers
             var bannersNotExist = (from weeklyBucket in listWeeklyBucket
                                    where !(
                                    from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => x.BannerId)
-                                   join banner in _bannerService.GetAllActiveBanner().AsEnumerable() on monthlyBucket.BannerId equals banner.Id
+                                   join banner in _bannerPlantService.GetAllActiveBannerPlant().AsEnumerable() on monthlyBucket.BannerId equals banner.Id
                                    select new
                                    {
-                                       banner.BannerName,
+                                       banner.Banner.BannerName,
                                        banner.PlantCode,
                                    }).Any(x => x.BannerName == weeklyBucket.BannerName && x.PlantCode == weeklyBucket.PlantCode)
                                    select new
@@ -1020,11 +1020,11 @@ namespace FSAWebSystem.Controllers
             var bannersNotExist = (from dailyOrder in listDailyOrder
                                    where !(
                                    from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerId, x.Month, x.Year })
-                                   join banner in _bannerService.GetAllActiveBanner().AsEnumerable() on weeklyBucket.BannerId equals banner.Id
+                                   join banner in _bannerPlantService.GetAllActiveBannerPlant().AsEnumerable() on weeklyBucket.BannerId equals banner.Id
                                    where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
                                    select new
                                    {
-                                       banner.BannerName,
+                                       banner.Banner.BannerName,
                                        banner.PlantCode,
                                    }).Any(x => x.BannerName == dailyOrder.BannerName && x.PlantCode == dailyOrder.PlantCode)
                                    select new
@@ -1057,14 +1057,14 @@ namespace FSAWebSystem.Controllers
             }
         }
 
-        private static void ValidateBannerExcel(List<Banner> listBanner, List<string> errorMessages)
+        private static void ValidateBannerExcel(List<BannerPlant> listBannerPlant, List<string> errorMessages)
         {
-            if (listBanner.Any(x => string.IsNullOrEmpty(x.BannerName) || string.IsNullOrEmpty(x.PlantCode)))
+            if (listBannerPlant.Any(x => string.IsNullOrEmpty(x.Banner.BannerName) || string.IsNullOrEmpty(x.PlantCode)))
             {
                 errorMessages.Add("Please fill all BannerName and PlantCode column");
             }
 
-            var bannerGroups = listBanner.GroupBy(x => new { x.BannerName, x.PlantCode }).ToList();
+            var bannerGroups = listBannerPlant.GroupBy(x => new { x.Banner.BannerName, x.PlantCode }).ToList();
             foreach (var bannerGrp in bannerGroups)
             {
                 if (bannerGrp.Count() > 1)
@@ -1078,7 +1078,7 @@ namespace FSAWebSystem.Controllers
         private void ValidateUserExcel(List<UserUnilever> listUser, List<string> errorMessages)
         {
             List<string> columnToCheck = new List<string>();
-            var savedBanners = _bannerService.GetAllActiveBanner();
+            var savedBanners = _bannerPlantService.GetAllActiveBannerPlant();
             var savedRoles = _roleService.GetAllRoles();
             var savedWls = _userService.GetAllWorkLevel();
             columnToCheck.Add("Name");
@@ -1145,7 +1145,7 @@ namespace FSAWebSystem.Controllers
 
                 foreach (var user in grp)
                 {
-                    var bannerExist = savedBanners.Any(x => x.BannerName == user.BannerName && x.PlantCode == user.PlantCode);
+                    var bannerExist = savedBanners.Any(x => x.Banner.BannerName == user.BannerName && x.PlantCode == user.PlantCode);
                     if (!bannerExist)
                     {
                         errorMessages.Add("Banner Name: " + user.BannerName + ", Plant Code: " + user.PlantCode + "on Email: " + grp.Key + " doesn't exist in database!");
@@ -1168,7 +1168,7 @@ namespace FSAWebSystem.Controllers
         {
             string mainColumn = string.Empty;
             var className = typeof(T).Name;
-            IEnumerable<Banner> banners = new List<Banner>().AsEnumerable();
+            IEnumerable<BannerPlant> bannerPlants = new List<BannerPlant>().AsEnumerable();
             IEnumerable<RoleUnilever> roles = new List<RoleUnilever>().AsEnumerable();
             IEnumerable<UserUnilever> users = new List<UserUnilever>().AsEnumerable();
             List<string> columnToCheck = new List<string>();
@@ -1181,7 +1181,7 @@ namespace FSAWebSystem.Controllers
                     break;
                 case nameof(UserUnilever):
                     mainColumn = "Email";
-                    //banners = _bannerService.GetAllBanner().AsEnumerable();
+                    //banners = _bannerPlantService.GetAllBannerPlant().AsEnumerable();
                     //roles = _roleService.GetAllRoles().AsEnumerable();
                     columnToCheck.Add("Email");
                     columnToCheck.Add("Name");

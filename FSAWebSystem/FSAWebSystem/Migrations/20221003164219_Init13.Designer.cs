@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221003164219_Init13")]
+    partial class Init13
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -619,7 +621,7 @@ namespace FSAWebSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Plants");
+                    b.ToTable("Plant");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.ProductCategory", b =>

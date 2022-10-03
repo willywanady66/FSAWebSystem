@@ -21,17 +21,17 @@ namespace FSAWebSystem.Controllers
     public class UserUnileversController : Controller
     {
         private readonly FSAWebSystemDbContext _context;
-        private readonly IBannerService _bannerService;
+        private readonly IBannerPlantService _bannerPlantService;
         private readonly IRoleService _roleService;
         private readonly IUserService _userService;
         private readonly UserManager<FSAWebSystemUser> _userManager;
         private readonly INotyfService _notyfService;
         private readonly ISKUService _skuService;
 
-        public UserUnileversController(FSAWebSystemDbContext context, IBannerService bannerService, IRoleService roleService, IUserService userService, UserManager<FSAWebSystemUser> userManager, INotyfService notyfService, ISKUService skuService)
+        public UserUnileversController(FSAWebSystemDbContext context, IBannerPlantService bannerService, IRoleService roleService, IUserService userService, UserManager<FSAWebSystemUser> userManager, INotyfService notyfService, ISKUService skuService)
         {
             _context = context;
-            _bannerService = bannerService;
+            _bannerPlantService = bannerService;
             _roleService = roleService;
             _userService = userService;
             _userManager = userManager;
@@ -75,7 +75,7 @@ namespace FSAWebSystem.Controllers
             var listWorkLevel = (List<SelectListItem>)ViewData["ListWorkLevel"];
             var listSku = (List<SelectListItem>)ViewData["ListSku"];
             var listCategory = (List<SelectListItem>)ViewData["ListCategory"];
-            var userBanner = userUnilever.Banners.Select(x => x.Id).ToList();
+            var userBanner = userUnilever.BannerPlants.Select(x => x.Id).ToList();
 
             var selectedBanner = listBanner.Where(x => userBanner.Contains(Guid.Parse(x.Value))).ToList();
             var selectedWorkLevel = listWorkLevel.SingleOrDefault(x => userUnilever.WLId == Guid.Parse(x.Value));
@@ -139,7 +139,7 @@ namespace FSAWebSystem.Controllers
                     var savedUser = await _userService.GetUser((Guid)user.UserUnileverId);
 
                     List<Guid> selectedBannerId = (from bannerId in bannerIds select Guid.Parse(bannerId)).ToList();
-                    var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerId.Contains(x.Id)).ToList();
+                    var selectedBanners = (_bannerPlantService.GetAllBannerPlant().ToList()).Where(x => selectedBannerId.Contains(x.Id)).ToList();
                     if ((savedUser == null || savedUser.Id == userUnilever.Id) && (user == null || user.Id == userUnilever.UserId))
                     {
                         var selectedWorkLevel = _userService.GetAllWorkLevel().Single(x => x.Id == Guid.Parse(workLevelId)).Id;
@@ -165,7 +165,7 @@ namespace FSAWebSystem.Controllers
 
                         savedUser.SKUs = selectedSKUs;
                         savedUser.ProductCategories = selectedCategories;
-                        savedUser.Banners = selectedBanners;
+                        savedUser.BannerPlants = selectedBanners;
                         savedUser.Name = userUnilever.Name;
                         savedUser.Email = userUnilever.Email;
                         savedUser.RoleUnilever = await _roleService.GetRole(Guid.Parse(roleUnileverId));
@@ -187,14 +187,14 @@ namespace FSAWebSystem.Controllers
                     {
                         ModelState.AddModelError(string.Empty, "User Already exist!");
                         var listBanner = (List<SelectListItem>)ViewData["ListBanner"];
-                        var userBanner = savedUser.Banners.Select(x => x.Id).ToList();
+                        var userBanner = savedUser.BannerPlants.Select(x => x.Id).ToList();
 
                         var selectedBanner = listBanner.Where(x => selectedBannerId.Contains(Guid.Parse(x.Value))).ToList();
                         foreach (var item in selectedBanner)
                         {
                             item.Selected = true;
                         }
-                        userUnilever.Banners = selectedBanners;
+                        userUnilever.BannerPlants = selectedBanners;
                     }
                        
                 }
@@ -226,7 +226,7 @@ namespace FSAWebSystem.Controllers
 
         private async Task FillDropdowns(ViewDataDictionary viewData)
         {
-            await _bannerService.FillBannerDropdown(viewData);
+            await _bannerPlantService.FillBannerPlantDropdown(viewData);
             await _roleService.FillRoleDropdown(viewData);
             await _userService.FillWorkLevelDropdown(viewData);
             await _skuService.FillSKUDropdown(viewData);

@@ -22,19 +22,19 @@ namespace FSAWebSystem.Services
         public async Task<MonthlyBucketHistoryPagingData> GetMonthlyBucketHistoryPagination(DataTableParam param, UserUnilever userUnilever)
         {
             var monthlyBucketHistories = (from monthlyBucket in _db.MonthlyBuckets
-                                         join banner in _db.Banners on monthlyBucket.BannerId equals banner.Id
+                                         join bannerPlant in _db.BannerPlants.Include(x => x.Plant) on monthlyBucket.BannerId equals bannerPlant.Id
                                          join sku in _db.SKUs on monthlyBucket.SKUId equals sku.Id
                                          where monthlyBucket.Year == Convert.ToInt32(param.year) && monthlyBucket.Month == Convert.ToInt32(param.month)
                                          select new MonthlyBucket
                                          {
-                                             BannerId = banner.Id,
+                                             BannerId = bannerPlant.Id,
                                              UploadedDate = monthlyBucket.CreatedAt.Value.ToString("dd/MM/yyyy"),
                                              CreatedAt = monthlyBucket.CreatedAt,
-                                             BannerName = banner.BannerName,
+                                             BannerName = bannerPlant.Banner.BannerName,
                                              PCMap = sku.PCMap,
                                              DescriptionMap = sku.DescriptionMap,
-                                             PlantCode = banner.PlantCode,
-                                             PlantName = banner.PlantName,
+                                             PlantCode = bannerPlant.Plant.PlantCode,
+                                             PlantName = bannerPlant.Plant.PlantName,
                                              Year = monthlyBucket.Year,
                                              Month = monthlyBucket.Month,
                                              Price = monthlyBucket.Price,
@@ -45,7 +45,7 @@ namespace FSAWebSystem.Services
                                          });
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
-                monthlyBucketHistories = monthlyBucketHistories.Where(x => userUnilever.Banners.Select(y => y.Id).Contains(x.BannerId));
+                monthlyBucketHistories = monthlyBucketHistories.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BannerId));
             }
 
 
@@ -124,19 +124,19 @@ namespace FSAWebSystem.Services
         public async Task<WeeklyBucketHistoryPagingData> GetWeeklyBucketHistoryPagination(DataTableParam param, UserUnilever userUnilever)
         {
             var weeklyBucketHistories = (from weeklyBucketHistory in _db.WeeklyBucketHistories
-                                          join banner in _db.Banners  on weeklyBucketHistory.BannerId equals banner.Id
+                                          join bannerPlant in _db.BannerPlants.Include(x => x.Plant)  on weeklyBucketHistory.BannerId equals bannerPlant.Id
                                           join sku in _db.SKUs on weeklyBucketHistory.SKUId equals sku.Id
                                           where weeklyBucketHistory.Year == Convert.ToInt32(param.year) && weeklyBucketHistory.Month == Convert.ToInt32(param.month)
                                           select new WeeklyBucketHistory
                                           {
-                                              BannerId = banner.Id,
+                                              BannerId = bannerPlant.Id,
                                               CreatedAt = weeklyBucketHistory.CreatedAt,
                                               UploadedDate = weeklyBucketHistory.CreatedAt.Value.ToShortDateString(),
-                                              BannerName = banner.BannerName,
+                                              BannerName = bannerPlant.Banner.BannerName,
                                               PCMap = sku.PCMap,
                                               DescriptionMap = sku.DescriptionMap,
-                                              PlantCode = banner.PlantCode,
-                                              PlantName = banner.PlantName,
+                                              PlantCode = bannerPlant.Plant.PlantCode,
+                                              PlantName = bannerPlant.Plant.PlantName,
                                               Year = weeklyBucketHistory.Year,
                                               Month = weeklyBucketHistory.Month,
                                               Week = weeklyBucketHistory.Week,
@@ -145,7 +145,7 @@ namespace FSAWebSystem.Services
 
             if(userUnilever.RoleUnilever.RoleName != "Administrator")
             {
-                weeklyBucketHistories = weeklyBucketHistories.Where(x => userUnilever.Banners.Select(y => y.Id).Contains(x.BannerId));
+                weeklyBucketHistories = weeklyBucketHistories.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BannerId));
             }
 
 

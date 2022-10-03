@@ -17,16 +17,16 @@ namespace FSAWebSystem.Services
         private readonly UserManager<FSAWebSystemUser> _userManager;
         //private readonly IUserStore<FSAWebSystemUser> _userStore;
         //private readonly IUserEmailStore<FSAWebSystemUser> _emailStore;
-        private readonly IBannerService _bannerService;
+        private readonly IBannerPlantService _bannerPlantService;
         private readonly IRoleService _roleService;
         private readonly ISKUService _skuService;
 
 
-        public UserService(FSAWebSystemDbContext db, UserManager<FSAWebSystemUser> userManager, IBannerService bannerService, IRoleService roleService, ISKUService skuService)
+        public UserService(FSAWebSystemDbContext db, UserManager<FSAWebSystemUser> userManager, IBannerPlantService bannerService, IRoleService roleService, ISKUService skuService)
         {
             _db = db;
             _userManager = userManager;
-            _bannerService = bannerService;
+            _bannerPlantService = bannerService;
             _roleService = roleService;
             _skuService = skuService;
 
@@ -35,12 +35,12 @@ namespace FSAWebSystem.Services
         public async Task<List<UserUnilever>> GetAllUsers()
         {
             var users = await (from user in _userManager.Users
-                               join userUnilever in _db.UsersUnilever.Include(x => x.Banners) on user.UserUnileverId equals userUnilever.Id
+                               join userUnilever in _db.UsersUnilever.Include(x => x.BannerPlants) on user.UserUnileverId equals userUnilever.Id
                                select new UserUnilever
                                {
                                    UserId = user.Id,
                                    Id = userUnilever.Id,
-                                   Banners = userUnilever.Banners,
+                                   BannerPlants = userUnilever.BannerPlants,
                                    RoleUnilever = userUnilever.RoleUnilever,
                                    IsActive = userUnilever.IsActive,
                                    Status = userUnilever.IsActive ? "Active" : "Non-Active",
@@ -53,14 +53,14 @@ namespace FSAWebSystem.Services
         public async Task<UserPagingData> GetAllUsersPagination(DataTableParam param)
         {
             var users = (from user in _userManager.Users
-                         join userUnilever in _db.UsersUnilever.Include(x => x.Banners) on user.UserUnileverId equals userUnilever.Id
+                         join userUnilever in _db.UsersUnilever.Include(x => x.BannerPlants) on user.UserUnileverId equals userUnilever.Id
                          join worklevel in _db.WorkLevels on userUnilever.WLId equals worklevel.Id into workLevelGroups
                          from wl in workLevelGroups.DefaultIfEmpty()
                          select new UserUnilever
                          {
                              UserId = user.Id,
                              Id = userUnilever.Id,
-                             Banners = userUnilever.Banners.Where(x => x.IsActive).ToList(),
+                             BannerPlants = userUnilever.BannerPlants.Where(x => x.IsActive).ToList(),
                              RoleUnilever = userUnilever.RoleUnilever,
                              Role = userUnilever.RoleUnilever.RoleName,
                              IsActive = userUnilever.IsActive,
@@ -109,7 +109,7 @@ namespace FSAWebSystem.Services
 
         public async Task<UserUnilever> GetUser(Guid id)
         {
-            var userUnilever = await _db.UsersUnilever.Include(x => x.Banners.Where(x => x.IsActive)).Include(x => x.RoleUnilever.Menus).Include(x => x.SKUs).Include(x => x.ProductCategories).SingleOrDefaultAsync(x => x.Id == id);
+            var userUnilever = await _db.UsersUnilever.Include(x => x.BannerPlants.Where(x => x.IsActive)).Include(x => x.RoleUnilever.Menus).Include(x => x.SKUs).Include(x => x.ProductCategories).SingleOrDefaultAsync(x => x.Id == id);
             return userUnilever;
         }
 
@@ -121,7 +121,7 @@ namespace FSAWebSystem.Services
 
         public async Task<UserUnilever> GetUserByEmail(string email)
         {
-            return await _db.UsersUnilever.Include(x => x.Banners).Include(x => x.RoleUnilever.Menus).SingleOrDefaultAsync(x => x.Email == email);
+            return await _db.UsersUnilever.Include(x => x.BannerPlants).Include(x => x.RoleUnilever.Menus).SingleOrDefaultAsync(x => x.Email == email);
         }
 
         public async Task SaveUsers(List<UserUnilever> users)
@@ -129,10 +129,10 @@ namespace FSAWebSystem.Services
             _db.UsersUnilever.AddRange(users);
         }
 
-        public async Task<List<Banner>> GetUserBanners(Guid id)
+        public async Task<List<BannerPlant>> GetUserBanners(Guid id)
         {
             var user = await GetUser(id);
-            var userBanners = user.Banners;
+            var userBanners = user.BannerPlants;
             return userBanners;
         }
 
@@ -149,7 +149,7 @@ namespace FSAWebSystem.Services
         public async Task<UserUnilever> CreateUser(string name, string email, string password, string[] bannerIds, string roleId, string worklevelId, string loggedUser, IUserStore<FSAWebSystemUser> _userStore, IUserEmailStore<FSAWebSystemUser> _emailStore, string[] skuIds, string[] categoryIds)
         {
             var selectedBannerIds = bannerIds.Select(x => Guid.Parse(x)).ToList();
-            var selectedBanners = (_bannerService.GetAllBanner().ToList()).Where(x => selectedBannerIds.Contains(x.Id)).ToList();
+            var selectedBanners = (_bannerPlantService.GetAllBannerPlant().ToList()).Where(x => selectedBannerIds.Contains(x.Id)).ToList();
             var selectedWl = new WorkLevel();
             if (!string.IsNullOrEmpty(worklevelId))
             {
@@ -172,7 +172,7 @@ namespace FSAWebSystem.Services
                 CreatedAt = DateTime.Now,
                 CreatedBy = loggedUser,
                 RoleUnilever = await _roleService.GetRole(Guid.Parse(roleId)),
-                Banners = selectedBanners,
+                BannerPlants = selectedBanners,
                 WLId = selectedWl.Id != Guid.Empty ? selectedWl.Id : null,
                 SKUs = selectedSKUs,
                 ProductCategories = selectedCategories

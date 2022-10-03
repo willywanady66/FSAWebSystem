@@ -5,6 +5,8 @@ let dataTableCategoy;
 let dataTableAndromeda;
 let dataTableBottomPrice;
 let dataTableITrust;
+let dataTableBanners;
+let dataTablePlants;
 $(document).ready(function () {
 
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -148,6 +150,47 @@ $(document).ready(function () {
                 });
                 break;
             }
+            case "banners-tab": {
+                dataTableBanners = $('#dataTableBanners').DataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "ajax": {
+                        url: getBannerUrl,
+                        type: "POST"
+                    },
+                    "columns": [
+                        { "data": "id" },  //0
+                        { "data": "bannerName" }       //1
+                    ],
+                    columnDefs: [
+                        {
+                            targets: 0,
+                            searchable: false,
+                            orderable: false,
+                            "render": function (data, type, full, meta) {
+                                return meta.row + 1 + meta.settings._iDisplayStart;
+                            }
+                        }
+                    ]
+                });
+                break;
+            }
+            case "plants-tab":
+                {
+                    dataTablePlants = $('#dataTablePlants').DataTable({
+                        "processing": true,
+                        "serverSide": true,
+                        "ajax": {
+                            url: getPlantUrl,
+                            type: "POST"
+                        },
+                        "columns": [
+                            { "data": "plantCode" },       //1
+                            { "data": "plantName" }       //2
+                        ]
+                    });
+                    break;
+                }
 
         }
     });
@@ -176,6 +219,14 @@ $(document).ready(function () {
             }
             case "itrust-tab": {
                 dataTableITrust.destroy();
+                break;
+            }
+            case "banners-tab": {
+                dataTableBanners.destroy();
+                break;
+            }
+            case "plants-tab": {
+                dataTablePlants.destroy();
                 break;
             }
 
@@ -232,12 +283,12 @@ $(document).ready(function () {
     });
 
 
-    $('#dataTableBanners').DataTable({
+    $('#dataTableBannerPlants').DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
             async: true,
-            url: getBannerUrl,
+            url: getBannerPlantUrl,
             type: "POST"
         },
         "columns": [

@@ -11,27 +11,27 @@ using FSAWebSystem.Services.Interface;
 
 namespace FSAWebSystem.Controllers
 {
-    public class BannersController : Controller
+    public class BannerPlantsController : Controller
     {
         private readonly FSAWebSystemDbContext _context;
-        private readonly IBannerService _bannerService;
+        private readonly IBannerPlantService _bannerPlantService;
 
-        public BannersController(FSAWebSystemDbContext context, IBannerService bannerService)
+        public BannerPlantsController(FSAWebSystemDbContext context, IBannerPlantService bannerService)
         {
             _context = context;
-            _bannerService = bannerService;
+            _bannerPlantService = bannerService;
          }
 
 
         // GET: Banners/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {
-            if (id == null || _context.Banners == null)
+            if (id == null || _context.BannerPlants == null)
             {
                 return NotFound();
             }
 
-            var banner = await _context.Banners
+            var banner = await _context.BannerPlants
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (banner == null)
             {
@@ -52,34 +52,34 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Trade,BannerName,PlantName,PlantCode")] Banner banner)
+        public async Task<IActionResult> Create([Bind("Id,Trade,BannerName,PlantName,PlantCode")] BannerPlant bannerPlant)
         {
             if (ModelState.IsValid)
             {
-                var isBannerExist = await _bannerService.IsBannerExist(banner.BannerName);
-                if(isBannerExist)
+                var IsBannerPlantExist = await _bannerPlantService.IsBannerPlantExist(bannerPlant.Banner.BannerName);
+                if(IsBannerPlantExist)
                 {
-                    ModelState.AddModelError("", "Banner " + banner.BannerName + " already exist!");
+                    ModelState.AddModelError("", "Banner Plant" + bannerPlant.Banner.BannerName + " already exist!");
                 }
                 else
                 {
-                    var savedBanner = await _bannerService.SaveBanner(banner, User.Identity.Name);
+                    var savedBanner = await _bannerPlantService.SaveBannerPlant(bannerPlant, User.Identity.Name);
                     return RedirectToAction("Index", "Admin");
                 }   
             }
-            return View(banner);
+            return View(bannerPlant);
             
         }
 
         // GET: Banners/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
-            if (id == null || _context.Banners == null)
+            if (id == null || _context.BannerPlants == null)
             {
                 return NotFound();
             }
 
-            var banner = await _context.Banners.FindAsync(id);
+            var banner = await _context.BannerPlants.FindAsync(id);
             if (banner == null)
             {
                 return NotFound();
@@ -92,9 +92,9 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Trade, CDM, KAM, BannerName,PlantName,PlantCode,IsActive")] Banner banner)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Trade, CDM, KAM, BannerName,PlantName,PlantCode,IsActive")] BannerPlant bannerPlant)
         {
-            if (id != banner.Id)
+            if (id != bannerPlant.Id)
             {
                 return NotFound();
             }
@@ -103,26 +103,27 @@ namespace FSAWebSystem.Controllers
             {   
                 try
                 {
-                    var savedBanner = await _bannerService.GetBanner(banner.Id);
-                    if (await _bannerService.IsBannerUsed(banner.BannerName, banner.PlantCode))
+                    var savedBanner = await _bannerPlantService.GetBannerPlant(bannerPlant.Id);
+                    if (await _bannerPlantService.IsBannerPlantUsed(bannerPlant.Banner.BannerName, bannerPlant.Plant.Id))
                     {
                         ModelState.AddModelError("", "Cannot Edit, Banner is registered on User/ Bucket");
-                        return View(banner);
+                        return View(bannerPlant);
                     }
                     
-                    savedBanner.Trade = banner.Trade;
-                    savedBanner.BannerName = banner.BannerName;
-                    savedBanner.PlantName = banner.PlantName;
-                    savedBanner.PlantCode = banner.PlantCode;
-                    savedBanner.KAM = banner.KAM;
-                    savedBanner.CDM = banner.CDM;
-                    savedBanner.IsActive = banner.IsActive;
-                    await _bannerService.UpdateBanner(savedBanner, User.Identity.Name);
+                    savedBanner.Trade = bannerPlant.Trade;
+                    savedBanner.Banner = bannerPlant.Banner;
+                    //savedBanner.PlantName = banner.PlantName;
+                    //savedBanner.PlantCode = banner.PlantCode;
+                    savedBanner.Plant = bannerPlant.Plant;
+                    savedBanner.KAM = bannerPlant.KAM;
+                    savedBanner.CDM = bannerPlant.CDM;
+                    savedBanner.IsActive = bannerPlant.IsActive;
+                    await _bannerPlantService.UpdateBannerPlant(savedBanner, User.Identity.Name);
                     return RedirectToAction("Index", "Admin");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!BannerExists(banner.Id))
+                    if (!BannerExists(bannerPlant.Id))
                     {
                         return NotFound();
                     }
@@ -134,10 +135,10 @@ namespace FSAWebSystem.Controllers
                 catch (Exception ex)
                 {
                     ModelState.AddModelError("", ex.Message);
-                    return View(banner);
+                    return View(bannerPlant);
                 }
             }
-            return View(banner);
+            return View(bannerPlant);
         }
 
         // GET: Banners/Delete/5
@@ -152,14 +153,14 @@ namespace FSAWebSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            if (_context.Banners == null)
+            if (_context.BannerPlants == null)
             {
                 return Problem("Entity set 'FSAWebSystemDbContext.Banners'  is null.");
             }
-            var banner = await _context.Banners.FindAsync(id);
+            var banner = await _context.BannerPlants.FindAsync(id);
             if (banner != null)
             {
-                _context.Banners.Remove(banner);
+                _context.BannerPlants.Remove(banner);
             }
             
             await _context.SaveChangesAsync();
@@ -168,13 +169,13 @@ namespace FSAWebSystem.Controllers
 
         private bool BannerExists(Guid id)
         {
-          return (_context.Banners?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.BannerPlants?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
 
         public async Task ValidateDeleteBanner(Guid bannerId)
         {
-            var banner = await _bannerService.GetBanner(bannerId);
+            var banner = await _bannerPlantService.GetBannerPlant(bannerId);
 
 
         }
