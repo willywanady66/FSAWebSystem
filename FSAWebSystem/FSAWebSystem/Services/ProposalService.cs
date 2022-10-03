@@ -173,6 +173,7 @@ namespace FSAWebSystem.Services
                                      //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id) && x.IsActive) on proposalHistory.BannerId equals banner.Id
                                      join banner in _db.Banners on proposalHistory.BannerId equals banner.Id
                                      join approval in _db.Approvals on proposalHistory.ApprovalId equals approval.Id
+                                     where proposalHistory.Month == month && proposalHistory.Year == year
                                      select new ProposalHistory
                                      {
                                          BannerId = banner.Id,

@@ -30,7 +30,7 @@ namespace FSAWebSystem.Services
         public async Task<FSACalendarDetail> GetCalendarDetail(DateTime date)
         {
             date = date.Date;
-            var calendarDetail = await _db.FSACalendarDetails.SingleOrDefaultAsync(x => date >= x.StartDate.Value.Date && date <= x.EndDate.Value.Date);
+            var calendarDetail = await _db.FSACalendarDetails.SingleOrDefaultAsync(x => date >= x.StartDate.Value.Date && date <= x.EndDate.Value.Date && x.Month == date.Month);
             return calendarDetail;
         }
 
