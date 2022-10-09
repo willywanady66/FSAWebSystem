@@ -2,6 +2,8 @@
 using FSAWebSystem.Models.Context;
 using FSAWebSystem.Models.ViewModels;
 using FSAWebSystem.Services.Interface;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 
 namespace FSAWebSystem.Services
@@ -15,6 +17,17 @@ namespace FSAWebSystem.Services
             _db = db;
         }
 
+        public IQueryable<Banner> GetAllBanner()
+        {
+            var banners = _db.Banners;
+            return banners;
+        }
+       
+        public IQueryable<Plant> GetAllPlant()
+        {
+            var plants = _db.Plants;
+            return plants;
+        }
 
         public async Task<BannerPagingData> GetBannersPagination(DataTableParam param)
         {
@@ -75,6 +88,34 @@ namespace FSAWebSystem.Services
                 totalRecord = totalCount,
                 plants = listPlant
             };
+        }
+
+        public async Task SaveBanners(List<Banner> banners)
+        {
+            _db.Banners.AddRangeAsync(banners);
+        }
+
+        public async Task SavePlants(List<Plant> plants)
+        {
+            _db.Plants.AddRangeAsync(plants);
+        }
+
+
+
+        public async Task FillBannerDropdown(ViewDataDictionary viewData)
+        {
+            var banners = GetAllBanner().ToList();
+            List<SelectListItem> listBanner = new List<SelectListItem>();
+            listBanner = banners.Select(x => new SelectListItem { Text = x.BannerName, Value = x.Id.ToString() }).ToList();
+            viewData["ListBanner"] = listBanner;
+        }
+
+        public async Task FillPlantDropdown(ViewDataDictionary viewData)
+        {
+            var plants = GetAllPlant().ToList();
+            List<SelectListItem> listPlant = new List<SelectListItem>();
+            listPlant = plants.Select(x => new SelectListItem { Text = x.PlantCode + " - " + x.PlantName, Value = x.Id.ToString() }).ToList();
+            viewData["ListPlant"] = listPlant;
         }
     }
 }

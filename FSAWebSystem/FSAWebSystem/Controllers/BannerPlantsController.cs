@@ -15,11 +15,12 @@ namespace FSAWebSystem.Controllers
     {
         private readonly FSAWebSystemDbContext _context;
         private readonly IBannerPlantService _bannerPlantService;
-
-        public BannerPlantsController(FSAWebSystemDbContext context, IBannerPlantService bannerService)
+        private readonly IBannerService _bannerService;
+        public BannerPlantsController(FSAWebSystemDbContext context, IBannerPlantService bannerPlantService, IBannerService bannerService)
         {
             _context = context;
-            _bannerPlantService = bannerService;
+            _bannerPlantService = bannerPlantService;
+            _bannerService = bannerService;
          }
 
 
@@ -74,17 +75,34 @@ namespace FSAWebSystem.Controllers
         // GET: Banners/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
+            await _bannerService.FillBannerDropdown(ViewData);
+            await _bannerService.FillPlantDropdown(ViewData);
+
+            var listBanner = (List<SelectListItem>)ViewData["ListBanner"];
+            var listPlant = (List<SelectListItem>)ViewData["ListPlant"];
             if (id == null || _context.BannerPlants == null)
             {
                 return NotFound();
             }
 
-            var banner = await _context.BannerPlants.FindAsync(id);
-            if (banner == null)
+            var bannerPlant = await _context.BannerPlants.FindAsync(id);
+            var selectedBanner = listBanner.SingleOrDefault(x => Guid.Parse(x.Value) == bannerPlant.Banner.Id);
+            if(selectedBanner != null)
+            {
+                selectedBanner.Selected = true;
+            }
+
+            var selectedPlant = listPlant.SingleOrDefault(x => Guid.Parse(x.Value) == bannerPlant.Plant.Id);
+            if(selectedPlant != null)
+            {
+                selectedPlant.Selected = true;
+            }
+
+            if (bannerPlant == null)
             {
                 return NotFound();
             }
-            return View(banner);
+            return View(bannerPlant);
         }
 
         // POST: Banners/Edit/5
@@ -92,29 +110,44 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Trade, CDM, KAM, BannerName,PlantName,PlantCode,IsActive")] BannerPlant bannerPlant)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id, CDM, Banner, Plant, KAM, IsActive")] BannerPlant bannerPlant, string plantId, string bannerId)
         {
             if (id != bannerPlant.Id)
             {
                 return NotFound();
             }
-       
+
+            ModelState.Remove("Banner");
+            ModelState.Remove("Banner.Trade");
+            ModelState.Remove("Banner.BannerName");
+            ModelState.Remove("Plant");
+            ModelState.Remove("Plant.PlantName");
+            ModelState.Remove("Plant.PlantCode");
+            ModelState.Remove("Trade");
+            ModelState.Remove("PlantName");
+            ModelState.Remove("PlantCode");
+            ModelState.Remove("BannerName");
+
+            await _bannerService.FillBannerDropdown(ViewData);
+            await _bannerService.FillPlantDropdown(ViewData);
+
             if (ModelState.IsValid)
             {   
                 try
                 {
                     var savedBanner = await _bannerPlantService.GetBannerPlant(bannerPlant.Id);
+                    var banner = _bannerService.GetAllBanner().Single(x => x.Id == Guid.Parse(bannerId));
+                    var plant = _bannerService.GetAllPlant().Single(x => x.Id == Guid.Parse(plantId));
                     if (await _bannerPlantService.IsBannerPlantUsed(bannerPlant.Banner.BannerName, bannerPlant.Plant.Id))
                     {
                         ModelState.AddModelError("", "Cannot Edit, Banner is registered on User/ Bucket");
                         return View(bannerPlant);
                     }
-                    
-                    savedBanner.Trade = bannerPlant.Trade;
-                    savedBanner.Banner = bannerPlant.Banner;
-                    //savedBanner.PlantName = banner.PlantName;
-                    //savedBanner.PlantCode = banner.PlantCode;
-                    savedBanner.Plant = bannerPlant.Plant;
+
+                    //CHECKDUPLICATE
+                 
+                    savedBanner.Banner = banner;
+                    savedBanner.Plant = plant;
                     savedBanner.KAM = bannerPlant.KAM;
                     savedBanner.CDM = bannerPlant.CDM;
                     savedBanner.IsActive = bannerPlant.IsActive;

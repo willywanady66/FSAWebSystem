@@ -292,12 +292,12 @@ $(document).ready(function () {
             type: "POST"
         },
         "columns": [
-            { "data": "trade" },  //0
+            { "data": "banner.trade" },  //0
             { "data": "cdm" },  //1
             { "data": "kam" },  //2
-            { "data": "bannerName" },       //3
-            { "data": "plantName" }, //4
-            { "data": "plantCode" },      //5
+            { "data": "banner.bannerName" },       //3
+            { "data": "plant.plantName" }, //4
+            { "data": "plant.plantCode" },      //5
             { "data": "isActive" },      //6
             { "data": "id" } //7
         ],

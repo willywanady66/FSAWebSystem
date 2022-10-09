@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "Edit";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    	List<SelectListItem> listBanners = ViewData["ListBanner"] as List<SelectListItem>;
+    	List<SelectListItem> listPlants = ViewData["ListPlant"] as List<SelectListItem>;
 }
 
 <h1>Edit</h1>
@@ -14,11 +16,14 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
+            <input type="hidden" asp-for="Banner.Id" />
+            <input type="hidden" asp-for="Banner.BannerName" />
+            <input type="hidden" asp-for="Plant.Id" />
+@*            <div class="form-group">
                 <label asp-for="Trade" class="control-label"></label>
                 <input asp-for="Trade" class="form-control" />
                 <span asp-validation-for="Trade" class="text-danger"></span>
-            </div>
+            </div>*@
             <div class="form-group">
                 <label asp-for="CDM" class="control-label"></label>
                 <input asp-for="CDM" class="form-control" />
@@ -29,11 +34,15 @@
                 <input asp-for="KAM" class="form-control" />
                 <span asp-validation-for="KAM" class="text-danger"></span>
             </div>
-@*            <div class="form-group">
-                <label asp-for="BannerName" class="control-label"></label>
-                <input asp-for="BannerName" class="form-control" />
-                <span asp-validation-for="BannerName" class="text-danger readonly"></span>
-            </div>*@
+            <div class="form-group">
+                <label asp-for="Banner" class="control-label"></label>
+               <select class="form-control form-select" id="dropDownListBanner" name="bannerId" asp-items="@listBanners"></select>
+            </div>
+
+                <div class="form-group">
+                <label asp-for="Plant" class="control-label"></label>
+               <select class="form-control form-select" id="dropDownListPlant" name="plantId" asp-items="@listPlants"></select>
+            </div>
 @*            <div class="form-group">
                 <label asp-for="PlantName" class="control-label"></label>
                 <input asp-for="PlantName" class="form-control" />

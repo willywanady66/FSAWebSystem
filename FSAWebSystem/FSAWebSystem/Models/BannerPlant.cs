@@ -9,9 +9,9 @@ namespace FSAWebSystem.Models
         public Guid Id { get; set; }
 
 
-        [Required]
-        [Display(Name = "Trade")]
-        public string Trade { get; set; }
+        //[Required]
+        //[Display(Name = "Trade")]
+        //public string Trade { get; set; }
 
         [Required]
         [Display(Name = "CDM")]
@@ -51,5 +51,9 @@ namespace FSAWebSystem.Models
         public string PlantName { get; set; }
         [NotMapped]
         public string PlantCode { get; set; }
+        [NotMapped]
+        public string BannerName { get; set; }
+        [NotMapped]
+        public string Trade { get; set; }
     }
 }

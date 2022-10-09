@@ -38,16 +38,17 @@ namespace FSAWebSystem.Services
 
         public IQueryable<BannerPlant> GetAllActiveBannerPlant()
         {
-            return _db.BannerPlants.Where(x => x.IsActive);
+            var bannerPlants = _db.BannerPlants.Include(x => x.Plant).Include(x => x.Banner).Where(x => x.IsActive).AsQueryable();
+            return bannerPlants;
         }
 
         public async Task<BannerPlantPagingData> GetBannerPlantPagination(DataTableParam param)
         {
-            var banners = _db.BannerPlants.Include(x => x.Plant).AsQueryable();
+            var banners = _db.BannerPlants.Include(x => x.Plant).Include(x => x.Banner).AsQueryable();
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
-                banners = banners.Where(x => x.Banner.BannerName.ToLower().Contains(search.ToLower()) || x.Trade.ToLower().Contains(search.ToLower()) || x.Plant.PlantCode.ToLower().Contains(search.ToLower()) || x.Plant.PlantName.ToLower().Contains(search.ToLower())
+                banners = banners.Where(x => x.Banner.BannerName.ToLower().Contains(search.ToLower()) || x.Banner.Trade.ToLower().Contains(search.ToLower()) || x.Plant.PlantCode.ToLower().Contains(search.ToLower()) || x.Plant.PlantName.ToLower().Contains(search.ToLower())
                                         || x.CDM.ToLower().Contains(search.ToLower()) || x.KAM.ToLower().Contains(search.ToLower()));
             }
 
@@ -57,7 +58,7 @@ namespace FSAWebSystem.Services
                 switch (order.column)
                 {
                     case 0:
-                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.Trade) : banners.OrderByDescending(x => x.IsActive).ThenBy(x => x.Trade);
+                        banners = order.dir == "desc" ? banners.OrderByDescending(x => x.Banner.Trade) : banners.OrderByDescending(x => x.IsActive).ThenBy(x => x.Banner.Trade);
                         break;
                     case 1:
                         banners = order.dir == "desc" ? banners.OrderByDescending(x => x.CDM) : banners.OrderBy(x => x.CDM);
@@ -90,7 +91,7 @@ namespace FSAWebSystem.Services
 
         public IQueryable<BannerPlant> GetAllBannerPlant()
         {
-            return _db.BannerPlants.Include(x => x.Plant);
+            return _db.BannerPlants.Include(x => x.Plant).Include(x => x.Banner);
         }
 
         public async Task<BannerPlant> GetBannerPlant(Guid id)
@@ -111,10 +112,16 @@ namespace FSAWebSystem.Services
 
         public async Task<bool> IsBannerPlantUsed(string name, Guid plantId)
         {
-            var usedBanner = await _db.BannerPlants.Where(x => x.IsActive).Include(x => x.UserUnilevers).Include(x => x.Plant).SingleOrDefaultAsync(x => x.Banner.BannerName.ToUpper() == name.ToUpper() && x.Plant.Id == plantId);
+            var bannerUsed = false;
+            var usedBanner = await _db.BannerPlants.Where(x => x.IsActive).Include(x => x.UserUnilevers).Include(x => x.Plant).Include(x => x.Banner).SingleOrDefaultAsync(x => x.Banner.BannerName.ToUpper() == name.ToUpper() && x.Plant.Id == plantId);
 
-            var usedBannerBucket =  _db.MonthlyBuckets.Where(x => x.BannerId == usedBanner.Id);
-            var bannerUsed = usedBanner.UserUnilevers.Any() || usedBannerBucket.Any();
+            
+            if(usedBanner != null)
+            {
+                var usedBannerBucket = _db.MonthlyBuckets.Where(x => x.BannerId == usedBanner.Id);
+                bannerUsed = usedBanner.UserUnilevers.Any() || usedBannerBucket.Any();
+            }
+            
             return bannerUsed;
 
         }
