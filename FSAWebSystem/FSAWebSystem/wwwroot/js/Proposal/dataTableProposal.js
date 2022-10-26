@@ -49,10 +49,11 @@
             { "data": "proposeAdditional" }, //10
             { "data": "remark" },           //11
             { "data": "id" }, //12
-            { "data": "approvalId" }, //13
-            { "data": "isWaitingApproval" },    //14
-            { "data": "banner.id" },    //15
-            { "data": "sku.id" },    //16
+            { "data": "isWaitingApproval" },    //13
+            { "data": "banner.id" },    //14
+            { "data": "sku.id" },    //15
+            { "data": "kam" },   //16
+            { "data": "cdm" },   //17
         ],
         "order": [[0, 'asc']],
         "drawCallback": function (data) {
@@ -61,7 +62,7 @@
         },
         "columnDefs": [
             {
-                "targets": [12,13, 14, 15,16],
+                "targets": [12,13, 14, 15, 16, 17],
                 "className": "hide_column"
             },
             {
@@ -167,30 +168,35 @@
             //proposal.WeeklyBucketId = row.find("TD").eq(12).html();
             proposal.Rephase = row.find("TD").eq(9).find("INPUT").val();
             proposal.ProposeAdditional = row.find("TD").eq(10).find("INPUT").val();
-            proposal.Remark = row.find("TD").eq(11).find("SELECT").val();
-            if (proposal.Remark == "Other") {
-                proposal.Remark = row.find("TD").eq(11).find("INPUT").val();
-            }
-            proposal.BannerName = row.find("TD").eq(0).html();
-            proposal.PcMap = row.find("TD").eq(1).html();
-            //proposal.PlantName = row.find("TD").eq(1).html();
-            proposal.Id = row.find("TD").eq(12).html();
-            proposal.NextWeekBucket = row.find("TD").eq(6).html();
-            proposal.IsWaitingApproval = row.find("TD").eq(14).html();
-            proposal.BannerId = row.find("TD").eq(15).html();
-            proposal.SKUId = row.find("TD").eq(16).html();
-            if (proposalInputs.length == 0) {
-                proposalInputs.push(proposal);
-            }
-            else {
-                if (!proposalInputs.some(element => element.BannerId === proposal.BannerId)) {
+            if (proposal.Rephase > 0 || proposal.ProposeAdditional > 0) {
+                proposal.Remark = row.find("TD").eq(11).find("SELECT").val();
+                if (proposal.Remark == "Other") {
+                    proposal.Remark = row.find("TD").eq(11).find("INPUT").val();
+                }
+                proposal.BannerName = row.find("TD").eq(0).html();
+                proposal.PcMap = row.find("TD").eq(1).html();
+                //proposal.PlantName = row.find("TD").eq(1).html();
+                proposal.Id = row.find("TD").eq(12).html();
+                proposal.NextWeekBucket = row.find("TD").eq(6).html();
+                proposal.IsWaitingApproval = row.find("TD").eq(14).html();
+                proposal.BannerId = row.find("TD").eq(14).html();
+                proposal.SKUId = row.find("TD").eq(15).html();
+                proposal.kam = row.find("TD").eq(16).html();
+                proposal.cdm = row.find("TD").eq(17).html();
+                if (proposalInputs.length == 0) {
                     proposalInputs.push(proposal);
                 }
                 else {
-                    var index = proposalInputs.findIndex((obj => obj.BannerId == proposal.BannerId && obj.PcMap == proposal.PcMap));
-                    proposalInputs[index] = proposal;
+                    if (!proposalInputs.some(element => element.BannerId === proposal.BannerId)) {
+                        proposalInputs.push(proposal);
+                    }
+                    else {
+                        var index = proposalInputs.findIndex((obj => obj.BannerId == proposal.BannerId && obj.PcMap == proposal.PcMap));
+                        proposalInputs[index] = proposal;
+                    }
                 }
             }
+           
         });
         return proposalInputs;
     };
@@ -265,26 +271,26 @@
             { "data": "week" }, //1
             { "data": "uliWeek", orderable:false }, //2
             { "data": "bannerName" }, //3
-            { "data": "plantName" },  //4
-            { "data": "pcMap" },       //5
-            { "data": "descriptionMap" }, //6
-            { "data": "rephase" },      //7
-            { "data": "proposeAdditional" },   //8
-            { "data": "remark" },   //9
-            { "data": "approvalStatus" },   //10
-            { "data": "approvedBy" },   //11
-            { "data": "approvalNote" },   //12
+            { "data": "pcMap" },       //4
+            { "data": "descriptionMap" }, //5
+            { "data": "rephase" },      //6
+            { "data": "proposeAdditional" },   //7
+            { "data": "remark" },   //8
+            { "data": "approvalStatus" },   //9
+            { "data": "approvedBy" },   //10
+            { "data": "approvalNote" },   //11
+
         ],
         "columnDefs": [{
-            "targets": 10,
+            "targets": 9,
             "orderable": false
         }],
         "rowCallback": function (row, data, index) {
             if (data.approvalStatus == "Approved") {
-                $('td:eq(10)', row).css({ color: "green" });
+                $('td:eq(9)', row).css({ color: "green" });
             }
             else if (data.approvalStatus == "Rejected") {
-                $('td:eq(10)', row).css({ color: "red" });
+                $('td:eq(9)', row).css({ color: "red" });
             }
         },
         error: {

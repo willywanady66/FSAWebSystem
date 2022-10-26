@@ -264,26 +264,26 @@ namespace FSAWebSystem.Controllers
             return Ok();
         }
 
-        public async Task UpdateWeeklyBuckets(List<ProposalDetail> proposalDetails, ProposalType type, int week, Guid approvalId)
+        public async Task UpdateWeeklyBuckets(Proposal proposal, ProposalType type, int week)
         {
-            foreach(var detail in proposalDetails.Where(x => x.ApprovalId == approvalId))
+            foreach (var detail in proposal.ProposalDetails)
             {
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(detail.WeeklyBucketId);
                 if (type == ProposalType.Rephase)
                 {
-       
+
                     var nextBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null));
                     //NEXTWEEK
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).SetValue(weeklyBucket, nextBucket - detail.Rephase);
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).SetValue(weeklyBucket, nextBucket - detail.ActualRephase);
 
                     var currentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).GetValue(weeklyBucket, null));
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, currentBucket + detail.Rephase);
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, currentBucket + detail.ActualRephase);
                 }
                 else
                 {
-                    weeklyBucket.MonthlyBucket = weeklyBucket.MonthlyBucket + detail.ProposeAdditional;
+                    weeklyBucket.MonthlyBucket = weeklyBucket.MonthlyBucket + detail.ActualProposeAdditional;
                     var currentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).GetValue(weeklyBucket, null));
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, currentBucket + detail.ProposeAdditional);
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, currentBucket + detail.ActualProposeAdditional);
                 }
             }
         }
@@ -370,68 +370,77 @@ namespace FSAWebSystem.Controllers
             var listApproval = new List<Approval>();
             var listEmail = new List<EmailApproval>();
 
-            foreach (var approvalId in approvalIds)
+            try
             {
-               
-                var approval = await _approvalService.GetApprovalById(approvalId);
-                var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
-                var weeklyBucket = new WeeklyBucket();
-                //var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
-                //var banner = await _bannerPlantService.GetBannerPlant(weeklyBucket.BannerId);
-                //var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
-                var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
-                approval.ApprovedAt = currDate;
-                approval.SKUId = weeklyBucket.SKUId;
-                approval.BannerPlantId = weeklyBucket.BannerPlant.Id;
-                approval.ApprovalStatus = ApprovalStatus.WaitingNextLevel;
-                approval.RequestedBy = userRequestor.Email;
-                if (string.IsNullOrEmpty(approval.ApprovedBy))
+                foreach (var approvalId in approvalIds)
                 {
-                    approval.ApprovedBy = User.Identity.Name;
-                }
-                else
-                {
-                    approval.ApprovedBy += ";" + User.Identity.Name;
-                }
 
-                if (string.IsNullOrEmpty(approval.ApprovalNote))
-                {
-                    approval.ApprovalNote = approvalNote;
-                }
-                else
-                {
-                    approval.ApprovalNote += ";" + approvalNote;
-                }
+                    var approval = await _approvalService.GetApprovalById(approvalId);
+                    //var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
+                    var proposal = approval.Proposal;
+                    var weeklyBucket = new WeeklyBucket();
+                    //var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
+                    //var banner = await _bannerPlantService.GetBannerPlant(weeklyBucket.BannerId);
+                    //var sku = await _skuService.GetSKUById(weeklyBucket.SKUId);
+                    var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
+                    approval.ApprovedAt = currDate;
+     
+                    approval.ApprovalStatus = ApprovalStatus.WaitingNextLevel;
+                    approval.RequestedBy = userRequestor.Email;
+                    if (string.IsNullOrEmpty(approval.ApprovedBy))
+                    {
+                        approval.ApprovedBy = User.Identity.Name;
+                    }
+                    else
+                    {
+                        approval.ApprovedBy += ";" + User.Identity.Name;
+                    }
+
+                    if (string.IsNullOrEmpty(approval.ApprovalNote))
+                    {
+                        approval.ApprovalNote = approvalNote;
+                    }
+                    else
+                    {
+                        approval.ApprovalNote += ";" + approvalNote;
+                    }
 
 
-                approval.Level -= 1;
-                //Update Weekly & Approval Done
-                if (approval.Level == 0)
-                {
-                    approval.ApprovalStatus = ApprovalStatus.Approved;
-                    proposal.IsWaitingApproval = false;
-                    proposal.SubmittedBy = Guid.Empty;
-                    await UpdateWeeklyBuckets(proposal.ProposalDetails, proposal.Type.Value, proposal.Week, approval.Id);
-                }
-                else
-                {
-                    var nextApproverWL = _approvalService.GetWLApprover(approval);
-                    approval.ApproverWL = nextApproverWL;
+                    approval.Level -= 1;
+                    //Update Weekly & Approval Done
+                    if (approval.Level == 0)
+                    {
+                        approval.ApprovalStatus = ApprovalStatus.Approved;
+                        proposal.IsWaitingApproval = false;
+                        proposal.SubmittedBy = Guid.Empty;
+                        await UpdateWeeklyBuckets(proposal, proposal.Type.Value, proposal.Week);
+                    }
+                    else
+                    {
+                        var nextApproverWL = _approvalService.GetWLApprover(approval);
+                        approval.ApproverWL = nextApproverWL;
+
                         
+                    }
                     listApproval.Add(approval);
                 }
-            }
 
-            await _context.SaveChangesAsync();
-            var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals");
-            var proposalEmails = await _approvalService.GenerateCombinedEmailProposal(listApproval, baseUrl);
-            var approvalEmails = await _approvalService.GenerateCombinedEmailApproval(listApproval, User.Identity.Name, approvalNote);
-            listEmail.AddRange(proposalEmails);
-            listEmail.AddRange(approvalEmails);
-            foreach (var email in listEmail)
-            {
-                await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
+                await _context.SaveChangesAsync();
+                var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Details", "Approvals");
+                var proposalEmails = await _approvalService.GenerateCombinedEmailProposal(listApproval, baseUrl);
+                var approvalEmails = await _approvalService.GenerateCombinedEmailApproval(listApproval, User.Identity.Name, approvalNote);
+                listEmail.AddRange(proposalEmails);
+                listEmail.AddRange(approvalEmails);
+                foreach (var email in listEmail)
+                {
+                    await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
+                }
             }
+            catch(Exception ex)
+            {
+
+            }
+          
         }
 
         public async Task Reject(List<Guid> approvalIds, string approvalNote)
@@ -441,7 +450,8 @@ namespace FSAWebSystem.Controllers
             foreach (var approvalId in approvalIds)
             {
                 var approval = await _approvalService.GetApprovalById(approvalId);
-                var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
+                //var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
+                var proposal = new Proposal();
                 var weeklyBucket = new WeeklyBucket();
                 //var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
                 approval.BannerPlantId = weeklyBucket.BannerPlant.Id;
@@ -492,14 +502,16 @@ namespace FSAWebSystem.Controllers
 			try
 			{
                 var approval = await _approvalService.GetApprovalById(approvalId);
-                var proposal = await _proposalService.GetProposalByApprovalId(approvalId);
+                //var proposal = await _proposalService.GetProposalByApprovalId(approvalId);
+                var proposal = new Proposal();
                 var proposalTypeInit = proposal.Type;
                 var proposalHistory = await _proposalService.GetProposalHistory(approvalId);
                 var weeklyBucket = new WeeklyBucket();
                 //var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
                 var weekBucketTarget = await GetWeeklyBucketTarget(approval, proposal);
                 proposalHistory.BannerId = weekBucketTarget.BannerPlant.Banner.Id;
-                var proposalDetailTarget = proposal.ProposalDetails.Single(x => x.ProposeAdditional < 0);
+                //var proposalDetailTarget = proposal.ProposalDetails.Single(x => x.ProposeAdditional < 0);
+                var proposalDetailTarget = new ProposalDetail();
 
                 if(((int)proposalTypeInit) + 1 != (int)proposal.Type)
                 {
@@ -524,7 +536,7 @@ namespace FSAWebSystem.Controllers
                     proposal.ProposalDetails.Remove(proposalDetailTarget);
                 }
                 else {
-                    proposalDetailTarget.WeeklyBucketId = weekBucketTarget.Id;
+                    //proposalDetailTarget.WeeklyBucketId = weekBucketTarget.Id;
                 }
               
                 var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
@@ -584,7 +596,8 @@ namespace FSAWebSystem.Controllers
             var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant();
             var weeklyBuckets = _bucketService.GetWeeklyBuckets();
             var bannerPlant = await bannerPlants.SingleOrDefaultAsync(x => x.Id == weeklyBucket.BannerPlant.Id);
-            var currentBucketTargetId = proposal.ProposalDetails.Single(x=> x.ProposeAdditional < 0).WeeklyBucketId;
+            //var currentBucketTargetId = proposal.ProposalDetails.Single(x=> x.ProposeAdditional < 0).WeeklyBucketId;
+            var currentBucketTargetId = Guid.Empty;
             var currentBucketTarget = weeklyBuckets.Single(x => x.Id == currentBucketTargetId);
             var currentBannerTarget = bannerPlants.Single(x => x.Id == currentBucketTarget.BannerPlant.Id);
        
@@ -627,7 +640,8 @@ namespace FSAWebSystem.Controllers
                 if(proposal.Type != ProposalType.ProposeAdditional)
 				{
                     approval.ProposalType = proposal.Type.Value;
-                    var proposeAdditional = proposal.ProposalDetails.Single(x => x.ProposeAdditional > 0).ProposeAdditional;
+                    //var proposeAdditional = proposal.ProposalDetails.Single(x => x.ProposeAdditional > 0).ProposeAdditional;
+                    var proposeAdditional = 0;
                     var weeklyBucketTargetByMonthly = await weeklyBuckets.Where(x => x.MonthlyBucket > proposeAdditional && x.Id != weeklyBucket.Id && x.Month == proposal.Month).OrderByDescending(x => x.MonthlyBucket).FirstOrDefaultAsync();
                     var weeklyBucketTargetByRemFSA = await weeklyBuckets.Where(x => x.RemFSA > proposeAdditional && x.Id != weeklyBucket.Id && x.Month == proposal.Month).OrderByDescending(x => x.RemFSA).FirstOrDefaultAsync();
                     if (weeklyBucketTargetByMonthly == null && weeklyBucketTargetByRemFSA == null)

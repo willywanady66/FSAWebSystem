@@ -12,7 +12,7 @@
         "columns": [
             { "data": "id" },  //0
             { "data": "proposalSubmitDate" },  //1
-            { "data": "bannerName" }, //2
+            { "data": "bannerName" }, //2   
             { "data": "pcMap" },       //3
             { "data": "descriptionMap" }, //4
             { "data": "proposeAdditional" },      //5

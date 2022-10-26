@@ -36,6 +36,8 @@
             public string bannerTargetId { get; set; }
             public bool isWaitingApproval { get; set; }
             public ProposalType Type { get; set; }
+            public string KAM { get; set; }
+            public string CDM { get; set; }
             //public string Remark { get; set; }
         }
     }

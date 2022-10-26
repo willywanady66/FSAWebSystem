@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221028050113_Init19")]
+    partial class Init19
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -707,30 +709,14 @@ namespace FSAWebSystem.Migrations
                     b.Property<Guid>("BannerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("CDM")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsWaitingApproval")
                         .HasColumnType("bit");
-
-                    b.Property<string>("KAM")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Month")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("ProposeAdditional")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Remark")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Rephase")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("SkuId")
                         .HasColumnType("uniqueidentifier");
@@ -769,10 +755,6 @@ namespace FSAWebSystem.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("ActualRephase")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<Guid?>("BannerPlantId")
                         .HasColumnType("uniqueidentifier");
 
@@ -783,8 +765,13 @@ namespace FSAWebSystem.Migrations
                     b.Property<Guid>("ProposalId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("WeeklyBucketId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<decimal>("ProposeAdditional")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Rephase")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -809,9 +796,6 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<int>("Month")
                         .HasColumnType("int");
-
-                    b.Property<Guid>("ProposalId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("ProposeAdditional")
                         .HasPrecision(18, 2)

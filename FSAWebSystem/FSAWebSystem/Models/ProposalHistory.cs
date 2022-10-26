@@ -8,6 +8,7 @@ namespace FSAWebSystem.Models
         public int Week { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
+        public Guid ProposalId { get; set; }
         public Guid ApprovalId { get; set; }
         public Guid SKUId { get; set; }
         public Guid BannerId { get; set; }
@@ -17,8 +18,6 @@ namespace FSAWebSystem.Models
         public Guid SubmittedBy { get; set; }
         public string SubmittedAt { get; set; }
 
-        [NotMapped]
-        public Proposal Proposal { get; set; }
         [NotMapped]
         public string BannerName { get; set; }
         [NotMapped]

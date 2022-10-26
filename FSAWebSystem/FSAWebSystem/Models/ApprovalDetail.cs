@@ -6,9 +6,10 @@ namespace FSAWebSystem.Models
     {
         public Guid Id { get; set; }
         public Guid ApprovalId { get; set; }
-        public Guid WeeklyBucketId { get; set; }
         public decimal ProposeAdditional { get; set; }
         public decimal Rephase { get; set; }
+        public decimal PlantContribution { get; set; }
+        public decimal ActualProposeAdditional { get; set; }
 
         public Approval Approval { get; set; }
         [NotMapped]

@@ -4,18 +4,19 @@ namespace FSAWebSystem.Models
 {
     public class Approval
     {
+        public Approval()
+        {
+            ApprovalDetails = new List<ApprovalDetail>();
+        }
 
         public Guid Id { get; set; }
+        public Proposal Proposal { get; set; }
         public ApprovalStatus ApprovalStatus { get; set; }
-
         public ProposalType ProposalType { get; set; }
-        [NotMapped]
         public List<ApprovalDetail> ApprovalDetails { get; set; }
-   
         public string? ApprovalNote { get; set; }
         public string ApprovedBy { get; set; }
         public DateTime? ApprovedAt { get; set; }
-
         public int Level { get; set; }
         public string ApproverWL { get; set; }
 
@@ -30,10 +31,6 @@ namespace FSAWebSystem.Models
         public string Level1 { get; set; }
         [NotMapped]
         public string Level2 { get; set; }
-        [NotMapped]
-        public Proposal Proposal { get; set; }
-        [NotMapped]
-        public Guid ProposalId { get; set; }
         [NotMapped]
         public int Week { get; set; }
         [NotMapped]

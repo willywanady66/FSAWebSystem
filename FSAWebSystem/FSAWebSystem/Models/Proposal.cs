@@ -7,21 +7,21 @@ namespace FSAWebSystem.Models
         public Proposal()
         {
             ProposalDetails = new List<ProposalDetail>();
-        }          
+        }
         public Guid Id { get; set; }
         public int Week { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
         //public Guid WeeklyBucketId { get; set; }    
         public Banner Banner { get; set; }
+        public string KAM { get; set; }
+        public string CDM { get; set; }
         public SKU Sku { get; set; }
         public decimal Rephase { get; set; }
-
         public decimal ProposeAdditional { get; set; }
-
         public string? Remark { get; set; }
         public ProposalType? Type { get; set; }
-        public Guid ApprovalId { get; set; }
+        //public Guid ApprovalId { get; set; }
         public List<ProposalDetail>? ProposalDetails { get; set; }
         public bool IsWaitingApproval { get; set; }
 
@@ -36,10 +36,6 @@ namespace FSAWebSystem.Models
         public decimal ApprovedProposeAdditional { get; set; }
         [NotMapped]
         public string BannerName { get; set; }
-        [NotMapped]
-        public string CDM { get; set; }
-        [NotMapped]
-        public string KAM { get; set; }
         [NotMapped]
         public string PlantCode { get; set; }
         [NotMapped]
@@ -71,7 +67,9 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public string ApprovedBy { get; set; }
         [NotMapped]
-        public string RejectionReason { get; set; }
+        public string ApprovalNote { get; set; }
+        [NotMapped]
+        public string ApproverWL { get; set; }
 
 		[NotMapped]
         public string BannerNameTarget { get; set; }
@@ -83,6 +81,7 @@ namespace FSAWebSystem.Models
         public Guid ProductCategoryId { get; set; }
         [NotMapped]
         public Guid SKUId { get; set; }
+
     }
 
 

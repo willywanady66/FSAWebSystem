@@ -25,7 +25,7 @@ namespace FSAWebSystem.Services
             var proposals = (from weeklyBucket in _db.WeeklyBuckets.Include(x => x.BannerPlant)
                              join bannerPlant in _db.BannerPlants.Include(x => x.Plant) on weeklyBucket.BannerPlant.Id equals bannerPlant.Id
                              join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
-                             join proposal in _db.Proposals.Include(x => x.Banner).Where(x => x.IsWaitingApproval) on weeklyBucket.BannerPlant.Banner.Id equals proposal.Banner.Id into proposalGroups
+                             join proposal in _db.Proposals.Include(x => x.ProposalDetails).Include(x => x.Banner).Where(x => x.IsWaitingApproval) on new { BannerId = weeklyBucket.BannerPlant.Banner.Id, SKUId = weeklyBucket.SKUId } equals new { BannerId = proposal.Banner.Id, SKUId = proposal.Sku.Id } into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
                              where weeklyBucket.Month == month && weeklyBucket.Year == year
                              select new Proposal
@@ -52,19 +52,18 @@ namespace FSAWebSystem.Services
                                  NextBucket = week <= 4 ? Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null)) : 0,
                                  Remark = p != null ? p.Remark : string.Empty,
                                  Rephase = p != null ? p.Rephase : decimal.Zero,
-                                 ApprovedRephase = p != null ? p.ApprovedRephase : decimal.Zero,
                                  ProposeAdditional = p != null ? p.ProposeAdditional : decimal.Zero,
-                                 ApprovedProposeAdditional = p != null ? p.ApprovedProposeAdditional : decimal.Zero,
                                  IsWaitingApproval = p != null ? p.IsWaitingApproval : false,
                                  SubmittedBy = p == null ? Guid.Empty : p.SubmittedBy.Value,
-                                 ApprovalId = p != null ? p.ApprovalId : Guid.Empty,
-                             }).AsEnumerable().GroupBy(x => new {x.KAM, x.CDM, x.Banner.Id, SKUId = x.Sku.Id}).Select(y => new Proposal
+                             }).AsEnumerable().GroupBy(x => new { x.KAM, x.CDM, x.Banner.Id, SKUId = x.Sku.Id }).Select(y => new Proposal
                              {
                                  Id = y.First().Id,
                                  Banner = y.First().Banner,
                                  Month = y.First().Month,
                                  Week = y.First().Week,
                                  Year = y.First().Year,
+                                 KAM = y.First().KAM,
+                                 CDM = y.First().CDM,
                                  //PlantCode = y.First().PlantCode,
                                  //PlantName = y.First().PlantName,
                                  Sku = y.First().Sku,
@@ -75,63 +74,27 @@ namespace FSAWebSystem.Services
                                  RemFSA = y.Sum(z => z.RemFSA),
                                  CurrentBucket = y.Sum(z => z.CurrentBucket),
                                  NextBucket = y.Sum(z => z.NextBucket),
-                                 Remark = y.SingleOrDefault(z => !string.IsNullOrEmpty(z.Remark)) != null ? y.SingleOrDefault(z => !string.IsNullOrEmpty(z.Remark)).Remark : string.Empty,
+                                 Remark = y.First().Remark,
                                  Rephase = y.First().Rephase,
                                  IsWaitingApproval = y.Any(z => z.IsWaitingApproval),
-                                 SubmittedBy = y.SingleOrDefault(z => z.SubmittedBy != Guid.Empty) != null ? y.SingleOrDefault(z => z.SubmittedBy != Guid.Empty).SubmittedBy : Guid.Empty,
-                                 ApprovalId = y.SingleOrDefault(z => z.ApprovalId != Guid.Empty) != null ? y.SingleOrDefault(z => z.ApprovalId != Guid.Empty).ApprovalId : Guid.Empty,
+                                 SubmittedBy = y.First().SubmittedBy,
                              });
 
-            var proposal2 = proposals;
-            //var zz = proposals.ToList();
-            //var proposal2 = (from proposal in proposals
-            //                 join approval in _db.Approvals on proposal.ApprovalId equals approval.Id into approvalGroup
-            //                 from apprvl in approvalGroup.DefaultIfEmpty()
 
-            //                 select new Proposal
-            //                 {
-            //                     Id = proposal.Id,
-            //                     BannerId = proposal.BannerId,
-            //                     WeeklyBucketId = proposal.WeeklyBucketId,
-            //                     BannerName = proposal.BannerName,
-            //                     Month = month,
-            //                     Week = week,
-            //                     Year = year,
-            //                     PlantCode = proposal.PlantCode,
-            //                     PlantName = proposal.PlantName,
-            //                     PCMap = proposal.PCMap,
-            //                     DescriptionMap = proposal.DescriptionMap,
-            //                     RatingRate = proposal.RatingRate,
-            //                     MonthlyBucket = proposal.MonthlyBucket,
-            //                     ValidBJ = proposal.ValidBJ,
-            //                     RemFSA = proposal.MonthlyBucket - proposal.ValidBJ,
-            //                     CurrentBucket = proposal.CurrentBucket,
-            //                     NextBucket = proposal.NextBucket,
-            //                     Remark = proposal.IsWaitingApproval ? proposal.Remark : string.Empty,
-            //                     Rephase = proposal.IsWaitingApproval ? proposal.Rephase : decimal.Zero,
-            //                     ApprovedRephase = proposal.ApprovedRephase,
-            //                     ApprovalStatus = apprvl != null ? apprvl.ApprovalStatus : ApprovalStatus.Pending,
-            //                     ProposeAdditional = proposal.IsWaitingApproval ? proposal.ProposeAdditional : decimal.Zero,
-            //                     ApprovedProposeAdditional = proposal.ApprovedProposeAdditional,
-            //                     IsWaitingApproval = proposal.IsWaitingApproval,
-            //                     SubmittedBy = proposal.SubmittedBy
-            //                 });
 
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
-                proposal2 = proposal2.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.Banner.Id));
-                proposal2 = proposal2.Where(x => x.SubmittedBy == userUnilever.Id || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
+                proposals = proposals.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.Banner.Id));
+                proposals = proposals.Where(x => x.SubmittedBy == userUnilever.Id || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
             }
 
 
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
-                proposal2 = proposal2.Where(x => x.BannerName.ToLower().Contains(search.ToLower()) ||
-                                            x.PlantCode.ToLower().Contains(search.ToLower()) ||
-                                            x.PlantName.ToLower().Contains(search.ToLower()) ||
-                                            x.PCMap.ToLower().Contains(search.ToLower()) ||
-                                            x.DescriptionMap.ToLower().Contains(search.ToLower()));
+                proposals = proposals.Where(x => x.Banner.BannerName.ToLower().Contains(search.ToLower()) ||
+                                            x.Sku.PCMap.ToLower().Contains(search.ToLower()) ||
+                                            x.Sku.DescriptionMap.ToLower().Contains(search.ToLower()));
             }
 
 
@@ -141,19 +104,19 @@ namespace FSAWebSystem.Services
                 switch (order.column)
                 {
                     case 0:
-                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.Banner.BannerName) : proposal2.OrderBy(x => x.Banner.BannerName);
+                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.IsWaitingApproval).ThenByDescending(x => x.Banner.BannerName) : proposals.OrderByDescending(x => x.IsWaitingApproval).ThenBy(x => x.Banner.BannerName);
                         break;
                     case 1:
-                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.PCMap) : proposal2.OrderBy(x => x.PCMap);
+                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PCMap) : proposals.OrderBy(x => x.PCMap);
                         break;
                     case 2:
-                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.DescriptionMap) : proposal2.OrderBy(x => x.DescriptionMap);
+                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.DescriptionMap) : proposals.OrderBy(x => x.DescriptionMap);
                         break;
                     case 3:
-                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.RatingRate) : proposal2.OrderBy(x => x.RatingRate);
+                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RatingRate) : proposals.OrderBy(x => x.RatingRate);
                         break;
                     case 4:
-                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.MonthlyBucket) : proposal2.OrderBy(x => x.MonthlyBucket);
+                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.MonthlyBucket) : proposals.OrderBy(x => x.MonthlyBucket);
                         break;
                     //case 6:
                     //    proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.CurrentBucket) : proposal2.OrderBy(x => x.CurrentBucket);
@@ -162,10 +125,10 @@ namespace FSAWebSystem.Services
                     //    proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.NextBucket) : proposal2.OrderBy(x => x.NextBucket);
                     //    break;
                     case 7:
-                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.ValidBJ) : proposal2.OrderBy(x => x.ValidBJ);
+                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.ValidBJ) : proposals.OrderBy(x => x.ValidBJ);
                         break;
                     case 8:
-                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.RemFSA) : proposal2.OrderBy(x => x.RemFSA);
+                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RemFSA) : proposals.OrderBy(x => x.RemFSA);
                         break;
                     default:
                         break;
@@ -174,8 +137,8 @@ namespace FSAWebSystem.Services
             }
 
 
-            var totalCount = proposal2.Count();
-            var listProposal = proposal2.Skip(param.start).Take(param.length).ToList();
+            var totalCount = proposals.Count();
+            var listProposal = proposals.Skip(param.start).Take(param.length).ToList();
             _db.ChangeTracker.AutoDetectChangesEnabled = true;
             return new ProposalData
             {
@@ -190,17 +153,23 @@ namespace FSAWebSystem.Services
         {
 
             var proposalHistories = (from proposalHistory in _db.ProposalHistories
+                                     join proposal in (from proposal in _db.Proposals
+                                                       join approval in _db.Approvals on proposal.Id equals approval.Proposal.Id
+                                                       select new Proposal
+                                                       {
+                                                           Id = proposal.Id,
+                                                           ApprovedBy = approval.ApprovedBy,
+                                                           ApprovalStatus = approval.ApprovalStatus,
+                                                           ApprovalNote = approval.ApprovalNote,
+                                                           ApproverWL = approval.ApproverWL,
+                                                       }) on proposalHistory.ProposalId equals proposal.Id
                                      join sku in _db.SKUs.Where(x => x.IsActive) on proposalHistory.SKUId equals sku.Id
-                                     //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id) && x.IsActive) on proposalHistory.BannerId equals banner.Id
-                                     join bannerPlant in _db.BannerPlants.Include(x => x.Plant).Include(x => x.Banner) on proposalHistory.BannerId equals bannerPlant.Banner.Id
-                                     join approval in _db.Approvals on proposalHistory.ApprovalId equals approval.Id
+                                     join banner in _db.Banners on proposalHistory.BannerId equals banner.Id
                                      where proposalHistory.Month == month && proposalHistory.Year == year
                                      select new ProposalHistory
                                      {
-                                         BannerId = bannerPlant.Banner.Id,
                                          Week = proposalHistory.Week,
-                                         BannerName = bannerPlant.Banner.BannerName,
-                                         PlantName = bannerPlant.PlantName,
+                                         BannerName = banner.BannerName,
                                          PCMap = sku.PCMap,
                                          DescriptionMap = sku.DescriptionMap,
                                          Month = proposalHistory.Month,
@@ -208,13 +177,13 @@ namespace FSAWebSystem.Services
                                          Remark = proposalHistory.Remark,
                                          ProposeAdditional = proposalHistory.ProposeAdditional,
                                          Rephase = proposalHistory.Rephase,
-                                         ApprovedBy = approval.ApprovedBy,
-                                         ApprovalNote = approval.ApprovalNote,
-                                         ApprovalStatus = approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel || approval.ApprovalStatus == ApprovalStatus.Pending ? approval.ApprovalStatus.ToString() + '(' + approval.ApproverWL + ')' : approval.ApprovalStatus.ToString(),
-                                         ApprovalId = approval.Id,
+                                         ApprovedBy = proposal.ApprovedBy,
+                                         ApprovalNote = proposal.ApprovalNote,
+                                         ApprovalStatus = proposal.ApprovalStatus == ApprovalStatus.WaitingNextLevel || proposal.ApprovalStatus == ApprovalStatus.Pending ? proposal.ApprovalStatus.ToString() + '(' + proposal.ApproverWL + ')' : proposal.ApprovalStatus.ToString(),
                                          SubmittedBy = proposalHistory.SubmittedBy
                                      });
 
+            var zz = proposalHistories.ToList();
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
                 //proposalHistories = proposalHistories.Where(x => userUnilever.Banners.Select(y => y.Id).Contains(x.BannerId));
@@ -313,11 +282,11 @@ namespace FSAWebSystem.Services
             return proposal;
         }
 
-        public async Task<Proposal> GetProposalByApprovalId(Guid approvalId)
-        {
-            var proposal = await _db.Proposals.Include(x => x.ProposalDetails).SingleOrDefaultAsync(x => x.ApprovalId == approvalId);
-            return proposal;
-        }
+        //public async Task<Proposal> GetProposalByApprovalId(Guid approvalId)
+        //{
+        //    var proposal = await _db.Proposals.Include(x => x.ProposalDetails).SingleOrDefaultAsync(x => x.ApprovalId == approvalId);
+        //    return proposal;
+        //}
 
         public async Task SaveProposalHistories(List<ProposalHistory> listProposalHistory)
         {

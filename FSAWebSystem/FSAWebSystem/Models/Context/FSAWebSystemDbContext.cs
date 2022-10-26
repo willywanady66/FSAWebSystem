@@ -36,6 +36,15 @@ namespace FSAWebSystem.Models.Context
             builder.Entity<WorkLevel>()
               .Property(x => x.IsActive)
               .HasDefaultValue(true);
+
+            foreach (var property in builder.Model.GetEntityTypes()
+                .SelectMany(t => t.GetProperties())
+                .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
+            {
+                property.SetPrecision(18);
+                property.SetScale(2);
+            }
+
         }
 
         public DbSet<UserUnilever> UsersUnilever { get; set; }
