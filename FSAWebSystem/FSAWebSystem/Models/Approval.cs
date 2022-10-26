@@ -9,7 +9,7 @@ namespace FSAWebSystem.Models
         public ApprovalStatus ApprovalStatus { get; set; }
 
         public ProposalType ProposalType { get; set; }
-
+        [NotMapped]
         public List<ApprovalDetail> ApprovalDetails { get; set; }
    
         public string? ApprovalNote { get; set; }
@@ -51,7 +51,7 @@ namespace FSAWebSystem.Models
         public string BannerName { get; set; }
 
         [NotMapped]
-        public Guid BannerId { get; set; }
+        public Guid BannerPlantId { get; set; }
         [NotMapped]
         public Guid SKUId { get; set; }
         [NotMapped]

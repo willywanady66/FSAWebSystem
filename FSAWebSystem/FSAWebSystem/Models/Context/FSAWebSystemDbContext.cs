@@ -59,7 +59,6 @@ namespace FSAWebSystem.Models.Context
         public DbSet<Menu> Menus { get; set; }
         public DbSet<WeeklyBucketHistory> WeeklyBucketHistories { get; set; }
         public DbSet<ProposalHistory> ProposalHistories { get; set; }
-        public DbSet<ApprovalDetail> ApprovalDetail { get; set; }
         public DbSet<AndromedaModel> Andromedas { get; set; }
         public DbSet<BottomPriceModel> BottomPrices { get; set; }
         public DbSet<ITrustModel> ITrusts{ get; set; }

@@ -45,104 +45,104 @@ namespace FSAWebSystem.Services
 
             if (workLevel == "CCD")
             {
-                approvals = (from approval in _db.Approvals
-                             join proposal in (from proposal in _db.Proposals
-                                               join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
-                                                                     join bannerPlant in bannerPlants on weeklyBucket.BannerId equals bannerPlant.Id
-                                                                     join sku in skus.Include(x => x.ProductCategory).ThenInclude(cat => cat.UserUnilevers)
-                                                                                     .Include(x => x.UserUnilevers).Where(y => y.UserUnilevers.Any(z => z.Id == user.Id) || y.ProductCategory.UserUnilevers.Any(u => u.Id == user.Id)) on weeklyBucket.SKUId equals sku.Id
-                                                                     select new WeeklyBucket
-                                                                     {
-                                                                         Id = weeklyBucket.Id,
-                                                                         ProductCategoryId = sku.ProductCategory.Id,
-                                                                         BannerName = bannerPlant.Banner.BannerName,
-                                                                         PlantName = bannerPlant.Plant.PlantName,
-                                                                         PCMap = sku.PCMap,
-                                                                         DescriptionMap = sku.DescriptionMap,
-                                                                     }) on proposal.WeeklyBucketId equals weeklyBucket.Id
-                                               select new Proposal
-                                               {
-                                                   Id = proposal.Id,
-                                                   ApprovalId = proposal.ApprovalId,
-                                                   BannerName = weeklyBucket.BannerName,
-                                                   PlantName = weeklyBucket.PlantName,
-                                                   PCMap = weeklyBucket.PCMap,
-                                                   DescriptionMap = weeklyBucket.DescriptionMap,
-                                                   ProposeAdditional = proposal.ProposeAdditional,
-                                                   Rephase = proposal.Rephase,
-                                                   Remark = proposal.Remark,
-                                                   Type = proposal.Type,
-                                                   Week = proposal.Week,
-                                                   SubmittedAt = proposal.SubmittedAt
-                                               }) on approval.Id equals proposal.ApprovalId
-                             where approval.ApprovalStatus == ApprovalStatus.Pending || approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel
-                             select new Approval
-                             {
-                                 ProposalId = proposal.Id,
-                                 Proposal = proposal,
-                                 ProposalType = proposal.Type.Value,
-                                 Id = approval.Id,
-                                 ProposalSubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
-                                 BannerName = proposal.BannerName,
-                                 PCMap = proposal.PCMap,
-                                 DescriptionMap = proposal.DescriptionMap,
-                                 ProposeAdditional = proposal.ProposeAdditional,
-                                 Rephase = proposal.Rephase,
-                                 Remark = proposal.Remark,
-                                 Week = proposal.Week,
-                                 Level = approval.Level,
-                                 ApproverWL = approval.ApproverWL,
-                             });
+                //approvals = (from approval in _db.Approvals
+                //             join proposal in (from proposal in _db.Proposals
+                //                               join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets.Include(x => x.BannerPlant)
+                //                                                     join bannerPlant in bannerPlants on weeklyBucket.BannerPlant.Id equals bannerPlant.Id
+                //                                                     join sku in skus.Include(x => x.ProductCategory).ThenInclude(cat => cat.UserUnilevers)
+                //                                                                     .Include(x => x.UserUnilevers).Where(y => y.UserUnilevers.Any(z => z.Id == user.Id) || y.ProductCategory.UserUnilevers.Any(u => u.Id == user.Id)) on weeklyBucket.SKUId equals sku.Id
+                //                                                     select new WeeklyBucket
+                //                                                     {
+                //                                                         Id = weeklyBucket.Id,
+                //                                                         ProductCategoryId = sku.ProductCategory.Id,
+                //                                                         BannerName = bannerPlant.Banner.BannerName,
+                //                                                         PlantName = bannerPlant.Plant.PlantName,
+                //                                                         PCMap = sku.PCMap,
+                //                                                         DescriptionMap = sku.DescriptionMap,
+                //                                                     }) on proposal.WeeklyBucketId equals weeklyBucket.Id
+                //                               select new Proposal
+                //                               {
+                //                                   Id = proposal.Id,
+                //                                   ApprovalId = proposal.ApprovalId,
+                //                                   BannerName = weeklyBucket.BannerName,
+                //                                   PlantName = weeklyBucket.PlantName,
+                //                                   PCMap = weeklyBucket.PCMap,
+                //                                   DescriptionMap = weeklyBucket.DescriptionMap,
+                //                                   ProposeAdditional = proposal.ProposeAdditional,
+                //                                   Rephase = proposal.Rephase,
+                //                                   Remark = proposal.Remark,
+                //                                   Type = proposal.Type,
+                //                                   Week = proposal.Week,
+                //                                   SubmittedAt = proposal.SubmittedAt
+                //                               }) on approval.Id equals proposal.ApprovalId
+                //             where approval.ApprovalStatus == ApprovalStatus.Pending || approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel
+                //             select new Approval
+                //             {
+                //                 ProposalId = proposal.Id,
+                //                 Proposal = proposal,
+                //                 ProposalType = proposal.Type.Value,
+                //                 Id = approval.Id,
+                //                 ProposalSubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
+                //                 BannerName = proposal.BannerName,
+                //                 PCMap = proposal.PCMap,
+                //                 DescriptionMap = proposal.DescriptionMap,
+                //                 ProposeAdditional = proposal.ProposeAdditional,
+                //                 Rephase = proposal.Rephase,
+                //                 Remark = proposal.Remark,
+                //                 Week = proposal.Week,
+                //                 Level = approval.Level,
+                //                 ApproverWL = approval.ApproverWL,
+                //             });
             }
             else
             {
-                approvals = (from approval in _db.Approvals
-                             join proposal in (from proposal in _db.Proposals
-                                               join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets
-                                                                     join bannerPlant in bannerPlants on weeklyBucket.BannerId equals bannerPlant.Id
-                                                                     join sku in skus on weeklyBucket.SKUId equals sku.Id
-                                                                     select new WeeklyBucket
-                                                                     {
-                                                                         Id = weeklyBucket.Id,
-                                                                         ProductCategoryId = sku.ProductCategory.Id,
-                                                                         BannerName = bannerPlant.Banner.BannerName,
-                                                                         PlantName = bannerPlant.Plant.PlantName,
-                                                                         PCMap = sku.PCMap,
-                                                                         DescriptionMap = sku.DescriptionMap,
-                                                                     }) on proposal.WeeklyBucketId equals weeklyBucket.Id
-                                               select new Proposal
-                                               {
-                                                   Id = proposal.Id,
-                                                   ApprovalId = proposal.ApprovalId,
-                                                   BannerName = weeklyBucket.BannerName,
-                                                   PlantName = weeklyBucket.PlantName,
-                                                   PCMap = weeklyBucket.PCMap,
-                                                   DescriptionMap = weeklyBucket.DescriptionMap,
-                                                   ProposeAdditional = proposal.ProposeAdditional,
-                                                   Rephase = proposal.Rephase,
-                                                   Remark = proposal.Remark,
-                                                   Type = proposal.Type,
-                                                   Week = proposal.Week,
-                                                   SubmittedAt = proposal.SubmittedAt
-                                               }) on approval.Id equals proposal.ApprovalId
-                             where approval.ApprovalStatus == ApprovalStatus.Pending || approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel
-                             select new Approval
-                             {
-                                 ProposalId = proposal.Id,
-                                 Proposal = proposal,
-                                 ProposalType = proposal.Type.Value,
-                                 Id = approval.Id,
-                                 ProposalSubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
-                                 BannerName = proposal.BannerName,
-                                 PCMap = proposal.PCMap,
-                                 DescriptionMap = proposal.DescriptionMap,
-                                 ProposeAdditional = proposal.ProposeAdditional,
-                                 Rephase = proposal.Rephase,
-                                 Remark = proposal.Remark,
-                                 Week = proposal.Week,
-                                 Level = approval.Level,
-                                 ApproverWL = approval.ApproverWL,
-                             });
+                //approvals = (from approval in _db.Approvals
+                //             join proposal in (from proposal in _db.Proposals
+                //                               join weeklyBucket in (from weeklyBucket in _db.WeeklyBuckets.Include(x => x.BannerPlant)
+                //                                                     join bannerPlant in bannerPlants on weeklyBucket.BannerPlant.Id equals bannerPlant.Id
+                //                                                     join sku in skus on weeklyBucket.SKUId equals sku.Id
+                //                                                     select new WeeklyBucket
+                //                                                     {
+                //                                                         Id = weeklyBucket.Id,
+                //                                                         ProductCategoryId = sku.ProductCategory.Id,
+                //                                                         BannerName = bannerPlant.Banner.BannerName,
+                //                                                         PlantName = bannerPlant.Plant.PlantName,
+                //                                                         PCMap = sku.PCMap,
+                //                                                         DescriptionMap = sku.DescriptionMap,
+                //                                                     }) on proposal.WeeklyBucketId equals weeklyBucket.Id
+                //                               select new Proposal
+                //                               {
+                //                                   Id = proposal.Id,
+                //                                   ApprovalId = proposal.ApprovalId,
+                //                                   BannerName = weeklyBucket.BannerName,
+                //                                   PlantName = weeklyBucket.PlantName,
+                //                                   PCMap = weeklyBucket.PCMap,
+                //                                   DescriptionMap = weeklyBucket.DescriptionMap,
+                //                                   ProposeAdditional = proposal.ProposeAdditional,
+                //                                   Rephase = proposal.Rephase,
+                //                                   Remark = proposal.Remark,
+                //                                   Type = proposal.Type,
+                //                                   Week = proposal.Week,
+                //                                   SubmittedAt = proposal.SubmittedAt
+                //                               }) on approval.Id equals proposal.ApprovalId
+                //             where approval.ApprovalStatus == ApprovalStatus.Pending || approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel
+                //             select new Approval
+                //             {
+                //                 ProposalId = proposal.Id,
+                //                 Proposal = proposal,
+                //                 ProposalType = proposal.Type.Value,
+                //                 Id = approval.Id,
+                //                 ProposalSubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
+                //                 BannerName = proposal.BannerName,
+                //                 PCMap = proposal.PCMap,
+                //                 DescriptionMap = proposal.DescriptionMap,
+                //                 ProposeAdditional = proposal.ProposeAdditional,
+                //                 Rephase = proposal.Rephase,
+                //                 Remark = proposal.Remark,
+                //                 Week = proposal.Week,
+                //                 Level = approval.Level,
+                //                 ApproverWL = approval.ApproverWL,
+                //             });
             }
 
             if (user.RoleUnilever.RoleName != "Administrator")
@@ -172,7 +172,8 @@ namespace FSAWebSystem.Services
             if (apprvl != null)
             {
                 var proposalThisApproval = _db.Proposals.Include(x => x.ProposalDetails.Where(y => y.ApprovalId == approvalId)).SingleOrDefault(x => x.ApprovalId == apprvl.Id);
-                var weeklyBucketProposal = _db.WeeklyBuckets.Single(x => x.Id == proposalThisApproval.WeeklyBucketId);
+                //var weeklyBucketProposal = _db.WeeklyBuckets.Single(x => x.Id == proposalThisApproval.WeeklyBucketId);
+                var weeklyBucketProposal = new WeeklyBucket();
                 apprvl.ProposalSubmitDate = proposalThisApproval.SubmittedAt.ToString("dd/MM/yyyy");
                 apprvl.Week = proposalThisApproval.Week;
                 apprvl.RequestedBy = (await _db.UsersUnilever.SingleAsync(x => x.Id == proposalThisApproval.SubmittedBy)).Email;
@@ -201,11 +202,11 @@ namespace FSAWebSystem.Services
                 foreach (var detail in proposalThisApproval.ProposalDetails)
                 {
                     var approvalDetail = new ApprovalDetail();
-                    var weeklyBucket = await _db.WeeklyBuckets.SingleAsync(x => x.Id == detail.WeeklyBucketId);
-                    var bannerPlant = await _db.BannerPlants.SingleAsync(x => x.Id == weeklyBucket.BannerId);
+                    var weeklyBucket = await _db.WeeklyBuckets.Include(x => x.BannerPlant).SingleAsync(x => x.Id == detail.WeeklyBucketId);
+                    var bannerPlant = await _db.BannerPlants.Include(x => x.Banner).Include(x => x.Plant).SingleAsync(x => x.Id == weeklyBucket.BannerPlant.Id);
                     var sku = await _db.SKUs.SingleAsync(x => x.Id == weeklyBucket.SKUId);
                     approvalDetail.BannerName = bannerPlant.Banner.BannerName;
-                    approvalDetail.PlantName = bannerPlant.PlantName;
+                    approvalDetail.PlantName = bannerPlant.Plant.PlantName;
                     approvalDetail.CDM = bannerPlant.CDM;
                     approvalDetail.KAM = bannerPlant.KAM;
                     approvalDetail.PCMap = sku.PCMap;
@@ -289,7 +290,7 @@ namespace FSAWebSystem.Services
             var users = await _db.UsersUnilever.Include(x => x.BannerPlants).Where(x => x.WLId == worklevel.Id).ToListAsync();
             if (approval.ApproverWL == "KAM WL 2")
             {
-                users = users.Where(x => x.BannerPlants.Select(x => x.Id).Contains(approval.BannerId)).ToList();
+                users = users.Where(x => x.BannerPlants.Select(x => x.Id).Contains(approval.BannerPlantId)).ToList();
             }
 
 
@@ -353,21 +354,21 @@ namespace FSAWebSystem.Services
                 {
                     var approval = email.Item3;
                     emailApproval.ApprovalUrl = baseUrl;
-                    var banner = await _db.BannerPlants.Include(x => x.Banner).SingleOrDefaultAsync(x => x.Id == approval.BannerId);
+                    var bannerPlant = await _db.BannerPlants.Include(x => x.Banner).SingleOrDefaultAsync(x => x.Id == approval.BannerPlantId);
                     var sku = await _db.SKUs.SingleOrDefaultAsync(x => x.Id == approval.SKUId);
                     var type = string.Empty;
                     if(typeGrp.Count > 1)
                     {
                         type = email.Item4;
                     }
-                    emailApproval.Body += $"<br> {type} <br> Banner: {banner.Banner.BannerName}" +
+                    emailApproval.Body += $"<br> {type} <br> Banner: {bannerPlant.Banner.BannerName}" +
                                  $"<br> " +
                                  $"PC Code: {sku.PCMap}" +
                                  $"<br>" +
                                  $"Description Map: {sku.DescriptionMap} " +
-                                 $"<br>" +
-                                 $"Link: <a href='{HtmlEncoder.Default.Encode(emailApproval.ApprovalUrl)}'>Detail</a> <br>";
+                                 $"<br>";
                 }
+                emailApproval.Body += $"Link: <a href='{HtmlEncoder.Default.Encode(emailApproval.ApprovalUrl)}'>Detail</a> <br>";
                 listEmail.Add(emailApproval);
             }
 
@@ -401,7 +402,7 @@ namespace FSAWebSystem.Services
             }
             foreach (var email in emails)
             {
-                var banner = _db.BannerPlants.Include(x => x.Banner).Single(x => x.Id == approval.BannerId);
+                var bannerPlant = _db.BannerPlants.Include(x => x.Banner).Single(x => x.Id == approval.BannerPlantId);
                 var sku = _db.SKUs.Single(x => x.Id == approval.SKUId);
                 var emailApproval = new EmailApproval();
                 emailApproval.RecipientEmail = email.Item1;
@@ -412,7 +413,7 @@ namespace FSAWebSystem.Services
                 emailApproval.Body = $"Hi, {emailApproval.RecipientEmail}, " +
                                      $"<br> Please approve {type} Proposal Request: " +
                                      $"<br> " +
-                                     $"Banner: {banner.Banner.BannerName} " +
+                                     $"Banner: {bannerPlant.Banner.BannerName} " +
                                      $"<br> " +
                                      $"PC Code: {sku.PCMap}" +
                                      $"<br>" +
@@ -486,7 +487,7 @@ namespace FSAWebSystem.Services
         public async Task<List<EmailApproval>> GenerateCombinedEmailApproval(List<Approval> approvals, string userApproverEmail, string approvalNote)
         {
             var listEmailApproval = new List<EmailApproval>();
-            var bannerPlants = _db.BannerPlants;
+            var bannerPlants = _db.BannerPlants.Include(x => x.Banner).Include(x => x.Plant);
             var skus = _db.SKUs;
             var proposals = _db.Proposals;
             var approvalGroups = approvals.GroupBy(x => new { x.RequestedBy, x.SKUId }).ToList();
@@ -501,7 +502,7 @@ namespace FSAWebSystem.Services
                 {
                     var type = string.Empty;
                     var sku = skus.SingleOrDefault(x => x.Id == approval.SKUId);
-                    var bannerPlant = bannerPlants.SingleOrDefault(x => x.Id == approval.BannerId);
+                    var bannerPlant = bannerPlants.SingleOrDefault(x => x.Id == approval.BannerPlantId);
                     var emailBody = GenerateApprovalEmailBody(approval, approval.ProposalType, userApproverEmail, approvalNote, bannerPlant, sku);
                     emailApproval.Body += emailBody;
                 }

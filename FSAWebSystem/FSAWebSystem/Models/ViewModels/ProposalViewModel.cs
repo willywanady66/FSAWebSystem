@@ -32,6 +32,7 @@
             public decimal reallocate { get; set; }
             public string remark { get; set; }
             public string bannerId { get; set; }
+            public string skuId { get; set; }
             public string bannerTargetId { get; set; }
             public bool isWaitingApproval { get; set; }
             public ProposalType Type { get; set; }

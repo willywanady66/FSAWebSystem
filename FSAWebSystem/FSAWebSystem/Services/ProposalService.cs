@@ -22,25 +22,27 @@ namespace FSAWebSystem.Services
         {
             _db.ChangeTracker.AutoDetectChangesEnabled = false;
 
-            var proposals = (from weeklyBucket in _db.WeeklyBuckets
-                                 //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id)) on weeklyBucket.BannerId equals banner.Id
-                             join bannerPlant in _db.BannerPlants.Include(x => x.Plant) on weeklyBucket.BannerId equals bannerPlant.Id
+            var proposals = (from weeklyBucket in _db.WeeklyBuckets.Include(x => x.BannerPlant)
+                             join bannerPlant in _db.BannerPlants.Include(x => x.Plant) on weeklyBucket.BannerPlant.Id equals bannerPlant.Id
                              join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
-                             join proposal in _db.Proposals.Where(x => x.IsWaitingApproval) on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
+                             join proposal in _db.Proposals.Include(x => x.Banner).Where(x => x.IsWaitingApproval) on weeklyBucket.BannerPlant.Banner.Id equals proposal.Banner.Id into proposalGroups
                              from p in proposalGroups.DefaultIfEmpty()
                              where weeklyBucket.Month == month && weeklyBucket.Year == year
                              select new Proposal
                              {
                                  Id = p != null ? p.Id : Guid.Empty,
-                                 WeeklyBucketId = weeklyBucket.Id,
-                                 BannerName = bannerPlant.Banner.BannerName,
-                                 BannerId = bannerPlant.Id,
+                                 KAM = bannerPlant.KAM,
+                                 CDM = bannerPlant.CDM,
+                                 Banner = bannerPlant.Banner,
+                                 //WeeklyBucketId = weeklyBucket.Id,
+                                 //BannerName = bannerPlant.Banner.BannerName,
+                                 //BannerId = bannerPlant.Banner.Id,
                                  Month = month,
                                  Week = week,
                                  Year = year,
-                                 PlantCode = bannerPlant.Plant.PlantCode,
-                                 PlantName = bannerPlant.Plant.PlantName,
-                                 PCMap = sku.PCMap,
+                                 //PlantCode = bannerPlant.Plant.PlantCode,
+                                 //PlantName = bannerPlant.Plant.PlantName,
+                                 Sku = sku,
                                  DescriptionMap = sku.DescriptionMap,
                                  RatingRate = weeklyBucket.RatingRate,
                                  MonthlyBucket = weeklyBucket.MonthlyBucket,
@@ -56,6 +58,28 @@ namespace FSAWebSystem.Services
                                  IsWaitingApproval = p != null ? p.IsWaitingApproval : false,
                                  SubmittedBy = p == null ? Guid.Empty : p.SubmittedBy.Value,
                                  ApprovalId = p != null ? p.ApprovalId : Guid.Empty,
+                             }).AsEnumerable().GroupBy(x => new {x.KAM, x.CDM, x.Banner.Id, SKUId = x.Sku.Id}).Select(y => new Proposal
+                             {
+                                 Id = y.First().Id,
+                                 Banner = y.First().Banner,
+                                 Month = y.First().Month,
+                                 Week = y.First().Week,
+                                 Year = y.First().Year,
+                                 //PlantCode = y.First().PlantCode,
+                                 //PlantName = y.First().PlantName,
+                                 Sku = y.First().Sku,
+                                 DescriptionMap = y.First().DescriptionMap,
+                                 RatingRate = y.Sum(z => z.RatingRate),
+                                 MonthlyBucket = y.Sum(z => z.MonthlyBucket),
+                                 ValidBJ = y.Sum(z => z.ValidBJ),
+                                 RemFSA = y.Sum(z => z.RemFSA),
+                                 CurrentBucket = y.Sum(z => z.CurrentBucket),
+                                 NextBucket = y.Sum(z => z.NextBucket),
+                                 Remark = y.SingleOrDefault(z => !string.IsNullOrEmpty(z.Remark)) != null ? y.SingleOrDefault(z => !string.IsNullOrEmpty(z.Remark)).Remark : string.Empty,
+                                 Rephase = y.First().Rephase,
+                                 IsWaitingApproval = y.Any(z => z.IsWaitingApproval),
+                                 SubmittedBy = y.SingleOrDefault(z => z.SubmittedBy != Guid.Empty) != null ? y.SingleOrDefault(z => z.SubmittedBy != Guid.Empty).SubmittedBy : Guid.Empty,
+                                 ApprovalId = y.SingleOrDefault(z => z.ApprovalId != Guid.Empty) != null ? y.SingleOrDefault(z => z.ApprovalId != Guid.Empty).ApprovalId : Guid.Empty,
                              });
 
             var proposal2 = proposals;
@@ -95,7 +119,7 @@ namespace FSAWebSystem.Services
 
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
-                proposal2 = proposal2.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BannerId));
+                proposal2 = proposal2.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.Banner.Id));
                 proposal2 = proposal2.Where(x => x.SubmittedBy == userUnilever.Id || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
             }
 
@@ -117,21 +141,18 @@ namespace FSAWebSystem.Services
                 switch (order.column)
                 {
                     case 0:
-                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.BannerName) : proposal2.OrderByDescending(x => x.BannerName);
+                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.Banner.BannerName) : proposal2.OrderBy(x => x.Banner.BannerName);
                         break;
                     case 1:
-                        proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.PlantName) : proposal2.OrderBy(x => x.PlantName);
-                        break;
-                    case 2:
                         proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.PCMap) : proposal2.OrderBy(x => x.PCMap);
                         break;
-                    case 3:
+                    case 2:
                         proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.DescriptionMap) : proposal2.OrderBy(x => x.DescriptionMap);
                         break;
-                    case 4:
+                    case 3:
                         proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.RatingRate) : proposal2.OrderBy(x => x.RatingRate);
                         break;
-                    case 5:
+                    case 4:
                         proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.MonthlyBucket) : proposal2.OrderBy(x => x.MonthlyBucket);
                         break;
                     //case 6:
@@ -140,10 +161,10 @@ namespace FSAWebSystem.Services
                     //case 7:
                     //    proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.NextBucket) : proposal2.OrderBy(x => x.NextBucket);
                     //    break;
-                    case 8:
+                    case 7:
                         proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.ValidBJ) : proposal2.OrderBy(x => x.ValidBJ);
                         break;
-                    case 9:
+                    case 8:
                         proposal2 = order.dir == "desc" ? proposal2.OrderByDescending(x => x.RemFSA) : proposal2.OrderBy(x => x.RemFSA);
                         break;
                     default:
@@ -171,15 +192,15 @@ namespace FSAWebSystem.Services
             var proposalHistories = (from proposalHistory in _db.ProposalHistories
                                      join sku in _db.SKUs.Where(x => x.IsActive) on proposalHistory.SKUId equals sku.Id
                                      //join banner in _db.Banners.Include(x => x.UserUnilevers).Where(x => x.UserUnilevers.Any(x => x.Id == userUnilever.Id) && x.IsActive) on proposalHistory.BannerId equals banner.Id
-                                     join banner in _db.BannerPlants.Include(x => x.Plant).Include(x => x.Banner) on proposalHistory.BannerId equals banner.Id
+                                     join bannerPlant in _db.BannerPlants.Include(x => x.Plant).Include(x => x.Banner) on proposalHistory.BannerId equals bannerPlant.Banner.Id
                                      join approval in _db.Approvals on proposalHistory.ApprovalId equals approval.Id
                                      where proposalHistory.Month == month && proposalHistory.Year == year
                                      select new ProposalHistory
                                      {
-                                         BannerId = banner.Id,
+                                         BannerId = bannerPlant.Banner.Id,
                                          Week = proposalHistory.Week,
-                                         BannerName = banner.Banner.BannerName,
-                                         PlantName = banner.PlantName,
+                                         BannerName = bannerPlant.Banner.BannerName,
+                                         PlantName = bannerPlant.PlantName,
                                          PCMap = sku.PCMap,
                                          DescriptionMap = sku.DescriptionMap,
                                          Month = proposalHistory.Month,
@@ -282,7 +303,7 @@ namespace FSAWebSystem.Services
 
         public IQueryable<Proposal> GetPendingProposals(FSACalendarDetail fsaDetail, Guid userId)
         {
-            var listProposals = _db.Proposals.Where(x => !x.IsWaitingApproval);
+            var listProposals = _db.Proposals.Include(x => x.Banner).Where(x => !x.IsWaitingApproval);
             return listProposals;
         }
 
@@ -307,10 +328,10 @@ namespace FSAWebSystem.Services
         public List<ProposalExcelModel> GetProposalExcelData(int month, int year, UserUnilever user)
         {
 
-            var data = (from weeklyBucket in _db.WeeklyBuckets
-                        join bannerPlant in _db.BannerPlants.Include(x => x.UserUnilevers).Include(x => x.Plant).Where(y => y.UserUnilevers.Any(z => z.Id == user.Id)) on weeklyBucket.BannerId equals bannerPlant.Id
+            var data = (from weeklyBucket in _db.WeeklyBuckets.Include(x => x.BannerPlant)
+                        join bannerPlant in _db.BannerPlants.Include(x => x.UserUnilevers).Include(x => x.Plant).Where(y => y.UserUnilevers.Any(z => z.Id == user.Id)) on weeklyBucket.BannerPlant.Id equals bannerPlant.Id
                         join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
-                        join proposal in _db.Proposals on weeklyBucket.Id equals proposal.WeeklyBucketId into proposalGroups
+                        join proposal in _db.Proposals.Include(x => x.Banner) on weeklyBucket.BannerPlant.Banner.Id equals proposal.Banner.Id into proposalGroups
                         from p in proposalGroups.DefaultIfEmpty()
                         where weeklyBucket.Month == month && weeklyBucket.Year == year
                         select new ProposalExcelModel

@@ -61,7 +61,7 @@ var getWeeklyHistoryUrl = '@Url.Action("GetWeeklyBucketHistoryPagination", "Prop
 				<thead>
 					<tr>
 						<th>Banner</th>
-						<th>Plant Name</th>
+						@*<th>Plant Name</th>*@
 						<th>PC Map</th>
 						<th>Description Map</th>
 						<th>RR</th>
@@ -73,11 +73,12 @@ var getWeeklyHistoryUrl = '@Url.Action("GetWeeklyBucketHistoryPagination", "Prop
 						<th style="width:20%">Rephase</th>
 						<th style="width:20%">Propose Additional</th>
 						<th style="width:20%">Remark</th>
-						<th class="hide_column">WeeklyId</th>
+						@*<th class="hide_column">WeeklyId</th>*@
 						<th class="hide_column">Id</th>
 						<th class="hide_column">ApprovalId</th>
 						<th class="hide_column">Waiting Approval</th>
 						<th class="hide_column">BannerId</th>
+						<th class="hide_column">SKUId</th>
 					</tr>
 				</thead>
 			</table>

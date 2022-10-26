@@ -7,7 +7,7 @@ namespace FSAWebSystem.Models.Bucket
         public Guid Id { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
-        public Guid BannerId { get; set; }
+        public BannerPlant BannerPlant { get; set; }
         public Guid SKUId { get; set; }
         public decimal PlantContribution { get; set; }
         public decimal MonthlyBucket { get; set; }

@@ -7,7 +7,7 @@ namespace FSAWebSystem.Models.Bucket
         public Guid Id { get; set; }
         public string? SWF2 { get; set; }
         public string? SWF3 { get; set; }
-        public Guid BannerId { get; set; }
+        public BannerPlant BannerPlant { get; set; }
         public Guid SKUId { get; set; }
         public decimal Price { get; set; }
         public decimal PlantContribution { get; set; }

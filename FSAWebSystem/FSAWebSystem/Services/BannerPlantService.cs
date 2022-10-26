@@ -113,13 +113,13 @@ namespace FSAWebSystem.Services
         public async Task<bool> IsBannerPlantUsed(string name, Guid plantId)
         {
             var bannerUsed = false;
-            var usedBanner = await _db.BannerPlants.Where(x => x.IsActive).Include(x => x.UserUnilevers).Include(x => x.Plant).Include(x => x.Banner).SingleOrDefaultAsync(x => x.Banner.BannerName.ToUpper() == name.ToUpper() && x.Plant.Id == plantId);
+            var usedBannerPlant = await _db.BannerPlants.Where(x => x.IsActive).Include(x => x.UserUnilevers).Include(x => x.Plant).Include(x => x.Banner).SingleOrDefaultAsync(x => x.Banner.BannerName.ToUpper() == name.ToUpper() && x.Plant.Id == plantId);
 
             
-            if(usedBanner != null)
+            if(usedBannerPlant != null)
             {
-                var usedBannerBucket = _db.MonthlyBuckets.Where(x => x.BannerId == usedBanner.Id);
-                bannerUsed = usedBanner.UserUnilevers.Any() || usedBannerBucket.Any();
+                var usedBannerBucket = _db.MonthlyBuckets.Include(x => x.BannerPlant).Where(x => x.BannerPlant.Id == usedBannerPlant.Id);
+                bannerUsed = usedBannerPlant.UserUnilevers.Any() || usedBannerBucket.Any();
             }
             
             return bannerUsed;

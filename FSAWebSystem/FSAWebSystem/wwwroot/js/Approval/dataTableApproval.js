@@ -135,7 +135,7 @@
                 setTimeout(
                 function() {
                         window.location.href = indexUrl;
-                    }, 800)
+                    }, 1000)
                 
             }
         })

@@ -12,7 +12,9 @@ namespace FSAWebSystem.Models
         public int Week { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
-        public Guid WeeklyBucketId { get; set; }    
+        //public Guid WeeklyBucketId { get; set; }    
+        public Banner Banner { get; set; }
+        public SKU Sku { get; set; }
         public decimal Rephase { get; set; }
 
         public decimal ProposeAdditional { get; set; }
@@ -38,8 +40,6 @@ namespace FSAWebSystem.Models
         public string CDM { get; set; }
         [NotMapped]
         public string KAM { get; set; }
-        [NotMapped]
-        public Guid BannerId { get; set; }
         [NotMapped]
         public string PlantCode { get; set; }
         [NotMapped]

@@ -4,6 +4,7 @@ using FSAWebSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    partial class FSAWebSystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221026042058_Init16")]
+    partial class Init16
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -658,9 +660,6 @@ namespace FSAWebSystem.Migrations
                     b.Property<decimal>("Rephase")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("SkuId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("SubmittedAt")
                         .HasColumnType("datetime2");
 
@@ -679,8 +678,6 @@ namespace FSAWebSystem.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BannerId");
-
-                    b.HasIndex("SkuId");
 
                     b.ToTable("Proposals");
                 });
@@ -722,7 +719,7 @@ namespace FSAWebSystem.Migrations
                     b.Property<Guid>("ApprovalId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BannerId")
+                    b.Property<Guid>("BannerPlantId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Month")
@@ -1246,15 +1243,7 @@ namespace FSAWebSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FSAWebSystem.Models.SKU", "Sku")
-                        .WithMany()
-                        .HasForeignKey("SkuId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Banner");
-
-                    b.Navigation("Sku");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.ProposalDetail", b =>

@@ -16,18 +16,18 @@ namespace FSAWebSystem.Services
         }
         public IQueryable<MonthlyBucket> GetMonthlyBuckets()
         {
-            return _db.MonthlyBuckets;
+            return _db.MonthlyBuckets.Include(x => x.BannerPlant);
         }
 
         public async Task<MonthlyBucketHistoryPagingData> GetMonthlyBucketHistoryPagination(DataTableParam param, UserUnilever userUnilever)
         {
-            var monthlyBucketHistories = (from monthlyBucket in _db.MonthlyBuckets
-                                         join bannerPlant in _db.BannerPlants.Include(x => x.Plant) on monthlyBucket.BannerId equals bannerPlant.Id
+            var monthlyBucketHistories = (from monthlyBucket in _db.MonthlyBuckets.Include(x => x.BannerPlant)
+                                         join bannerPlant in _db.BannerPlants.Include(x => x.Plant) on monthlyBucket.BannerPlant.Id equals bannerPlant.Id
                                          join sku in _db.SKUs on monthlyBucket.SKUId equals sku.Id
                                          where monthlyBucket.Year == Convert.ToInt32(param.year) && monthlyBucket.Month == Convert.ToInt32(param.month)
                                          select new MonthlyBucket
                                          {
-                                             BannerId = bannerPlant.Id,
+                                             BannerPlant = bannerPlant,
                                              UploadedDate = monthlyBucket.CreatedAt.Value.ToString("dd/MM/yyyy"),
                                              CreatedAt = monthlyBucket.CreatedAt,
                                              BannerName = bannerPlant.Banner.BannerName,
@@ -45,7 +45,7 @@ namespace FSAWebSystem.Services
                                          });
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
-                monthlyBucketHistories = monthlyBucketHistories.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BannerId));
+                monthlyBucketHistories = monthlyBucketHistories.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BannerPlant.Id));
             }
 
 
@@ -118,18 +118,18 @@ namespace FSAWebSystem.Services
 
         public IQueryable<WeeklyBucket> GetWeeklyBuckets()
         {
-            return _db.WeeklyBuckets;
+            return _db.WeeklyBuckets.Include(x => x.BannerPlant);
         }
 
         public async Task<WeeklyBucketHistoryPagingData> GetWeeklyBucketHistoryPagination(DataTableParam param, UserUnilever userUnilever)
         {
             var weeklyBucketHistories = (from weeklyBucketHistory in _db.WeeklyBucketHistories
-                                          join bannerPlant in _db.BannerPlants.Include(x => x.Plant)  on weeklyBucketHistory.BannerId equals bannerPlant.Id
+                                          join bannerPlant in _db.BannerPlants.Include(x => x.Plant)  on weeklyBucketHistory.BannerPlantId equals bannerPlant.Id
                                           join sku in _db.SKUs on weeklyBucketHistory.SKUId equals sku.Id
                                           where weeklyBucketHistory.Year == Convert.ToInt32(param.year) && weeklyBucketHistory.Month == Convert.ToInt32(param.month)
                                           select new WeeklyBucketHistory
                                           {
-                                              BannerId = bannerPlant.Id,
+                                              BannerPlantId = bannerPlant.Id,
                                               CreatedAt = weeklyBucketHistory.CreatedAt,
                                               UploadedDate = weeklyBucketHistory.CreatedAt.Value.ToShortDateString(),
                                               BannerName = bannerPlant.Banner.BannerName,
@@ -145,7 +145,7 @@ namespace FSAWebSystem.Services
 
             if(userUnilever.RoleUnilever.RoleName != "Administrator")
             {
-                weeklyBucketHistories = weeklyBucketHistories.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BannerId));
+                weeklyBucketHistories = weeklyBucketHistories.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BannerPlantId));
             }
 
 
@@ -209,19 +209,25 @@ namespace FSAWebSystem.Services
 
         public async Task<WeeklyBucket> GetWeeklyBucket(Guid id)
         {
-            var weeklyBucket = await _db.WeeklyBuckets.SingleOrDefaultAsync(x => x.Id == id);
+            var weeklyBucket = await _db.WeeklyBuckets.Include(x => x.BannerPlant).SingleOrDefaultAsync(x => x.Id == id);
             return weeklyBucket;
+        }
+
+        public async Task<IQueryable<WeeklyBucket>> GetWeeklyBucketsByBannerSKU(Guid bannerId, Guid skuId)
+        {
+            var weeklyBuckets = _db.WeeklyBuckets.Include(x => x.BannerPlant).Where(x => x.BannerPlant.Banner.Id == bannerId && x.SKUId == skuId);
+            return weeklyBuckets;
         }
 
         public async Task<List<Guid>> GetWeeklyBucketBanners()
 		{
-            var weeklyBucketBanners = await _db.WeeklyBuckets.Select(x => x.BannerId).Distinct().ToListAsync();
+            var weeklyBucketBanners = await _db.WeeklyBuckets.Include(x => x.BannerPlant).Select(x => x.BannerPlant.Id).Distinct().ToListAsync();
             return weeklyBucketBanners;
 		}
 		
         public async Task<WeeklyBucket> GetWeeklyBucketByBanner(Guid targetBanner, int year, int month)
 		{
-            var weeklyBucket = await _db.WeeklyBuckets.SingleAsync(x => x.BannerId == targetBanner && x.Month == month && x.Year == year);
+            var weeklyBucket = await _db.WeeklyBuckets.Include(x => x.BannerPlant).SingleAsync(x => x.BannerPlant.Id == targetBanner && x.Month == month && x.Year == year);
             return weeklyBucket;
         }
 
