@@ -23,6 +23,7 @@ using System.Security.Claims;
 using ExcelDataReader;
 using FSAWebSystem.Models.ApprovalSystemCheckModel;
 using Newtonsoft.Json;
+using FSAWebSystem.Models.ViewModels;
 
 namespace FSAWebSystem.Controllers
 {
@@ -162,7 +163,7 @@ namespace FSAWebSystem.Controllers
             var doc = (DocumentUpload)(Convert.ToInt32(documentType));
 
             List<string> errorMessages = new List<string>();
-
+            var currentDate = DateTime.Now;
 
             if (excelDocument != null)
             {
@@ -243,7 +244,19 @@ namespace FSAWebSystem.Controllers
                         case DocumentUpload.WeeklyDispatch:
                             columns = _uploadDocService.GetWeeklyDispatchColumns();
                             //dt = CreateDataTable(sheet, columns, errorMessages);
-                            await SaveWeeklyBucket(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+                            var calendarDetail = await _calendarService.GetCalendarDetail(currentDate);
+                            if(calendarDetail.Week == 1)
+                            {
+                                errorMessages.Add("Cannot Upload Weekly Dispatch on Week: " + calendarDetail.Week);
+                             
+                            }
+                            else
+                            {
+                                await SaveWeeklyBucket(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
+
+                            }
+                              
+                          
                             break;
                         case DocumentUpload.DailyOrder:
                             columns = _uploadDocService.GetDailyOrderColumns();
@@ -1012,47 +1025,45 @@ namespace FSAWebSystem.Controllers
 
         private void ValidateWeeklyBucketExcel(List<WeeklyBucket> listWeeklyBucket, List<string> errorMessages)
         {
+            var currDate = DateTime.Now;
             if (listWeeklyBucket.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
             {
                 errorMessages.Add("Please fill all PCMap and BannerName column");
             }
-            var z = _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.SKUId }).ToList();
 
-            var bannersNotExist = (from weeklyBucket in listWeeklyBucket
-                                   where !(
-                                   from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => x.BannerPlant.Id)
-                                   join bannerPlant in _bannerPlantService.GetAllActiveBannerPlant().AsEnumerable() on monthlyBucket.BannerPlant.Id equals bannerPlant.Id
-                                   select new
-                                   {
-                                       bannerPlant.Banner.BannerName,
-                                       bannerPlant.Plant.PlantCode,
-                                   }).Any(x => x.BannerName == weeklyBucket.BannerName && x.PlantCode == weeklyBucket.PlantCode)
-                                   select new
-                                   {
-                                       weeklyBucket.BannerName,
-                                       weeklyBucket.PlantCode
-                                   }).ToList();
+            var bucketPlants = (from monthlyBucket in _bucketService.GetMonthlyBuckets().Where(x => x.Month == currDate.Month && x.Year == currDate.Year).Select(x => x.BannerPlant).AsEnumerable().DistinctBy(x => x.Id)
+                               join bannerPlant in _bannerPlantService.GetAllActiveBannerPlant() on monthlyBucket.Id equals bannerPlant.Id
+                               select new BucketPlant
+                               {
+                                   BannerName = bannerPlant.Banner.BannerName,
+                                   PlantCode =bannerPlant.Plant.PlantCode,
+                               }).ToList();
+
+            var bannerBuckets = listWeeklyBucket.Select(x => new BucketPlant
+            {
+                BannerName = x.BannerName,
+                PlantCode = x.PlantCode
+            }).ToList();
+
+            var equalityComparer = new BucketPlantEqualityComparer();
+            var bannersNotExist = bannerBuckets.Except(bucketPlants, equalityComparer).ToList();
 
             foreach (var banner in bannersNotExist)
             {
                 errorMessages.Add("Banner Name: " + banner.BannerName + " and Plant Code: " + banner.PlantCode + " doesn't exist on Monthly Bucket");
             }
 
-            var skusNotExist = (from weeklyBucket in listWeeklyBucket
-                                where !(
-                                from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.SKUId })
-                                join sku in _skuService.GetAllProducts().Where(x => x.IsActive).AsEnumerable() on monthlyBucket.SKUId equals sku.Id
-                                select new
-                                {
-                                    sku.PCMap
-                                }).Any(x => x.PCMap == weeklyBucket.PCMap)
-                                select new
-                                {
-                                    weeklyBucket.PCMap
-                                }).ToList();
+            var skuMonthlyBuckets = (from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.SKUId })
+                                     join sku in _skuService.GetAllProducts().Where(x => x.IsActive).AsEnumerable() on monthlyBucket.SKUId equals sku.Id
+                                     select sku.PCMap).ToList();
+
+            var skuWeeklys = listWeeklyBucket.Select(x => x.PCMap).ToList();
+
+            var skusNotExist = skuWeeklys.Except(skuMonthlyBuckets);
+
             foreach (var sku in skusNotExist)
             {
-                errorMessages.Add("PC Map: " + sku.PCMap + " doesn't exist on Monthly Bucket");
+                errorMessages.Add("PC Map: " + sku + " doesn't exist on Monthly Bucket");
             }
 
         }

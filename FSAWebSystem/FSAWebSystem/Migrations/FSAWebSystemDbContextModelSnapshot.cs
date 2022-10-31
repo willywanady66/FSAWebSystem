@@ -314,13 +314,15 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<string>("BannerName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Trade")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BannerName");
 
                     b.ToTable("Banners");
                 });
@@ -776,6 +778,9 @@ namespace FSAWebSystem.Migrations
                     b.Property<Guid?>("BannerPlantId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("IsTarget")
+                        .HasColumnType("bit");
+
                     b.Property<decimal>("PlantContribution")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -906,12 +911,15 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<string>("PCMap")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<Guid>("ProductCategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PCMap")
+                        .IsUnique();
 
                     b.HasIndex("ProductCategoryId");
 

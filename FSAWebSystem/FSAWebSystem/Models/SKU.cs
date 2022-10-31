@@ -1,14 +1,17 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FSAWebSystem.Models
 {
+    [Index(nameof(PCMap), IsUnique = true)]
     public class SKU
     {
       
         public Guid Id { get; set; }
 
+    
         [Required]
         [Display(Name = "PC Map")]
         public string PCMap { get; set; }

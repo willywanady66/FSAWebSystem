@@ -5,10 +5,28 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace FSAWebSystem.Migrations
 {
-    public partial class Init : Migration
+    public partial class Init1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Andromedas",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PCMap = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UUStock = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ITThisWeek = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    RRACT13Wk = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    WeekCover = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Andromedas", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -56,21 +74,31 @@ namespace FSAWebSystem.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Trade = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CDM = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    KAM = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BannerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PlantName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PlantCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FSADocumentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    BannerName = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Banners", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BottomPrices",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PCMap = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AvgNormalPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    AvgBottomPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    AvgActualPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    MinActualPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Gap = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Remarks = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BottomPrices", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -106,6 +134,24 @@ namespace FSAWebSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ITrusts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PCMap = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SumIntransit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    SumStock = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    SumFinalRpp = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    DistStock = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ITrusts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Menus",
                 columns: table => new
                 {
@@ -115,6 +161,19 @@ namespace FSAWebSystem.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Menus", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Plants",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PlantName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PlantCode = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Plants", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -144,8 +203,10 @@ namespace FSAWebSystem.Migrations
                     Year = table.Column<int>(type: "int", nullable: false),
                     ProposalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ApprovalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Rephase = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ProposeAdditional = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BannerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Rephase = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ProposeAdditional = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubmittedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SubmittedAt = table.Column<string>(type: "nvarchar(max)", nullable: false)
@@ -153,29 +214,6 @@ namespace FSAWebSystem.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProposalHistories", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Proposals",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Week = table.Column<int>(type: "int", nullable: false),
-                    Month = table.Column<int>(type: "int", nullable: false),
-                    Year = table.Column<int>(type: "int", nullable: false),
-                    WeeklyBucketId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Rephase = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ProposeAdditional = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Remark = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<int>(type: "int", nullable: true),
-                    ApprovalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsWaitingApproval = table.Column<bool>(type: "bit", nullable: false),
-                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    SubmittedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Proposals", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -219,44 +257,15 @@ namespace FSAWebSystem.Migrations
                     Month = table.Column<int>(type: "int", nullable: false),
                     Year = table.Column<int>(type: "int", nullable: false),
                     Week = table.Column<int>(type: "int", nullable: false),
-                    BannerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BannerPlantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DispatchConsume = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ULIWeek = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WeeklyBucketHistories", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "WeeklyBuckets",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Month = table.Column<int>(type: "int", nullable: false),
-                    Year = table.Column<int>(type: "int", nullable: false),
-                    BannerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PlantContribution = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MonthlyBucket = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    RatingRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BucketWeek1 = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BucketWeek2 = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BucketWeek3 = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BucketWeek4 = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BucketWeek5 = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ValidBJ = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    RemFSA = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DispatchConsume = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DispatchConsume = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WeeklyBuckets", x => x.Id);
+                    table.PrimaryKey("PK_WeeklyBucketHistories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -406,32 +415,34 @@ namespace FSAWebSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MonthlyBuckets",
+                name: "BannerPlants",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SWF2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SWF3 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CDM = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    KAM = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BannerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PlantContribution = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    RatingRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TCT = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MonthlyTarget = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Month = table.Column<int>(type: "int", nullable: false),
-                    Year = table.Column<int>(type: "int", nullable: false),
+                    PlantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FSADocumentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MonthlyBuckets", x => x.Id);
+                    table.PrimaryKey("PK_BannerPlants", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MonthlyBuckets_FSADocuments_FSADocumentId",
-                        column: x => x.FSADocumentId,
-                        principalTable: "FSADocuments",
+                        name: "FK_BannerPlants_Banners_BannerId",
+                        column: x => x.BannerId,
+                        principalTable: "Banners",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BannerPlants_Plants_PlantId",
+                        column: x => x.PlantId,
+                        principalTable: "Plants",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -441,7 +452,7 @@ namespace FSAWebSystem.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PCMap = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PCMap = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DescriptionMap = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ProductCategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
@@ -458,27 +469,6 @@ namespace FSAWebSystem.Migrations
                         name: "FK_SKUs_ProductCategories_ProductCategoryId",
                         column: x => x.ProductCategoryId,
                         principalTable: "ProductCategories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProposalDetails",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProposalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ApprovalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    WeeklyBucketId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProposeAdditional = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProposalDetails", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ProposalDetails_Proposals_ProposalId",
-                        column: x => x.ProposalId,
-                        principalTable: "Proposals",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -559,21 +549,209 @@ namespace FSAWebSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MonthlyBuckets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SWF2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SWF3 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BannerPlantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PlantContribution = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    RatingRate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TCT = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    MonthlyTarget = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Month = table.Column<int>(type: "int", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FSADocumentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MonthlyBuckets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MonthlyBuckets_BannerPlants_BannerPlantId",
+                        column: x => x.BannerPlantId,
+                        principalTable: "BannerPlants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MonthlyBuckets_FSADocuments_FSADocumentId",
+                        column: x => x.FSADocumentId,
+                        principalTable: "FSADocuments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WeeklyBuckets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Month = table.Column<int>(type: "int", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
+                    BannerPlantId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PlantContribution = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    MonthlyBucket = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    RatingRate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    BucketWeek1 = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    BucketWeek2 = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    BucketWeek3 = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    BucketWeek4 = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    BucketWeek5 = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ValidBJ = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    RemFSA = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    DispatchConsume = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WeeklyBuckets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WeeklyBuckets_BannerPlants_BannerPlantId",
+                        column: x => x.BannerPlantId,
+                        principalTable: "BannerPlants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Proposals",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Week = table.Column<int>(type: "int", nullable: false),
+                    Month = table.Column<int>(type: "int", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
+                    BannerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    KAM = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CDM = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SkuId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Rephase = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ProposeAdditional = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Remark = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: true),
+                    IsWaitingApproval = table.Column<bool>(type: "bit", nullable: false),
+                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    SubmittedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Proposals", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Proposals_Banners_BannerId",
+                        column: x => x.BannerId,
+                        principalTable: "Banners",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Proposals_SKUs_SkuId",
+                        column: x => x.SkuId,
+                        principalTable: "SKUs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BannerPlantUserUnilever",
+                columns: table => new
+                {
+                    BannerPlantsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserUnileversId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BannerPlantUserUnilever", x => new { x.BannerPlantsId, x.UserUnileversId });
+                    table.ForeignKey(
+                        name: "FK_BannerPlantUserUnilever_BannerPlants_BannerPlantsId",
+                        column: x => x.BannerPlantsId,
+                        principalTable: "BannerPlants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BannerPlantUserUnilever_UsersUnilever_UserUnileversId",
+                        column: x => x.UserUnileversId,
+                        principalTable: "UsersUnilever",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductCategoryUserUnilever",
+                columns: table => new
+                {
+                    ProductCategoriesId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserUnileversId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductCategoryUserUnilever", x => new { x.ProductCategoriesId, x.UserUnileversId });
+                    table.ForeignKey(
+                        name: "FK_ProductCategoryUserUnilever_ProductCategories_ProductCategoriesId",
+                        column: x => x.ProductCategoriesId,
+                        principalTable: "ProductCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductCategoryUserUnilever_UsersUnilever_UserUnileversId",
+                        column: x => x.UserUnileversId,
+                        principalTable: "UsersUnilever",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SKUUserUnilever",
+                columns: table => new
+                {
+                    SKUsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserUnileversId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SKUUserUnilever", x => new { x.SKUsId, x.UserUnileversId });
+                    table.ForeignKey(
+                        name: "FK_SKUUserUnilever_SKUs_SKUsId",
+                        column: x => x.SKUsId,
+                        principalTable: "SKUs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SKUUserUnilever_UsersUnilever_UserUnileversId",
+                        column: x => x.UserUnileversId,
+                        principalTable: "UsersUnilever",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Approvals",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProposalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ApprovalStatus = table.Column<int>(type: "int", nullable: false),
                     ProposalType = table.Column<int>(type: "int", nullable: false),
-                    RejectionReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ApprovalNote = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ApprovedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Level = table.Column<int>(type: "int", nullable: false),
+                    ApproverWL = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserUnileverId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Approvals", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Approvals_Proposals_ProposalId",
+                        column: x => x.ProposalId,
+                        principalTable: "Proposals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Approvals_UsersUnilever_UserUnileverId",
                         column: x => x.UserUnileverId,
@@ -582,25 +760,30 @@ namespace FSAWebSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BannerUserUnilever",
+                name: "ProposalDetails",
                 columns: table => new
                 {
-                    BannersId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserUnileversId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BannerPlantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    WeeklyBucketId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ActualRephase = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ActualProposeAdditional = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PlantContribution = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ProposalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsTarget = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BannerUserUnilever", x => new { x.BannersId, x.UserUnileversId });
+                    table.PrimaryKey("PK_ProposalDetails", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BannerUserUnilever_Banners_BannersId",
-                        column: x => x.BannersId,
-                        principalTable: "Banners",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_ProposalDetails_BannerPlants_BannerPlantId",
+                        column: x => x.BannerPlantId,
+                        principalTable: "BannerPlants",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_BannerUserUnilever_UsersUnilever_UserUnileversId",
-                        column: x => x.UserUnileversId,
-                        principalTable: "UsersUnilever",
+                        name: "FK_ProposalDetails_Proposals_ProposalId",
+                        column: x => x.ProposalId,
+                        principalTable: "Proposals",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -611,8 +794,10 @@ namespace FSAWebSystem.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ApprovalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    WeeklyBucketId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProposeAdditional = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    ProposeAdditional = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Rephase = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PlantContribution = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ActualProposeAdditional = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -629,6 +814,11 @@ namespace FSAWebSystem.Migrations
                 name: "IX_ApprovalDetail_ApprovalId",
                 table: "ApprovalDetail",
                 column: "ApprovalId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Approvals_ProposalId",
+                table: "Approvals",
+                column: "ProposalId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Approvals_UserUnileverId",
@@ -675,9 +865,24 @@ namespace FSAWebSystem.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BannerUserUnilever_UserUnileversId",
-                table: "BannerUserUnilever",
+                name: "IX_BannerPlants_BannerId",
+                table: "BannerPlants",
+                column: "BannerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BannerPlants_PlantId",
+                table: "BannerPlants",
+                column: "PlantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BannerPlantUserUnilever_UserUnileversId",
+                table: "BannerPlantUserUnilever",
                 column: "UserUnileversId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Banners_BannerName",
+                table: "Banners",
+                column: "BannerName");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FSACalendarDetails_FSACalendarHeaderId",
@@ -690,9 +895,24 @@ namespace FSAWebSystem.Migrations
                 column: "RoleUnileversRoleUnileverId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_MonthlyBuckets_BannerPlantId",
+                table: "MonthlyBuckets",
+                column: "BannerPlantId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MonthlyBuckets_FSADocumentId",
                 table: "MonthlyBuckets",
                 column: "FSADocumentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductCategoryUserUnilever_UserUnileversId",
+                table: "ProductCategoryUserUnilever",
+                column: "UserUnileversId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProposalDetails_BannerPlantId",
+                table: "ProposalDetails",
+                column: "BannerPlantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProposalDetails_ProposalId",
@@ -700,9 +920,30 @@ namespace FSAWebSystem.Migrations
                 column: "ProposalId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Proposals_BannerId",
+                table: "Proposals",
+                column: "BannerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Proposals_SkuId",
+                table: "Proposals",
+                column: "SkuId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SKUs_PCMap",
+                table: "SKUs",
+                column: "PCMap",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SKUs_ProductCategoryId",
                 table: "SKUs",
                 column: "ProductCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SKUUserUnilever_UserUnileversId",
+                table: "SKUUserUnilever",
+                column: "UserUnileversId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ULICalendarDetails_ULICalendarId",
@@ -713,10 +954,18 @@ namespace FSAWebSystem.Migrations
                 name: "IX_UsersUnilever_RoleUnileverId",
                 table: "UsersUnilever",
                 column: "RoleUnileverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WeeklyBuckets_BannerPlantId",
+                table: "WeeklyBuckets",
+                column: "BannerPlantId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Andromedas");
+
             migrationBuilder.DropTable(
                 name: "ApprovalDetail");
 
@@ -736,10 +985,16 @@ namespace FSAWebSystem.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "BannerUserUnilever");
+                name: "BannerPlantUserUnilever");
+
+            migrationBuilder.DropTable(
+                name: "BottomPrices");
 
             migrationBuilder.DropTable(
                 name: "FSACalendarDetails");
+
+            migrationBuilder.DropTable(
+                name: "ITrusts");
 
             migrationBuilder.DropTable(
                 name: "MenuRoleUnilever");
@@ -748,13 +1003,16 @@ namespace FSAWebSystem.Migrations
                 name: "MonthlyBuckets");
 
             migrationBuilder.DropTable(
+                name: "ProductCategoryUserUnilever");
+
+            migrationBuilder.DropTable(
                 name: "ProposalDetails");
 
             migrationBuilder.DropTable(
                 name: "ProposalHistories");
 
             migrationBuilder.DropTable(
-                name: "SKUs");
+                name: "SKUUserUnilever");
 
             migrationBuilder.DropTable(
                 name: "ULICalendarDetails");
@@ -778,9 +1036,6 @@ namespace FSAWebSystem.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "Banners");
-
-            migrationBuilder.DropTable(
                 name: "FSACalendarHeaders");
 
             migrationBuilder.DropTable(
@@ -790,19 +1045,31 @@ namespace FSAWebSystem.Migrations
                 name: "FSADocuments");
 
             migrationBuilder.DropTable(
-                name: "Proposals");
-
-            migrationBuilder.DropTable(
-                name: "ProductCategories");
-
-            migrationBuilder.DropTable(
                 name: "ULICalendars");
+
+            migrationBuilder.DropTable(
+                name: "BannerPlants");
+
+            migrationBuilder.DropTable(
+                name: "Proposals");
 
             migrationBuilder.DropTable(
                 name: "UsersUnilever");
 
             migrationBuilder.DropTable(
+                name: "Plants");
+
+            migrationBuilder.DropTable(
+                name: "Banners");
+
+            migrationBuilder.DropTable(
+                name: "SKUs");
+
+            migrationBuilder.DropTable(
                 name: "RoleUnilevers");
+
+            migrationBuilder.DropTable(
+                name: "ProductCategories");
         }
     }
 }

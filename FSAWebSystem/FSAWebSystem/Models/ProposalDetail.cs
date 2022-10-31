@@ -12,6 +12,7 @@ namespace FSAWebSystem.Models
         public decimal ActualProposeAdditional { get; set; }
         public decimal PlantContribution { get; set; }
         public Proposal Proposal { get; set; }
+        public bool IsTarget { get; set; }
 
         [NotMapped]
         public string BannerName { get; set; }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    [Migration("20221005151200_Init15")]
-    partial class Init15
+    [Migration("20221030142455_Init1")]
+    partial class Init1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -136,6 +136,9 @@ namespace FSAWebSystem.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("ProposalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("ProposalType")
                         .HasColumnType("int");
 
@@ -143,6 +146,8 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProposalId");
 
                     b.HasIndex("UserUnileverId");
 
@@ -155,17 +160,24 @@ namespace FSAWebSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("ActualProposeAdditional")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<Guid>("ApprovalId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("PlantContribution")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("ProposeAdditional")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Rephase")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("WeeklyBucketId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -185,6 +197,7 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("ITThisWeek")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PCMap")
@@ -192,15 +205,18 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("RRACT13Wk")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("SKUId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("UUStock")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("WeekCover")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -215,12 +231,15 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("AvgActualPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("AvgBottomPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("AvgNormalPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Description")
@@ -228,9 +247,11 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Gap")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("MinActualPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PCMap")
@@ -260,6 +281,7 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("DistStock")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PCMap")
@@ -270,12 +292,15 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("SumFinalRpp")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SumIntransit")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SumStock")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -291,13 +316,15 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<string>("BannerName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Trade")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BannerName");
 
                     b.ToTable("Banners");
                 });
@@ -357,7 +384,7 @@ namespace FSAWebSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BannerId")
+                    b.Property<Guid>("BannerPlantId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -374,15 +401,19 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("MonthlyTarget")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("PlantContribution")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("RatingRate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("SKUId")
@@ -395,12 +426,15 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TCT")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Year")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BannerPlantId");
 
                     b.HasIndex("FSADocumentId");
 
@@ -413,22 +447,27 @@ namespace FSAWebSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BannerId")
+                    b.Property<Guid>("BannerPlantId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("BucketWeek1")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("BucketWeek2")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("BucketWeek3")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("BucketWeek4")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("BucketWeek5")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -438,33 +477,41 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("DispatchConsume")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Month")
                         .HasColumnType("int");
 
                     b.Property<decimal>("MonthlyBucket")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("PlantContribution")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("RatingRate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("RemFSA")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("SKUId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("ValidBJ")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Year")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BannerPlantId");
 
                     b.ToTable("WeeklyBuckets");
                 });
@@ -475,7 +522,7 @@ namespace FSAWebSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BannerId")
+                    b.Property<Guid>("BannerPlantId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -485,6 +532,7 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("DispatchConsume")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Month")
@@ -660,23 +708,36 @@ namespace FSAWebSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ApprovalId")
+                    b.Property<Guid>("BannerId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CDM")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsWaitingApproval")
                         .HasColumnType("bit");
+
+                    b.Property<string>("KAM")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Month")
                         .HasColumnType("int");
 
                     b.Property<decimal>("ProposeAdditional")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Remark")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Rephase")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("SkuId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("SubmittedAt")
                         .HasColumnType("datetime2");
@@ -690,13 +751,14 @@ namespace FSAWebSystem.Migrations
                     b.Property<int>("Week")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("WeeklyBucketId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Year")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BannerId");
+
+                    b.HasIndex("SkuId");
 
                     b.ToTable("Proposals");
                 });
@@ -707,22 +769,33 @@ namespace FSAWebSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ApprovalId")
+                    b.Property<decimal>("ActualProposeAdditional")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ActualRephase")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("BannerPlantId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsTarget")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("PlantContribution")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("ProposalId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("ProposeAdditional")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Rephase")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("WeeklyBucketId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BannerPlantId");
 
                     b.HasIndex("ProposalId");
 
@@ -744,7 +817,11 @@ namespace FSAWebSystem.Migrations
                     b.Property<int>("Month")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("ProposalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("ProposeAdditional")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Remark")
@@ -752,6 +829,7 @@ namespace FSAWebSystem.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Rephase")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("SKUId")
@@ -835,12 +913,15 @@ namespace FSAWebSystem.Migrations
 
                     b.Property<string>("PCMap")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<Guid>("ProductCategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PCMap")
+                        .IsUnique();
 
                     b.HasIndex("ProductCategoryId");
 
@@ -1193,9 +1274,17 @@ namespace FSAWebSystem.Migrations
 
             modelBuilder.Entity("FSAWebSystem.Models.Approval", b =>
                 {
+                    b.HasOne("FSAWebSystem.Models.Proposal", "Proposal")
+                        .WithMany()
+                        .HasForeignKey("ProposalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("FSAWebSystem.Models.UserUnilever", null)
                         .WithMany("Approvals")
                         .HasForeignKey("UserUnileverId");
+
+                    b.Navigation("Proposal");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.ApprovalDetail", b =>
@@ -1230,13 +1319,32 @@ namespace FSAWebSystem.Migrations
 
             modelBuilder.Entity("FSAWebSystem.Models.Bucket.MonthlyBucket", b =>
                 {
+                    b.HasOne("FSAWebSystem.Models.BannerPlant", "BannerPlant")
+                        .WithMany()
+                        .HasForeignKey("BannerPlantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("FSAWebSystem.Models.FSADocument", "FSADocument")
                         .WithMany()
                         .HasForeignKey("FSADocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("BannerPlant");
+
                     b.Navigation("FSADocument");
+                });
+
+            modelBuilder.Entity("FSAWebSystem.Models.Bucket.WeeklyBucket", b =>
+                {
+                    b.HasOne("FSAWebSystem.Models.BannerPlant", "BannerPlant")
+                        .WithMany()
+                        .HasForeignKey("BannerPlantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BannerPlant");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.FSACalendarDetail", b =>
@@ -1246,13 +1354,40 @@ namespace FSAWebSystem.Migrations
                         .HasForeignKey("FSACalendarHeaderId");
                 });
 
+            modelBuilder.Entity("FSAWebSystem.Models.Proposal", b =>
+                {
+                    b.HasOne("FSAWebSystem.Models.Banner", "Banner")
+                        .WithMany()
+                        .HasForeignKey("BannerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FSAWebSystem.Models.SKU", "Sku")
+                        .WithMany()
+                        .HasForeignKey("SkuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Banner");
+
+                    b.Navigation("Sku");
+                });
+
             modelBuilder.Entity("FSAWebSystem.Models.ProposalDetail", b =>
                 {
-                    b.HasOne("FSAWebSystem.Models.Proposal", null)
+                    b.HasOne("FSAWebSystem.Models.BannerPlant", "BannerPlant")
+                        .WithMany()
+                        .HasForeignKey("BannerPlantId");
+
+                    b.HasOne("FSAWebSystem.Models.Proposal", "Proposal")
                         .WithMany("ProposalDetails")
                         .HasForeignKey("ProposalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("BannerPlant");
+
+                    b.Navigation("Proposal");
                 });
 
             modelBuilder.Entity("FSAWebSystem.Models.SKU", b =>

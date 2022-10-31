@@ -27,7 +27,6 @@ namespace FSAWebSystem.Services
                                          where monthlyBucket.Year == Convert.ToInt32(param.year) && monthlyBucket.Month == Convert.ToInt32(param.month)
                                          select new MonthlyBucket
                                          {
-                                             BannerPlant = bannerPlant,
                                              UploadedDate = monthlyBucket.CreatedAt.Value.ToString("dd/MM/yyyy"),
                                              CreatedAt = monthlyBucket.CreatedAt,
                                              BannerName = bannerPlant.Banner.BannerName,
@@ -118,7 +117,7 @@ namespace FSAWebSystem.Services
 
         public IQueryable<WeeklyBucket> GetWeeklyBuckets()
         {
-            return _db.WeeklyBuckets.Include(x => x.BannerPlant);
+            return _db.WeeklyBuckets.Include(x => x.BannerPlant).ThenInclude(x => x.Banner);
         }
 
         public async Task<WeeklyBucketHistoryPagingData> GetWeeklyBucketHistoryPagination(DataTableParam param, UserUnilever userUnilever)
@@ -235,6 +234,127 @@ namespace FSAWebSystem.Services
         {
             var isWeeklyBucketExist = await _db.WeeklyBucketHistories.AnyAsync(x => x.Month == month && x.Week == week && x.Year == year);
             return isWeeklyBucketExist;
+        }
+
+
+        public async Task<ProposeAddtionalBucket> GetWeeklyBucketSource(IQueryable<BannerPlant> bannerPlants, IQueryable<SKU> skus, decimal proposeAdditional, Proposal proposal, int month, int year, ProposalType? proposalType = null)
+        {
+            var i = 0;
+            if(proposalType != null)
+            {
+                if (proposalType == ProposalType.ReallocateAcrossKAM)
+                {
+                    i = 1;
+                }
+                else if (proposalType == ProposalType.ReallocateAcrossCDM)
+                {
+                    i = 2;
+                }
+                else
+                {
+                    i = 3;
+                    proposal.Type = ProposalType.ProposeAdditional;
+                }
+            }
+          
+            var bannerPlantSourceIds = new List<Guid>();
+            var weeklyBucketSource = new WeeklyBucket();
+            var weeklyBucketTargets = (await GetWeeklyBucketsByBannerSKU(proposal.Banner.Id, proposal.Sku.Id)).Where(x => x.Month == month && x.Year == year);
+            var proposeAdditionalBucket = new ProposeAddtionalBucket();
+            proposeAdditionalBucket.WeeklyBucketTargets = weeklyBucketTargets.ToList();
+
+            var targetBannerPlants = weeklyBucketTargets.Select(y => y.BannerPlant.Id);
+            var weeklyBuckets = GetWeeklyBuckets().Where(x => x.Month == month && x.Year == year);
+            while (i != 3)
+            {
+
+                switch (i)
+                {
+                    //REALLOCATE ACROSS KAM
+                    case 0:
+                        bannerPlantSourceIds = await bannerPlants.Where(x => x.IsActive && x.CDM == proposal.CDM && x.KAM == proposal.KAM && !targetBannerPlants.Contains(x.Id) && x.Banner.Id != proposal.Banner.Id).Select(x => x.Id).ToListAsync();
+
+                        proposal.Type = ProposalType.ReallocateAcrossKAM;
+
+                        //bucketTargetIds = await bannerPlants.Where(x => x.KAM == bannerPlant.KAM && x.CDM == bannerPlant.CDM).Select(x => x.Id).ToListAsync();
+                        //weeklyBucketTargets = _bucketService.GetWeeklyBuckets().Where(x => bucketTargetIds.Contains(x.BannerPlant.Id) && x.SKUId == sku.Id && x.Month == month && x.Year == year);
+                        //proposal.Type = ProposalType.ReallocateAcrossKAM;
+                        break;
+                    //REALLOCATE ACROSS CDM
+                    case 1:
+                        bannerPlantSourceIds = await bannerPlants.Where(x => x.IsActive && x.CDM == proposal.CDM && !targetBannerPlants.Contains(x.Id) && x.Banner.Id != proposal.Banner.Id).Select(x => x.Id).ToListAsync();
+
+                        proposal.Type = ProposalType.ReallocateAcrossCDM;
+                        break;
+                    //REALLOCATE ACROSS MT
+                    case 2:
+                        bannerPlantSourceIds = await bannerPlants.Where(x => x.IsActive && !targetBannerPlants.Contains(x.Id) && x.Banner.Id != proposal.Banner.Id).Select(x => x.Id).ToListAsync();
+                        proposal.Type = ProposalType.ReallocateAcrossMT;
+                        break;
+                    default:
+                        proposal.Type = ProposalType.ProposeAdditional;
+                        break;
+                }
+
+                if (bannerPlantSourceIds.Any())
+                {
+                    var weeklyBucketSources = weeklyBuckets.AsEnumerable().Where(x => bannerPlantSourceIds.Contains(x.BannerPlant.Id) && x.SKUId == proposal.Sku.Id);
+
+                    var weeklyBucketSouceGroups = weeklyBucketSources.GroupBy(x => new { x.BannerPlant.CDM, x.BannerPlant.KAM, x.BannerPlant.Banner.Id }).ToList();
+
+                   
+                    var groupedWeeklyBucketSources = new List<WeeklyBucket>();
+                    foreach (var weeklyBucketSourceGroup in weeklyBucketSouceGroups)
+                    {
+                        var groupedWeeklyBucketSource = new WeeklyBucket();
+                        groupedWeeklyBucketSource.CDM = weeklyBucketSourceGroup.Key.CDM;
+                        groupedWeeklyBucketSource.KAM = weeklyBucketSourceGroup.Key.KAM;
+                        groupedWeeklyBucketSource.Banner = weeklyBucketSourceGroup.First().BannerPlant.Banner;
+                        groupedWeeklyBucketSource.MonthlyBucket = weeklyBucketSourceGroup.Sum(x => x.MonthlyBucket);
+                        groupedWeeklyBucketSource.RemFSA = weeklyBucketSourceGroup.Sum(x => x.RemFSA);
+                        groupedWeeklyBucketSources.Add(groupedWeeklyBucketSource);
+                    }
+                    if (!groupedWeeklyBucketSources.Any())
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        var weeklyBucketSourceByMonthly = groupedWeeklyBucketSources.Where(x => x.MonthlyBucket > proposeAdditional).OrderByDescending(x => x.MonthlyBucket).FirstOrDefault();
+                        var weeklyBucketSourceByRemFSA = groupedWeeklyBucketSources.Where(x => x.RemFSA > proposeAdditional).OrderByDescending(x => x.RemFSA).FirstOrDefault();
+                        if (weeklyBucketSourceByMonthly == null && weeklyBucketSourceByRemFSA == null)
+                        {
+                            proposal.Type = ProposalType.ProposeAdditional;
+                            i++;
+                        }
+                        else if (weeklyBucketSourceByMonthly != null && weeklyBucketSourceByRemFSA != null)
+                        {
+                            if (weeklyBucketSourceByMonthly.MonthlyBucket > weeklyBucketSourceByRemFSA.RemFSA)
+                            {
+                                weeklyBucketSource = weeklyBucketSourceByMonthly;
+                            }
+                            else
+                            {
+                                weeklyBucketSource = weeklyBucketSourceByRemFSA;
+                            }
+                        }
+                        else
+                        {
+                            weeklyBucketSource = weeklyBucketSourceByMonthly != null ? weeklyBucketSourceByMonthly : weeklyBucketSourceByRemFSA;
+
+                        }
+                        proposeAdditionalBucket.GroupedBucket = weeklyBucketSource;
+                        proposeAdditionalBucket.WeeklyBucketSource = weeklyBucketSources.Where(x=> x.BannerPlant.CDM == weeklyBucketSource.CDM && x.BannerPlant.KAM == weeklyBucketSource.KAM && x.BannerPlant.Banner.Id == weeklyBucketSource.Banner.Id).ToList();
+                        break;
+                    }
+
+                }
+                else
+                {
+                    i++;
+                }
+            }
+            return proposeAdditionalBucket;
         }
     }
 }

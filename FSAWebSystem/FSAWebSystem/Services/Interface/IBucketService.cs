@@ -21,5 +21,7 @@ namespace FSAWebSystem.Services.Interface
         public Task<bool> WeeklyBucketExist(int month, int week, int year);
 
         public Task<IQueryable<WeeklyBucket>> GetWeeklyBucketsByBannerSKU(Guid bannerId, Guid skuId);
+
+        public Task<ProposeAddtionalBucket> GetWeeklyBucketSource(IQueryable<BannerPlant> bannerPlants, IQueryable<SKU> skus, decimal proposeAdditional, Proposal proposal, int month, int year, ProposalType? proposalType = null);
     }
 }

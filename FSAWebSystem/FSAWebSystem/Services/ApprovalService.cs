@@ -165,7 +165,7 @@ namespace FSAWebSystem.Services
 
         public async Task<Approval> GetApprovalDetails(Guid approvalId)
         {
-            var apprvl = _db.Approvals.Include(x => x.Proposal).ThenInclude(x => x.ProposalDetails).ThenInclude(x => x.BannerPlant).ThenInclude(x => x.Plant).Include(x => x.Proposal.Sku).Include(x => x.Proposal.Banner)
+            var apprvl = _db.Approvals.Include(x => x.Proposal).ThenInclude(x => x.ProposalDetails).ThenInclude(x => x.BannerPlant).ThenInclude(x => x.Banner).Include(x => x.Proposal.Sku).Include(x => x.Proposal.Banner)
                 .Where(x => x.ApprovalStatus == ApprovalStatus.Pending || x.ApprovalStatus == ApprovalStatus.WaitingNextLevel).SingleOrDefault(x => x.Id == approvalId);
             if (apprvl != null)
             {
@@ -202,12 +202,11 @@ namespace FSAWebSystem.Services
 
                 var approvalDetail = new ApprovalDetail();
 
-                foreach (var detail in proposalThisApproval.ProposalDetails)
+                foreach (var detail in proposalThisApproval.ProposalDetails.Where(x => x.IsTarget))
                 {
                     var weeklyBucket = await _db.WeeklyBuckets.Include(x => x.BannerPlant).SingleAsync(x => x.SKUId == proposalThisApproval.Sku.Id && x.BannerPlant.Id == detail.BannerPlant.Id);
                     var sku = await _db.SKUs.SingleAsync(x => x.Id == proposalThisApproval.Sku.Id);
                     approvalDetail.BannerName = proposalThisApproval.Banner.BannerName;
-                    approvalDetail.PlantName = detail.BannerPlant.Plant.PlantName;
                     approvalDetail.CDM = detail.BannerPlant.CDM;
                     approvalDetail.KAM = detail.BannerPlant.KAM;
                     approvalDetail.PCMap = sku.PCMap;
@@ -218,13 +217,41 @@ namespace FSAWebSystem.Services
                     approvalDetail.NextBucket += apprvl.Week <= 4 ? Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (apprvl.Week + 1).ToString()).GetValue(weeklyBucket, null)) : 0;
                     approvalDetail.ValidBJ += weeklyBucket.ValidBJ;
                     approvalDetail.RemFSA += weeklyBucket.RemFSA;
+                    approvalDetail.Rephase = proposalThisApproval.Rephase;
+                    approvalDetail.ProposeAdditional = proposalThisApproval.ProposeAdditional;
+
                 }
-
-                approvalDetail.Rephase = proposalThisApproval.Rephase;
-                approvalDetail.ProposeAdditional = proposalThisApproval.ProposeAdditional;
-
-
                 apprvl.ApprovalDetails.Add(approvalDetail);
+
+                var approvalDetailSource = new ApprovalDetail();
+                var proposalDetailSources = proposalThisApproval.ProposalDetails.Where(x => !x.IsTarget).ToList();
+
+                if(proposalDetailSources.Any())
+                {
+                    foreach (var detail in proposalDetailSources)
+                    {
+                        var weeklyBucket = await _db.WeeklyBuckets.Include(x => x.BannerPlant).SingleAsync(x => x.SKUId == proposalThisApproval.Sku.Id && x.BannerPlant.Id == detail.BannerPlant.Id);
+                        var sku = await _db.SKUs.SingleAsync(x => x.Id == proposalThisApproval.Sku.Id);
+                        approvalDetailSource.BannerName = detail.BannerPlant.Banner.BannerName;
+                        approvalDetailSource.CDM = detail.BannerPlant.CDM;
+                        approvalDetailSource.KAM = detail.BannerPlant.KAM;
+                        approvalDetailSource.PCMap = sku.PCMap;
+                        approvalDetailSource.DescriptionMap = sku.DescriptionMap;
+                        approvalDetailSource.MonthlyBucket += weeklyBucket.MonthlyBucket;
+                        approvalDetailSource.RatingRate += weeklyBucket.RatingRate;
+                        approvalDetailSource.CurrentBucket += Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (apprvl.Week).ToString()).GetValue(weeklyBucket, null));
+                        approvalDetailSource.NextBucket += apprvl.Week <= 4 ? Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (apprvl.Week + 1).ToString()).GetValue(weeklyBucket, null)) : 0;
+                        approvalDetailSource.ValidBJ += weeklyBucket.ValidBJ;
+                        approvalDetailSource.RemFSA += weeklyBucket.RemFSA;
+                        approvalDetailSource.Rephase = proposalThisApproval.Rephase;
+                        approvalDetailSource.ProposeAdditional = proposalThisApproval.ProposeAdditional * -1;
+
+                    }
+                    apprvl.ApprovalDetails.Add(approvalDetailSource);
+                }
+               
+
+
 
                 apprvl.ApprovalDetails = apprvl.ApprovalDetails.OrderByDescending(x => x.ProposeAdditional).ToList();
             }

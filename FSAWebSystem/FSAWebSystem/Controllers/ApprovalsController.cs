@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using FSAWebSystem.Services;
 using System.Text.Encodings.Web;
 using FSAWebSystem.Models.Bucket;
+using System.Transactions;
 
 namespace FSAWebSystem.Controllers
 {
@@ -140,7 +141,7 @@ namespace FSAWebSystem.Controllers
                  
 
                     ViewData["ApprovalNotes"] = approvalNoteList;
-
+                    ViewData["Role"] = userUnilever.RoleUnilever.RoleName;
                     ViewData["CanApprove"] = canApprove;
                     ViewData["IsApproved"] = isApproved;
                     if(approval.ProposalType != ProposalType.Rephase && approval.ProposalType != ProposalType.ProposeAdditional)
@@ -241,18 +242,22 @@ namespace FSAWebSystem.Controllers
                 var errorMessages = new List<string>();
                 var approvalIds = new List<Guid>();
                 approvalIds.Add(approvalId);
-                if (approval.ApprovedBy.Split(';').Last().Contains(User.Identity.Name))
-                {
-                    errorMessages.Add("You already approve this proposal");
-                    _notyfService.Warning("Proposal Already Approved");
-                    TempData["ErrorMessages"] = errorMessages;
-                    return Ok(Json( new{ errorMessages}));
-                }
-                else
-                {
 
-                    await Approve(approvalIds, approvalNote);
+                var user = await _userManager.GetUserAsync(User);
+                var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
+
+                if(userUnilever.RoleUnilever.RoleName != "Administrator")
+                {
+                    if (approval.ApprovedBy.Split(';').Last().Contains(User.Identity.Name))
+                    {
+                        errorMessages.Add("You already approve this proposal");
+                        _notyfService.Warning("Proposal Already Approved");
+                        TempData["ErrorMessages"] = errorMessages;
+                        return Ok(Json(new { errorMessages }));
+                    }
                 }
+                await Approve(approvalIds, approvalNote);
+
             }
             catch (Exception ex)
             {
@@ -364,8 +369,8 @@ namespace FSAWebSystem.Controllers
         }
         public async Task Approve(List<Guid> approvalIds, string approvalNote)
         {
-            var user = await _userManager.GetUserAsync(User);
-            //var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
+            
+            
             var currDate = DateTime.Now;
             var listApproval = new List<Approval>();
             var listEmail = new List<EmailApproval>();
@@ -499,88 +504,128 @@ namespace FSAWebSystem.Controllers
 		[HttpPost]
         public async Task<IActionResult> RequestApprovalNextType(Guid approvalId, string approvalNote)
 		{
-			try
+            var message = string.Empty;
+            List<string> errorMessages = new List<string>();
+            try
 			{
-                var approval = await _approvalService.GetApprovalById(approvalId);
-                //var proposal = await _proposalService.GetProposalByApprovalId(approvalId);
-                var proposal = new Proposal();
-                var proposalTypeInit = proposal.Type;
-                var proposalHistory = await _proposalService.GetProposalHistory(approvalId);
-                var weeklyBucket = new WeeklyBucket();
-                //var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
-                var weekBucketTarget = await GetWeeklyBucketTarget(approval, proposal);
-                proposalHistory.BannerId = weekBucketTarget.BannerPlant.Banner.Id;
-                //var proposalDetailTarget = proposal.ProposalDetails.Single(x => x.ProposeAdditional < 0);
-                var proposalDetailTarget = new ProposalDetail();
+               using(var transcation = _context.Database.BeginTransaction())
+               {
+                    var approval = await _approvalService.GetApprovalById(approvalId);
 
-                if(((int)proposalTypeInit) + 1 != (int)proposal.Type)
-                {
-                    var message = string.Empty;
-                    if(proposal.Type == ProposalType.ReallocateAcrossCDM)
+                    var proposal = approval.Proposal;
+                    var proposalTypeInit = proposal.Type;
+
+                    //var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
+
+                    var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant();
+                    var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
+                    var proposeAdditionalBucket = await _bucketService.GetWeeklyBucketSource(bannerPlants, skus, proposal.ProposeAdditional, proposal, proposal.Month, proposal.Year, proposalTypeInit);
+                    //proposalHistory.BannerId = weekBucketTarget.BannerPlant.Banner.Id;
+                    //var proposalDetailTarget = proposal.ProposalDetails.Single(x => x.ProposeAdditional < 0);
+
+                    //foreach (var weeklyBucket in proposeAdditionalBucket.WeeklyBucketTargets)
+                    //{
+
+                    //    var proposalDetail = new ProposalDetail();
+                    //    proposalDetail.Id = Guid.NewGuid();
+                    //    proposalDetail.Proposal = proposal;
+                    //    proposalDetail.MonthlyBucket = weeklyBucket.MonthlyBucket;
+                    //    proposalDetail.PlantContribution = weeklyBucket.PlantContribution;
+                    //    proposalDetail.ActualProposeAdditional = (proposal.ProposeAdditional * weeklyBucket.PlantContribution) / 100;
+                    //    proposalDetail.BannerPlant = weeklyBucket.BannerPlant;
+                    //    proposalDetail.WeeklyBucketId = weeklyBucket.Id;
+                    //    proposalDetail.IsTarget = true;
+                    //    proposal.ProposalDetails.Add(proposalDetail);
+                    //}
+
+                    //Remove Old Details
+                    var proposalDetailToRemove = proposal.ProposalDetails.Where(x => !x.IsTarget).ToList();
+                    var newProposalDetail = proposal.ProposalDetails.Except(proposalDetailToRemove);
+                    proposal.ProposalDetails = newProposalDetail.ToList();
+
+                    _context.ProposalDetails.RemoveRange(proposalDetailToRemove);
+                    await _context.SaveChangesAsync();
+
+                    var listNewProposalDetail = new List<ProposalDetail>();
+                    foreach (var weeklyBucketSource in proposeAdditionalBucket.WeeklyBucketSource)
                     {
-                        message = "Across CDM";
+                        var proposalDetail = new ProposalDetail();
+                        proposalDetail.Id = Guid.NewGuid();
+                        proposalDetail.Proposal = proposal;
+                        proposalDetail.MonthlyBucket = weeklyBucketSource.MonthlyBucket;
+                        proposalDetail.PlantContribution = weeklyBucketSource.PlantContribution;
+                        proposalDetail.ActualProposeAdditional = (proposal.ProposeAdditional * weeklyBucketSource.PlantContribution) / 100 * -1;
+                        proposalDetail.BannerPlant = weeklyBucketSource.BannerPlant;
+                        proposalDetail.WeeklyBucketId = weeklyBucketSource.Id;
+                        proposalDetail.IsTarget = false;
+                        listNewProposalDetail.Add(proposalDetail);
                     }
-                    else if(proposal.Type == ProposalType.ReallocateAcrossMT)
+
+
+                    if (((int)proposalTypeInit) + 1 != (int)proposal.Type && proposalTypeInit != ProposalType.ReallocateAcrossMT)
                     {
-                        message = "Across MT";
+                        var note = string.Empty;
+                        if (proposal.Type == ProposalType.ReallocateAcrossCDM)
+                        {
+                            note = "Across CDM";
+                        }
+                        else if (proposal.Type == ProposalType.ReallocateAcrossMT)
+                        {
+                            note = "Across MT";
+                        }
+                        else
+                        {
+                            note = "Propose Additional";
+                        }
+                        approvalNote += " (Skipped to " + note + ")";
+                    }
+
+                    var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
+                    approval.ProposalType = proposal.Type.Value;
+                    approval.Level = approval.ProposalType == ProposalType.ProposeAdditional ? 3 : 2;
+                    approval.ApproverWL = _approvalService.GetWLApprover(approval);
+
+
+                    if (string.IsNullOrEmpty(approval.ApprovedBy))
+                    {
+                        approval.ApprovedBy = User.Identity.Name;
                     }
                     else
                     {
-                        message = "Propose Additional";
+                        approval.ApprovedBy += ";" + User.Identity.Name;
                     }
-                    approvalNote += " (Skipped to " + message + ")";
-                }
 
-                if(weekBucketTarget.Id == Guid.Empty)
-                {
-                    proposal.ProposalDetails.Remove(proposalDetailTarget);
-                }
-                else {
-                    //proposalDetailTarget.WeeklyBucketId = weekBucketTarget.Id;
-                }
-              
-                var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
-                approval.ProposalType = proposal.Type.Value;
-                approval.Level = approval.ProposalType == ProposalType.ProposeAdditional ? 3 : 2;
-                approval.ApproverWL = _approvalService.GetWLApprover(approval);
-                approval.SKUId = weeklyBucket.SKUId;
-                approval.BannerPlantId = weeklyBucket.BannerPlant.Id;
+                    if (string.IsNullOrEmpty(approval.ApprovalNote))
+                    {
+                        approval.ApprovalNote = approvalNote;
+                    }
+                    else
+                    {
+                        approval.ApprovalNote += ";" + approvalNote;
+                    }
+                    _context.ProposalDetails.AddRange(listNewProposalDetail);
+                    await _context.SaveChangesAsync();
 
-                if (string.IsNullOrEmpty(approval.ApprovedBy))
-                {
-                    approval.ApprovedBy = User.Identity.Name;
-                }
-                else
-                {
-                    approval.ApprovedBy += ";" + User.Identity.Name;
-                }
+                    var listEmail = new List<EmailApproval>();
+                    var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Index", "Approvals");
+                    var proposalEmails = await _approvalService.GenerateEmailProposal(approval, baseUrl, userRequestor.Email);
+                    listEmail.AddRange(proposalEmails);
+                    foreach (var email in listEmail)
+                    {
+                        await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
+                    }
 
-                if (string.IsNullOrEmpty(approval.ApprovalNote))
-                {
-                    approval.ApprovalNote = approvalNote;
+                    transcation.Commit();
                 }
-                else
-                {
-                    approval.ApprovalNote += ";" + approvalNote;
-                }
-
-                
-
-                await _context.SaveChangesAsync();
-                
-                var listEmail = new List<EmailApproval>();
-                var baseUrl = Request.Scheme + "://" + Request.Host + Url.Action("Index", "Approvals");
-                var proposalEmails = await _approvalService.GenerateEmailProposal(approval, baseUrl, userRequestor.Email);
-                listEmail.AddRange(proposalEmails);
-                foreach (var email in listEmail)
-                {
-                    await _emailService.SendEmailAsync(email.RecipientEmail, email.Subject, email.Body);
-                }
+               
             }
             catch(Exception ex)
 			{
-
-			}
+                message = "Request Approval Next Level Failed";
+                _notyfService.Warning(message);
+                errorMessages.Add(ex.Message);
+                return Ok(Json(new { errorMessages }));
+            }
 
             return Ok();
         }

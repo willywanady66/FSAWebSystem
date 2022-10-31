@@ -153,7 +153,8 @@ namespace FSAWebSystem.Models.Context
                         Email = user.Email,
                         CreatedAt = DateTime.Now,
                         CreatedBy = "System",
-                        RoleUnilever = await _roleService.GetRoleByName("Administrator")
+                        RoleUnilever = await _roleService.GetRoleByName("Administrator"),
+                        WLId = _db.WorkLevels.Single(x => x.WL == "CD DIRECTOR").Id
                     };
 
                     await userManager.AddClaimAsync(user, new Claim("Menu", "Admin"));

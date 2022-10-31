@@ -76,6 +76,7 @@ namespace FSAWebSystem.Services
                                  NextBucket = y.Sum(z => z.NextBucket),
                                  Remark = y.First().Remark,
                                  Rephase = y.First().Rephase,
+                                 ProposeAdditional = y.First().ProposeAdditional,
                                  IsWaitingApproval = y.Any(z => z.IsWaitingApproval),
                                  SubmittedBy = y.First().SubmittedBy,
                              });

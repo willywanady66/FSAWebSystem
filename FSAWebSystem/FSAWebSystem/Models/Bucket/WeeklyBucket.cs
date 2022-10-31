@@ -44,5 +44,7 @@ namespace FSAWebSystem.Models.Bucket
         public decimal NextBucket { get; set; }
         [NotMapped]
         public Guid ProductCategoryId { get; set; }
+        [NotMapped]
+        public Banner Banner { get; set; }
     }
 }

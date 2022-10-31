@@ -132,11 +132,30 @@
             data: { "approvalId": approvalId, "approvalNote": approvalNote },
             success: function (data) {
                 Swal.close();
-                setTimeout(
-                function() {
-                        window.location.href = indexUrl;
-                    }, 1000)
-                
+                var ul = document.getElementById('error-messages');
+                ul.innerHTML = '';
+
+                if (data.value) {
+                    if (data.value.errorMessages) {
+                        var errorMessages = data.value.errorMessages;
+                        var ul = document.getElementById('error-messages');
+                        ul.innerHTML = '';
+                        for (var i = 0; i < errorMessages.length; i++) {
+                            var li = document.createElement('li');
+                            li.appendChild(document.createTextNode(errorMessages[i]));
+                            ul.appendChild(li);
+                        }
+
+                        document.body.scrollTop = 0;
+                        document.documentElement.scrollTop = 0;
+                    }
+                }
+                else {
+                    setTimeout(
+                        function () {
+                            window.location.href = indexUrl;
+                        }, 1000)
+                }
             }
         })
     });
@@ -190,11 +209,30 @@
             data: { "approvalId": approvalId, "approvalNote": approvalNote },
             success: function (data) {
                 Swal.close();
-                setTimeout(
-                    function () {
-                        window.location.href = indexUrl;
-                    }, 800)
+                var ul = document.getElementById('error-messages');
+                ul.innerHTML = '';
 
+                if (data.value) {
+                    if (data.value.errorMessages) {
+                        var errorMessages = data.value.errorMessages;
+                        var ul = document.getElementById('error-messages');
+                        ul.innerHTML = '';
+                        for (var i = 0; i < errorMessages.length; i++) {
+                            var li = document.createElement('li');
+                            li.appendChild(document.createTextNode(errorMessages[i]));
+                            ul.appendChild(li);
+                        }
+
+                        document.body.scrollTop = 0;
+                        document.documentElement.scrollTop = 0;
+                    }
+                }
+                else {
+                    setTimeout(
+                        function () {
+                            window.location.href = indexUrl;
+                        }, 1000)
+                }
             }
         })
     });

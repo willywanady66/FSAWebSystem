@@ -8,6 +8,7 @@
     var type = ViewData["Type"];
     bool canApprove = (bool)ViewData["CanApprove"];
     bool isApproved = (bool)ViewData["IsApproved"];
+    var role = ViewData["Role"];
     List<Tuple<string, string, string>> approvalNotes = ViewData["ApprovalNotes"] as List<Tuple<string, string, string>>;
     int i = -1;
     var text = string.Empty;
@@ -26,15 +27,7 @@
     <h1 class="h3 mb-0 text-gray-800">Approval Details</h1>
 </div>
 <div class="text-danger">
-    @*	@if (TempData["ErrorMessages"] != null)
-    {
-    <ul>
-    @foreach (var error in TempData["ErrorMessages"] as IEnumerable<string>)
-    {
-    <li>@Html.DisplayFor(Model => error)</li>
-    }
-    </ul>
-    }*@
+    <ul id="error-messages"></ul>
 </div>
 <div class="card shadow mb-4 pt-4 pl-2">
     <div class="card-header py-3">
@@ -44,7 +37,7 @@
         @if (Model != null)
         {
             <div class="col-12">
-                @if (isApproved)
+                @if (isApproved && role != "Administrator")
                 {
                     <div>
                         <h3 style="color:green">Approved!</h3>
@@ -74,7 +67,7 @@
                             }
                             else
                             {
-                                <label>Reallocate</label>
+                                <label>Reallocate @type</label>
                             }
                         </div>
                         <div>
@@ -180,12 +173,9 @@
                 {
                     <p class="pt-3">Note: This @type from <b>@bannerSource</b> Bucket to <b>@bannerTarget</b> Bucket  </p>
                 }
-                else if (Model.ProposalType == FSAWebSystem.Models.ProposalType.ProposeAdditional)
-                {
-                    <p class="pt-3">Propose Additional</p>
-                }
+               
 
-                <div>
+                <div class="pt-3">
                     <button id="openConfirmRejectModalBtn" class="btn btn-danger" data-toggle="modal" @(Model != null && canApprove ? "" : "disabled")
                         data-target="#rejectProposalModal">
                         Reject
