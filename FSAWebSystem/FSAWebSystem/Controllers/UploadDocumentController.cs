@@ -160,14 +160,20 @@ namespace FSAWebSystem.Controllers
                 month = Convert.ToInt32(uploadMonth);
 
             }
+            var desc = string.Empty;
             var doc = (DocumentUpload)(Convert.ToInt32(documentType));
-
+            var fieldInfo = doc.GetType().GetField(doc.ToString());
+            var attrs = fieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), true);
+            if (attrs != null && attrs.Length > 0)
+            {
+                desc = ((DescriptionAttribute)attrs[0]).Description;
+            }
             List<string> errorMessages = new List<string>();
             var currentDate = DateTime.Now;
 
             if (excelDocument != null)
             {
-                if (!excelDocument.FileName.Contains(doc.ToString()))
+                if (!excelDocument.FileName.Contains(doc.ToString()) && !excelDocument.FileName.Contains(desc))
                 {
                     errorMessages.Add("Wrong File!");
              

@@ -23,6 +23,8 @@ namespace FSAWebSystem.Models.Bucket
         [NotMapped]
         public string BannerName { get; set; }
         [NotMapped]
+        public Guid BPlantId { get; set; }
+        [NotMapped]
         public string DescriptionMap { get; set; }
         [NotMapped]
         public string PCMap { get; set; }

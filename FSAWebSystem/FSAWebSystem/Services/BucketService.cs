@@ -30,6 +30,7 @@ namespace FSAWebSystem.Services
                                              UploadedDate = monthlyBucket.CreatedAt.Value.ToString("dd/MM/yyyy"),
                                              CreatedAt = monthlyBucket.CreatedAt,
                                              BannerName = bannerPlant.Banner.BannerName,
+                                             BPlantId = bannerPlant.Id,
                                              PCMap = sku.PCMap,
                                              DescriptionMap = sku.DescriptionMap,
                                              PlantCode = bannerPlant.Plant.PlantCode,
@@ -44,7 +45,7 @@ namespace FSAWebSystem.Services
                                          });
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
-                monthlyBucketHistories = monthlyBucketHistories.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BannerPlant.Id));
+                monthlyBucketHistories = monthlyBucketHistories.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BPlantId));
             }
 
 

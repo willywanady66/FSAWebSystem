@@ -421,8 +421,8 @@ $(document).ready(function () {
     var doc = $('#documentType option:selected').text();
     if (doc !== "Monthly Bucked") {
         $('#uploadMonthGroup').hide();
-
     }
+    var month = $('#dropdownMonth option:selected').val();
 
 
     //if (doc === "Andromeda" || doc === "Bottom Price" || doc === "I-TRUST") {
@@ -454,6 +454,11 @@ $(document).ready(function () {
         //}
     });
 
+
+    $('#dropdownMonth').change(function () {
+        month = $("#dropdownMonth option:selected").val();
+    });
+
     var files;
     $('input[type=file]').on('change', function () {
         files = event.target.files;
@@ -476,6 +481,7 @@ $(document).ready(function () {
             formData.append("excelDocument", value);
         });
 
+        formData.append("uploadMonth", month);
         formData.append("documentType", docVal);
         formData.append("loggedUser", loggedUser);
 
