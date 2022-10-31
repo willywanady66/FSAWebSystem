@@ -1081,44 +1081,78 @@ namespace FSAWebSystem.Controllers
                 errorMessages.Add("Please fill all PCMap and BannerName column");
             }
 
-            var bannersNotExist = (from dailyOrder in listDailyOrder
-                                   where !(
-                                   from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.Month, x.Year })
-                                   join banner in _bannerPlantService.GetAllActiveBannerPlant().AsEnumerable() on weeklyBucket.BannerPlant.Id equals banner.Id
-                                   where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
-                                   select new
-                                   {
-                                       banner.Banner.BannerName,
-                                       banner.Plant.PlantCode,
-                                   }).Any(x => x.BannerName == dailyOrder.BannerName && x.PlantCode == dailyOrder.PlantCode)
-                                   select new
-                                   {
-                                       dailyOrder.BannerName,
-                                       dailyOrder.PlantCode
-                                   }).ToList();
+            var bucketPlants = (from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.Month, x.Year })
+                                join bannerPlant in _bannerPlantService.GetAllActiveBannerPlant().AsEnumerable() on weeklyBucket.BannerPlant.Id equals bannerPlant.Id
+                                select new BucketPlant
+                                {
+                                    BannerName = bannerPlant.Banner.BannerName,
+                                    PlantCode = bannerPlant.Plant.PlantCode,
+                                }).ToList();
+
+            var bannerDailyOrders = listDailyOrder.Select(x => new BucketPlant
+            {
+                BannerName = x.BannerName,
+                PlantCode = x.PlantCode
+            }).ToList();
+
+
+
+            var equalityComparer = new BucketPlantEqualityComparer();
+            var bannersNotExist = bannerDailyOrders.Except(bucketPlants, equalityComparer).ToList();
+
 
             foreach (var banner in bannersNotExist)
             {
-                errorMessages.Add("Banner Name: " + banner.BannerName + " and Plant Code: " + banner.PlantCode + " doesn't exist on Weekly Bucket");
+                errorMessages.Add("Banner Name: " + banner.BannerName + " and Plant Code: " + banner.PlantCode + " doesn't exist on Monthly Bucket");
             }
 
-            var skusNotExist = (from dailyOrder in listDailyOrder
-                                where !(
-                                from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.SKUId, x.Month, x.Year })
-                                join sku in _skuService.GetAllProducts().AsEnumerable() on weeklyBucket.SKUId equals sku.Id
-                                where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
-                                select new
-                                {
-                                    sku.PCMap
-                                }).Any(x => x.PCMap == dailyOrder.PCMap)
-                                select new
-                                {
-                                    dailyOrder.PCMap
-                                }).ToList();
+            //var bannersNotExist = (from dailyOrder in listDailyOrder
+            //                       where !(
+            //                       from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.Month, x.Year })
+            //                       join banner in _bannerPlantService.GetAllActiveBannerPlant().AsEnumerable() on weeklyBucket.BannerPlant.Id equals banner.Id
+            //                       where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
+            //                       select new
+            //                       {
+            //                           banner.Banner.BannerName,
+            //                           banner.Plant.PlantCode,
+            //                       }).Any(x => x.BannerName == dailyOrder.BannerName && x.PlantCode == dailyOrder.PlantCode)
+            //                       select new
+            //                       {
+            //                           dailyOrder.BannerName,
+            //                           dailyOrder.PlantCode
+            //                       }).ToList();
+
+            var skuWeeklyBuckets = (from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.SKUId, x.Month, x.Year })
+                                    join sku in _skuService.GetAllProducts().Where(x => x.IsActive).AsEnumerable() on weeklyBucket.SKUId equals sku.Id
+                                     select sku.PCMap).ToList();
+
+
+            var skuDailys = listDailyOrder.Select(x => x.PCMap).ToList();
+
+            var skusNotExist = skuDailys.Except(skuWeeklyBuckets);
+
             foreach (var sku in skusNotExist)
             {
-                errorMessages.Add("PC Map: " + sku.PCMap + " doesn't exist on Weekly Bucket");
+                errorMessages.Add("PC Map: " + sku + " doesn't exist on Monthly Bucket");
             }
+
+            //var skusNotExist = (from dailyOrder in listDailyOrder
+            //                    where !(
+            //                    from weeklyBucket in _bucketService.GetWeeklyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.SKUId, x.Month, x.Year })
+            //                    join sku in _skuService.GetAllProducts().AsEnumerable() on weeklyBucket.SKUId equals sku.Id
+            //                    where weeklyBucket.Month == currentDate.Month && weeklyBucket.Year == currentDate.Year
+            //                    select new
+            //                    {
+            //                        sku.PCMap
+            //                    }).Any(x => x.PCMap == dailyOrder.PCMap)
+            //                    select new
+            //                    {
+            //                        dailyOrder.PCMap
+            //                    }).ToList();
+            //foreach (var sku in skusNotExist)
+            //{
+            //    errorMessages.Add("PC Map: " + sku.PCMap + " doesn't exist on Weekly Bucket");
+            //}
         }
 
         private static void ValidateBannerExcel(List<BannerPlant> listBannerPlant, List<string> errorMessages)
