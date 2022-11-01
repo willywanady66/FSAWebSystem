@@ -299,7 +299,9 @@ namespace FSAWebSystem.Controllers
                 SubmittedBy = userId,
                 Remark = proposalInput.remark,
                 Rephase = proposalInput.rephase,
-                ProposeAdditional = proposalInput.proposeAdditional
+                ProposeAdditional = proposalInput.proposeAdditional,
+                CDM = proposalInput.CDM,
+                KAM = proposalInput.KAM
             };
 
             var weeklyBuckets = (await _bucketService.GetWeeklyBucketsByBannerSKU(Guid.Parse(proposalInput.bannerId), Guid.Parse(proposalInput.skuId))).Where(x => x.Month == fsaDetail.Month && x.Year == fsaDetail.Year);
@@ -606,7 +608,7 @@ namespace FSAWebSystem.Controllers
         public async Task<ActionResult> DownloadProposalExcel(int month, int year)
         {
             var user = await _userManager.GetUserAsync(User);
-            var userUnilever = await _userService.GetUserOnly((Guid)user.UserUnileverId);
+            var userUnilever = await _userService.GetUser((Guid)user.UserUnileverId);
             userUnilever.WLName = (await _userService.GetAllWorkLevel().SingleAsync(x => x.Id == userUnilever.WLId)).WL;
             var data = _proposalService.GetProposalExcelData(month, year, userUnilever);
             var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);

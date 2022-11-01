@@ -33,16 +33,13 @@ namespace FSAWebSystem.Services
                                  Id = p != null ? p.Id : Guid.Empty,
                                  KAM = bannerPlant.KAM,
                                  CDM = bannerPlant.CDM,
-                                 Banner = bannerPlant.Banner,
-                                 //WeeklyBucketId = weeklyBucket.Id,
-                                 //BannerName = bannerPlant.Banner.BannerName,
-                                 //BannerId = bannerPlant.Banner.Id,
+                                 BannerName = bannerPlant.Banner.BannerName,
+                                 BnrId = bannerPlant.Banner.Id,
                                  Month = month,
                                  Week = week,
                                  Year = year,
-                                 //PlantCode = bannerPlant.Plant.PlantCode,
-                                 //PlantName = bannerPlant.Plant.PlantName,
-                                 Sku = sku,
+                                 SKUId = sku.Id,
+                                 PCMap = sku.PCMap,
                                  DescriptionMap = sku.DescriptionMap,
                                  RatingRate = weeklyBucket.RatingRate,
                                  MonthlyBucket = weeklyBucket.MonthlyBucket,
@@ -55,18 +52,18 @@ namespace FSAWebSystem.Services
                                  ProposeAdditional = p != null ? p.ProposeAdditional : decimal.Zero,
                                  IsWaitingApproval = p != null ? p.IsWaitingApproval : false,
                                  SubmittedBy = p == null ? Guid.Empty : p.SubmittedBy.Value,
-                             }).AsEnumerable().GroupBy(x => new { x.KAM, x.CDM, x.Banner.Id, SKUId = x.Sku.Id }).Select(y => new Proposal
+                             }).AsEnumerable().GroupBy(x => new { x.KAM, x.CDM, x.BnrId, SKUId = x.SKUId}).Select(y => new Proposal
                              {
                                  Id = y.First().Id,
-                                 Banner = y.First().Banner,
+                                 BnrId = y.Key.BnrId,
                                  Month = y.First().Month,
                                  Week = y.First().Week,
                                  Year = y.First().Year,
                                  KAM = y.First().KAM,
                                  CDM = y.First().CDM,
-                                 //PlantCode = y.First().PlantCode,
-                                 //PlantName = y.First().PlantName,
-                                 Sku = y.First().Sku,
+                                 BannerName = y.First().BannerName,
+                                 SKUId = y.Key.SKUId,
+                                 PCMap = y.First().PCMap,
                                  DescriptionMap = y.First().DescriptionMap,
                                  RatingRate = y.Sum(z => z.RatingRate),
                                  MonthlyBucket = y.Sum(z => z.MonthlyBucket),
@@ -85,7 +82,7 @@ namespace FSAWebSystem.Services
 
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
-                proposals = proposals.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.Banner.Id));
+                proposals = proposals.Where(x => userUnilever.BannerPlants.Select(y => y.Banner.Id).Contains(x.BnrId));
                 proposals = proposals.Where(x => x.SubmittedBy == userUnilever.Id || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
             }
 
@@ -93,9 +90,9 @@ namespace FSAWebSystem.Services
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
-                proposals = proposals.Where(x => x.Banner.BannerName.ToLower().Contains(search.ToLower()) ||
-                                            x.Sku.PCMap.ToLower().Contains(search.ToLower()) ||
-                                            x.Sku.DescriptionMap.ToLower().Contains(search.ToLower()));
+                proposals = proposals.Where(x => x.BannerName.ToLower().Contains(search.ToLower()) ||
+                                            x.PCMap.ToLower().Contains(search.ToLower()) ||
+                                            x.DescriptionMap.ToLower().Contains(search.ToLower()));
             }
 
 
@@ -105,7 +102,7 @@ namespace FSAWebSystem.Services
                 switch (order.column)
                 {
                     case 0:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.IsWaitingApproval).ThenByDescending(x => x.Banner.BannerName) : proposals.OrderByDescending(x => x.IsWaitingApproval).ThenBy(x => x.Banner.BannerName);
+                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.IsWaitingApproval).ThenByDescending(x => x.BannerName) : proposals.OrderByDescending(x => x.IsWaitingApproval).ThenBy(x => x.BannerName);
                         break;
                     case 1:
                         proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.PCMap) : proposals.OrderBy(x => x.PCMap);
@@ -317,7 +314,7 @@ namespace FSAWebSystem.Services
                             MonthlyBucket = weeklyBucket.MonthlyBucket,
                             PlantContribution = weeklyBucket.PlantContribution,
                             ValidBJ = weeklyBucket.ValidBJ,
-                            RemFSA = weeklyBucket.RemFSA,
+                            RemFSA = weeklyBucket.MonthlyBucket - weeklyBucket.ValidBJ,
                             DispatchConsume = weeklyBucket.DispatchConsume,
                             BucketWeek1 = weeklyBucket.BucketWeek1,
                             BucketWeek2 = weeklyBucket.BucketWeek2,
@@ -328,8 +325,8 @@ namespace FSAWebSystem.Services
                             SubmittedBy = p != null ? p.SubmittedBy.Value : Guid.Empty
                         }).AsEnumerable().GroupBy(x => new { x.KAM, x.CDM, x.Banner.Id, SKUId = x.SKU.Id }).Select(y => new ProposalExcelModel
                         {
-                           
                             Banner = y.First().Banner,
+                            BannerName = y.First().Banner.BannerName,
                             Month = y.First().Month,
                             KAM = y.First().KAM,
                             CDM = y.First().CDM,
@@ -344,9 +341,17 @@ namespace FSAWebSystem.Services
                             BucketWeek3 = y.Sum(z => z.BucketWeek3),
                             BucketWeek4 = y.Sum(z => z.BucketWeek4),
                             BucketWeek5 = y.Sum(z => z.BucketWeek5),
+                            DispatchConsume = y.Sum(z => z.DispatchConsume),
                             SubmittedBy = y.First().SubmittedBy,
-                        });
-        
+                            PlantContribution = y.Sum(z => z.PlantContribution)
+                        }) ;
+            var z = data.ToList();
+
+            if (user.RoleUnilever.RoleName != "Administrator")
+            {
+                data = data.Where(x => user.BannerPlants.Select(y => y.Banner.Id).Contains(x.Banner.Id));
+                data = data.Where(x => x.SubmittedBy == user.Id || x.SubmittedBy == Guid.Empty || x.SubmittedBy == null);
+            }
 
             var propData = data.Where(x => x.SubmittedBy == user.Id || x.SubmittedBy == Guid.Empty).ToList();
             return propData;

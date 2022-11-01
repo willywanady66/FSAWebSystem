@@ -5,7 +5,7 @@
         public int Month { get; set; }
         public string KAM { get; set; }
         public string CDM { get; set; }
-        public Banner Banner { get; set; }
+        public Banner Banner { get; set; }  
         public string BannerName { get; set; }
         public string PlantCode{ get; set; }
         public string PlantName{ get; set; }

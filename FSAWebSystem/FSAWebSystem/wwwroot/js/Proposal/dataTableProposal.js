@@ -36,8 +36,8 @@
             }
         },
         "columns": [
-            { "data": "banner.bannerName" }, //0
-            { "data": "sku.pcMap" },       //1
+            { "data": "bannerName" }, //0
+            { "data": "pcMap" },       //1
             { "data": "descriptionMap" }, //2
             { "data": "ratingRate" },      //3 
             { "data": "monthlyBucket" },   //4
@@ -50,8 +50,8 @@
             { "data": "remark" },           //11
             { "data": "id" }, //12
             { "data": "isWaitingApproval" },    //13
-            { "data": "banner.id" },    //14
-            { "data": "sku.id" },    //15
+            { "data": "bnrId" },    //14
+            { "data": "skuId" },    //15
             { "data": "kam" },   //16
             { "data": "cdm" },   //17
         ],
@@ -192,7 +192,13 @@
                     }
                     else {
                         var index = proposalInputs.findIndex((obj => obj.BannerId == proposal.BannerId && obj.PcMap == proposal.PcMap));
-                        proposalInputs[index] = proposal;
+                        if (index < 0) {
+                            proposalInputs.push(proposal);
+                        }
+                        else {
+                            proposalInputs[index] = proposal;
+                        }
+                     
                     }
                 }
             }

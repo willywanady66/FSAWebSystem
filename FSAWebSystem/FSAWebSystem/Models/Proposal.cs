@@ -35,6 +35,8 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public decimal ApprovedProposeAdditional { get; set; }
         [NotMapped]
+        public Guid BnrId { get; set; }
+        [NotMapped]
         public string BannerName { get; set; }
         [NotMapped]
         public string PlantCode { get; set; }
