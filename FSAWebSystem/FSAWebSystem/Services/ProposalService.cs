@@ -299,9 +299,9 @@ namespace FSAWebSystem.Services
         {
 
             var data = (from weeklyBucket in _db.WeeklyBuckets.Include(x => x.BannerPlant)
-                        join bannerPlant in _db.BannerPlants.Include(x => x.UserUnilevers).Include(x => x.Plant).Where(y => y.UserUnilevers.Any(z => z.Id == user.Id)) on weeklyBucket.BannerPlant.Id equals bannerPlant.Id
+                        join bannerPlant in _db.BannerPlants.Include(x => x.Plant) on weeklyBucket.BannerPlant.Id equals bannerPlant.Id
                         join sku in _db.SKUs on weeklyBucket.SKUId equals sku.Id
-                        join proposal in _db.Proposals.Include(x => x.Banner) on weeklyBucket.BannerPlant.Banner.Id equals proposal.Banner.Id into proposalGroups
+                        join proposal in _db.Proposals.Include(x => x.ProposalDetails).Include(x => x.Banner).Where(x => x.IsWaitingApproval) on new { BannerId = weeklyBucket.BannerPlant.Banner.Id, SKUId = weeklyBucket.SKUId } equals new { BannerId = proposal.Banner.Id, SKUId = proposal.Sku.Id } into proposalGroups
                         from p in proposalGroups.DefaultIfEmpty()
                         where weeklyBucket.Month == month && weeklyBucket.Year == year
                         select new ProposalExcelModel
@@ -309,9 +309,9 @@ namespace FSAWebSystem.Services
                             Month = month,
                             KAM = bannerPlant.KAM,
                             CDM = bannerPlant.CDM,
+                            Banner = bannerPlant.Banner,
                             BannerName = bannerPlant.Banner.BannerName,
-                            PlantCode = bannerPlant.Plant.PlantCode,
-                            PlantName = bannerPlant.Plant.PlantName,
+                            SKU = sku,
                             PCMap = sku.PCMap,
                             DescriptionMap = sku.DescriptionMap,
                             MonthlyBucket = weeklyBucket.MonthlyBucket,
@@ -326,10 +326,30 @@ namespace FSAWebSystem.Services
                             BucketWeek5 = weeklyBucket.BucketWeek5,
                             RatingRate = weeklyBucket.RatingRate,
                             SubmittedBy = p != null ? p.SubmittedBy.Value : Guid.Empty
-                        }).ToList();
+                        }).AsEnumerable().GroupBy(x => new { x.KAM, x.CDM, x.Banner.Id, SKUId = x.SKU.Id }).Select(y => new ProposalExcelModel
+                        {
+                           
+                            Banner = y.First().Banner,
+                            Month = y.First().Month,
+                            KAM = y.First().KAM,
+                            CDM = y.First().CDM,
+                            PCMap = y.First().PCMap,
+                            DescriptionMap = y.First().DescriptionMap,
+                            RatingRate = y.Sum(z => z.RatingRate),
+                            MonthlyBucket = y.Sum(z => z.MonthlyBucket),
+                            ValidBJ = y.Sum(z => z.ValidBJ),
+                            RemFSA = y.Sum(z => z.RemFSA),
+                            BucketWeek1 = y.Sum(z => z.BucketWeek1),
+                            BucketWeek2 = y.Sum(z => z.BucketWeek2),
+                            BucketWeek3 = y.Sum(z => z.BucketWeek3),
+                            BucketWeek4 = y.Sum(z => z.BucketWeek4),
+                            BucketWeek5 = y.Sum(z => z.BucketWeek5),
+                            SubmittedBy = y.First().SubmittedBy,
+                        });
+        
 
-            data = data.Where(x => x.SubmittedBy == user.Id || x.SubmittedBy == Guid.Empty).ToList();
-            return data;
+            var propData = data.Where(x => x.SubmittedBy == user.Id || x.SubmittedBy == Guid.Empty).ToList();
+            return propData;
         }
 
         public async Task<ProposalHistory> GetProposalHistory(Guid approvalId)

@@ -625,8 +625,6 @@ namespace FSAWebSystem.Controllers
                 "KAM",
                 "CDM",
                 "BannerName",
-                "Plant Code",
-                "Plant Name",
                 "PC Map",
                 "Description Map",
                 "Monthly Bucket",
@@ -674,10 +672,6 @@ namespace FSAWebSystem.Controllers
                 row.CreateCell(i).SetCellValue(item.CDM);
                 i++;
                 row.CreateCell(i).SetCellValue(item.BannerName);
-                i++;
-                row.CreateCell(i).SetCellValue(item.PlantCode);
-                i++;
-                row.CreateCell(i).SetCellValue(item.PlantName);
                 i++;
                 row.CreateCell(i).SetCellValue(item.PCMap);
                 i++;
