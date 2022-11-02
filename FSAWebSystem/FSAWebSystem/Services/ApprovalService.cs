@@ -178,27 +178,25 @@ namespace FSAWebSystem.Services
                 apprvl.RequestedBy = (await _db.UsersUnilever.SingleAsync(x => x.Id == proposalThisApproval.SubmittedBy)).Email;
                 apprvl.ProposalType = proposalThisApproval.Type.Value;
                 apprvl.Remark = proposalThisApproval.Remark;
-
-                var andromeda = await _db.Andromedas.SingleOrDefaultAsync(x => x.SKUId == weeklyBucketProposal.SKUId);
+               
+                var andromeda = await _db.Andromedas.SingleOrDefaultAsync(x => x.SKUId == proposalThisApproval.Sku.Id);
                 if (andromeda != null)
                 {
                     apprvl.IsAndromedaPassed = andromeda.WeekCover > 2;
                     apprvl.WeekCover = andromeda.WeekCover;
                 }
-                var bottomPrice = await _db.BottomPrices.SingleOrDefaultAsync(x => x.SKUId == weeklyBucketProposal.SKUId);
+                var bottomPrice = await _db.BottomPrices.SingleOrDefaultAsync(x => x.SKUId == proposalThisApproval.Sku.Id);
                 if (bottomPrice != null)
                 {
                     apprvl.IsBottomPricePassed = bottomPrice.Remarks.ToUpper() == "ABOVE" || bottomPrice.Remarks.ToUpper() == "NORMAL";
                     apprvl.BotPrcRemark = bottomPrice.Remarks;
                 }
-                var iTrust = await _db.ITrusts.SingleOrDefaultAsync(x => x.SKUId == weeklyBucketProposal.SKUId);
+                var iTrust = await _db.ITrusts.SingleOrDefaultAsync(x => x.SKUId == proposalThisApproval.Sku.Id);
                 if (iTrust != null)
                 {
                     apprvl.IsITrustPassed = iTrust.DistStock > 3;
                     apprvl.DistStock = iTrust.DistStock;
                 }
-
-                var zz = proposalThisApproval.ProposalDetails.ToList();
 
                 var approvalDetail = new ApprovalDetail();
 
