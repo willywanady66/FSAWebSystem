@@ -456,11 +456,10 @@ namespace FSAWebSystem.Controllers
             {
                 var approval = await _approvalService.GetApprovalById(approvalId);
                 //var proposal = await _proposalService.GetProposalByApprovalId(approval.Id);
-                var proposal = new Proposal();
+                var proposal = approval.Proposal;
                 var weeklyBucket = new WeeklyBucket();
                 //var weeklyBucket = await _bucketService.GetWeeklyBucket(proposal.WeeklyBucketId);
-                approval.BannerPlantId = weeklyBucket.BannerPlant.Id;
-                approval.SKUId = weeklyBucket.SKUId;
+
                 var userRequestor = await _userService.GetUser(proposal.SubmittedBy.Value);
            
 

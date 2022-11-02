@@ -18,7 +18,7 @@
             { "data": "proposeAdditional" },      //5
             { "data": "rephase" }, //6
             { "data": "remark" }, //7
-            { "data": "id" }, //8
+            {"data" : "approvedBy"},//8
             { "data": "id" }, //9
            
        ],
@@ -32,12 +32,8 @@
                    return `<input type="checkbox" class="" id="checkbox-${full.id}" />`
                }
            },
-           {
-               "targets": [9],
-               "className": "hide_column"   
-           },
             {
-                targets: 8,
+                targets: 9,
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
