@@ -19,7 +19,8 @@
             { "data": "rephase" }, //6
             { "data": "remark" }, //7
             {"data" : "approvedBy"},//8
-            { "data": "id" }, //9
+            { "data": "id" }, //9 for edit
+            { "data": "id" }, //10 
            
        ],
        "order": [[1, 'asc']],
@@ -31,6 +32,10 @@
                "render": function (data, type, full, meta) {
                    return `<input type="checkbox" class="" id="checkbox-${full.id}" />`
                }
+           },
+           {
+               "targets": [10],
+               "className": "hide_column"
            },
             {
                 targets: 9,
@@ -297,7 +302,7 @@
             var row = $(this);
             var selected = row.find("TD").eq(0).find("INPUT").is(':checked')
             if (selected) {
-                var id = row.find("TD").eq(9).html();
+                var id = row.find("TD").eq(10).html();
                 ids.push(id);
             }
         });

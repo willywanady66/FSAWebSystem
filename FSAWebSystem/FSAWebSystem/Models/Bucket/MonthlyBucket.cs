@@ -34,5 +34,11 @@ namespace FSAWebSystem.Models.Bucket
         public string PlantName { get; set; }
         [NotMapped]
         public string UploadedDate { get; set; }
+        [NotMapped]
+        public string KAM { get; set; }
+        [NotMapped]
+        public string CDM { get; set; }
+        [NotMapped]
+        public Guid BnrId { get; set; }
     }
 }

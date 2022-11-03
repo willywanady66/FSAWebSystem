@@ -168,7 +168,8 @@
             //proposal.WeeklyBucketId = row.find("TD").eq(12).html();
             proposal.Rephase = row.find("TD").eq(9).find("INPUT").val();
             proposal.ProposeAdditional = row.find("TD").eq(10).find("INPUT").val();
-            if (proposal.Rephase > 0 || proposal.ProposeAdditional > 0) {
+            proposal.IsWaitingApproval = row.find("TD").eq(13).html() == 'false' ? false : true;
+            if ((proposal.Rephase > 0 || proposal.ProposeAdditional > 0) && !proposal.IsWaitingApproval) {
                 proposal.Remark = row.find("TD").eq(11).find("SELECT").val();
                 if (proposal.Remark == "Other") {
                     proposal.Remark = row.find("TD").eq(11).find("INPUT").val();
@@ -321,22 +322,21 @@
             { "data": "year" }, //1
             { "data": "month" }, //2
             { "data": "bannerName" },//3
-            { "data": "plantName" }, //4
-            { "data": "pcMap" }, //5
-            { "data": "descriptionMap" }, //6
-            { "data": "price" }, //7
-            { "data": "plantContribution" }, //8
-            { "data": "ratingRate" }, //9
-            { "data": "tct" }, //10
-            { "data": "monthlyTarget" }, //11
+            { "data": "pcMap" }, //4
+            { "data": "descriptionMap" }, //5
+            { "data": "price" }, //6
+            { "data": "plantContribution" }, //7
+            { "data": "ratingRate" }, //8
+            { "data": "tct" }, //9
+            { "data": "monthlyTarget" }, //10
         ],
         columnDefs: [
             {
-                targets: 7,
+                targets: 6,
                 render: $.fn.dataTable.render.number(',', '.', 0, '')
             },
             {
-                targets: [8, 10, 11],
+                targets: [7, 8, 9],
                 render: function (data, type, row) {
                     return data + ' %';
                 }

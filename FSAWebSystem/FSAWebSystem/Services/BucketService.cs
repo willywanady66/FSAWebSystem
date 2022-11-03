@@ -22,27 +22,46 @@ namespace FSAWebSystem.Services
         public async Task<MonthlyBucketHistoryPagingData> GetMonthlyBucketHistoryPagination(DataTableParam param, UserUnilever userUnilever)
         {
             var monthlyBucketHistories = (from monthlyBucket in _db.MonthlyBuckets.Include(x => x.BannerPlant)
-                                         join bannerPlant in _db.BannerPlants.Include(x => x.Plant) on monthlyBucket.BannerPlant.Id equals bannerPlant.Id
-                                         join sku in _db.SKUs on monthlyBucket.SKUId equals sku.Id
-                                         where monthlyBucket.Year == Convert.ToInt32(param.year) && monthlyBucket.Month == Convert.ToInt32(param.month)
-                                         select new MonthlyBucket
-                                         {
-                                             UploadedDate = monthlyBucket.CreatedAt.Value.ToString("dd/MM/yyyy"),
-                                             CreatedAt = monthlyBucket.CreatedAt,
-                                             BannerName = bannerPlant.Banner.BannerName,
-                                             BPlantId = bannerPlant.Id,
-                                             PCMap = sku.PCMap,
-                                             DescriptionMap = sku.DescriptionMap,
-                                             PlantCode = bannerPlant.Plant.PlantCode,
-                                             PlantName = bannerPlant.Plant.PlantName,
-                                             Year = monthlyBucket.Year,
-                                             Month = monthlyBucket.Month,
-                                             Price = monthlyBucket.Price,
-                                             PlantContribution = monthlyBucket.PlantContribution,
-                                             RatingRate = monthlyBucket.RatingRate,
-                                             TCT = monthlyBucket.TCT,
-                                             MonthlyTarget = monthlyBucket.MonthlyTarget
-                                         });
+                                          join bannerPlant in _db.BannerPlants.Include(x => x.Plant) on monthlyBucket.BannerPlant.Id equals bannerPlant.Id
+                                          join sku in _db.SKUs on monthlyBucket.SKUId equals sku.Id
+                                          where monthlyBucket.Year == Convert.ToInt32(param.year) && monthlyBucket.Month == Convert.ToInt32(param.month)
+                                          select new MonthlyBucket
+                                          {
+                                              UploadedDate = monthlyBucket.CreatedAt.Value.ToString("dd/MM/yyyy"),
+                                              KAM = bannerPlant.KAM,
+                                              CDM = bannerPlant.CDM,
+                                              CreatedAt = monthlyBucket.CreatedAt,
+                                              BannerName = bannerPlant.Banner.BannerName,
+                                              BPlantId = bannerPlant.Id,
+                                              SKUId = sku.Id,
+                                              PCMap = sku.PCMap,
+                                              DescriptionMap = sku.DescriptionMap,
+                                              Year = monthlyBucket.Year,
+                                              Month = monthlyBucket.Month,
+                                              Price = monthlyBucket.Price,
+                                              PlantContribution = monthlyBucket.PlantContribution,
+                                              RatingRate = monthlyBucket.RatingRate,
+                                              TCT = monthlyBucket.TCT,
+                                              MonthlyTarget = monthlyBucket.MonthlyTarget
+                                          }).AsEnumerable().GroupBy(x => new { x.KAM, x.CDM, x.BnrId, SKUId = x.SKUId }).Select(y => new MonthlyBucket
+                                          {
+                                              UploadedDate = y.First().UploadedDate,
+                                              KAM = y.Key.KAM,
+                                              CDM = y.Key.CDM,
+                                              CreatedAt = y.First().CreatedAt,
+                                              BannerName = y.First().BannerName,
+                                              SKUId = y.Key.SKUId,
+                                              PCMap = y.First().PCMap,
+                                              DescriptionMap = y.First().DescriptionMap,
+                                              Year = y.First().Year,
+                                              Month = y.First().Month,
+                                              Price = y.Sum(z => z.Price),
+                                              PlantContribution = y.Sum(z => z.PlantContribution),
+                                              RatingRate = y.Sum(z => z.RatingRate),
+                                              TCT = y.Sum(z => z.TCT),
+                                              MonthlyTarget = y.Sum(z => z.MonthlyTarget)
+                                          });
+                                         
             if (userUnilever.RoleUnilever.RoleName != "Administrator")
             {
                 monthlyBucketHistories = monthlyBucketHistories.Where(x => userUnilever.BannerPlants.Select(y => y.Id).Contains(x.BPlantId));
@@ -52,7 +71,7 @@ namespace FSAWebSystem.Services
             if (!string.IsNullOrEmpty(param.search.value))
             {
                 var search = param.search.value.ToLower();
-                monthlyBucketHistories = monthlyBucketHistories.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search) || x.PlantName.ToLower().Contains(search));
+                monthlyBucketHistories = monthlyBucketHistories.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search));
             }
 
             if (param.order.Any())
@@ -73,27 +92,24 @@ namespace FSAWebSystem.Services
                         monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.BannerName) : monthlyBucketHistories.OrderBy(x => x.BannerName);
                         break;
                     case 4:
-                        monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.PlantName) : monthlyBucketHistories.OrderBy(x => x.PlantName);
-                        break;
-                    case 5:
                         monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.PCMap) : monthlyBucketHistories.OrderBy(x => x.PCMap);
                         break;
-                    case 6:
+                    case 5:
                         monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.DescriptionMap) : monthlyBucketHistories.OrderBy(x => x.DescriptionMap);
                         break;
-                    case 7:
+                    case 6:
                         monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.Price) : monthlyBucketHistories.OrderBy(x => x.Price);
                         break;
-                    case 8:
+                    case 7:
                         monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.PlantContribution) : monthlyBucketHistories.OrderBy(x => x.PlantContribution);
                         break;
-                    case 9:
+                    case 8:
                         monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.RatingRate) : monthlyBucketHistories.OrderBy(x => x.RatingRate);
                         break;
-                    case 10:
+                    case 9:
                         monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.TCT) : monthlyBucketHistories.OrderBy(x => x.TCT);
                         break;
-                    case 11:
+                    case 10:
                         monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.MonthlyTarget) : monthlyBucketHistories.OrderBy(x => x.MonthlyTarget);
                         break;
                     default:
@@ -106,7 +122,7 @@ namespace FSAWebSystem.Services
 
 
             var totalCount = monthlyBucketHistories.Count();
-            var listMonthlyBucketHistory = await monthlyBucketHistories.Skip(param.start).Take(param.length).ToListAsync();
+            var listMonthlyBucketHistory = monthlyBucketHistories.Skip(param.start).Take(param.length).ToList();
 
             return new MonthlyBucketHistoryPagingData
             {
