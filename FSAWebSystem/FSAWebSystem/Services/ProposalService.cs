@@ -193,7 +193,6 @@ namespace FSAWebSystem.Services
             {
                 var search = param.search.value.ToLower();
                 proposalHistories = proposalHistories.Where(x => x.BannerName.ToLower().Contains(search.ToLower()) ||
-                x.PlantName.ToLower().Contains(search.ToLower()) || x.PCMap.ToLower().Contains(search.ToLower()) ||
                 x.DescriptionMap.ToLower().Contains(search.ToLower()) ||
                 x.Remark.ToLower().Contains(search.ToLower())
                 );

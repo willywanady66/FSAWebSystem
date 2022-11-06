@@ -93,8 +93,9 @@ namespace FSAWebSystem.Controllers
         public async Task<IActionResult> GetDailyReportData()
         {
             var currDate = DateTime.Now;
-            var datas = await _reportService.GenerateFirstReportOfMonth(currDate.Month, currDate.Year);
+            //var datas = await _reportService.GenerateFirstReportOfMonth(currDate.Month, currDate.Year);
 
+            var dt = await _reportService.GenerateDailyReportData(currDate);
 
             //var workbook = new HSSFWorkbook();
             //ISheet worksheet = workbook.CreateSheet("v1.0");
@@ -112,7 +113,7 @@ namespace FSAWebSystem.Controllers
             //title.CellStyle = style;
             //title.SetCellValue("Publish Beginning of Month");
 
-            
+
 
             //var month = currDate.ToString("MMM").ToUpper();
             //var year = currDate.ToString("yy");
