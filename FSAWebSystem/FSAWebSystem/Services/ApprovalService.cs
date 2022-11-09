@@ -267,7 +267,6 @@ namespace FSAWebSystem.Services
                 users = users.Where(x => x.BannerPlants.Select(x => x.Banner.Id).Contains(approval.Proposal.Banner.Id)).ToList();
             }
 
-
             var type = string.Empty;
 
             if (approval.ProposalType == ProposalType.ReallocateAcrossKAM)
@@ -292,7 +291,6 @@ namespace FSAWebSystem.Services
             }
 
             var usersEmail = users.Select(x => new Tuple<string, Guid, Approval, string>(x.Email, approval.SKUId, approval, type)).ToList();
-            //var usersEmail = users.Select(x => x.Email).ToList();
             return usersEmail;
         }
 

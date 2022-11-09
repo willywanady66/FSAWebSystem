@@ -206,7 +206,7 @@ namespace FSAWebSystem.Services
                 switch (order.column)
                 {
                     case 0:
-                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.SubmittedAt) : proposalHistories.OrderByDescending(x => x.SubmittedAt);
+                        proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.SubmittedAt) : proposalHistories.OrderBy(x => x.SubmittedAt);
                         break;
                     case 1:
                         proposalHistories = order.dir == "desc" ? proposalHistories.OrderByDescending(x => x.Week) : proposalHistories.OrderBy(x => x.Week);

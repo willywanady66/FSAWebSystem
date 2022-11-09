@@ -254,7 +254,7 @@ namespace FSAWebSystem.Services
         }
 
 
-        public async Task<ProposeAddtionalBucket> GetWeeklyBucketSource(IQueryable<BannerPlant> bannerPlants, IQueryable<SKU> skus, decimal proposeAdditional, Proposal proposal, int month, int year, ProposalType? proposalType = null)
+        public async Task<ProposeAddtionalBucket> GetWeeklyBucketSource(IQueryable<BannerPlant> bannerPlants, IQueryable<SKU> skus, List<WeeklyBucket> weeklyBuckets, decimal proposeAdditional, Proposal proposal, int month, int year, ProposalType? proposalType = null)
         {
             var i = 0;
             if(proposalType != null)
@@ -276,12 +276,13 @@ namespace FSAWebSystem.Services
           
             var bannerPlantSourceIds = new List<Guid>();
             var weeklyBucketSource = new WeeklyBucket();
+            var weeklyBucketSources = new List<WeeklyBucket>();
             var weeklyBucketTargets = (await GetWeeklyBucketsByBannerSKU(proposal.Banner.Id, proposal.Sku.Id)).Where(x => x.Month == month && x.Year == year);
             var proposeAdditionalBucket = new ProposeAddtionalBucket();
             proposeAdditionalBucket.WeeklyBucketTargets = weeklyBucketTargets.ToList();
 
             var targetBannerPlants = weeklyBucketTargets.Select(y => y.BannerPlant.Id);
-            var weeklyBuckets = GetWeeklyBuckets().Where(x => x.Month == month && x.Year == year);
+            //var weeklyBuckets = GetWeeklyBuckets().Where(x => x.Month == month && x.Year == year).ToList();
             while (i != 3)
             {
 
@@ -315,7 +316,7 @@ namespace FSAWebSystem.Services
 
                 if (bannerPlantSourceIds.Any())
                 {
-                    var weeklyBucketSources = weeklyBuckets.AsEnumerable().Where(x => bannerPlantSourceIds.Contains(x.BannerPlant.Id) && x.SKUId == proposal.Sku.Id);
+                    weeklyBucketSources = weeklyBuckets.Where(x => bannerPlantSourceIds.Contains(x.BannerPlant.Id) && x.SKUId == proposal.Sku.Id).ToList();
 
                     var weeklyBucketSouceGroups = weeklyBucketSources.GroupBy(x => new { x.BannerPlant.CDM, x.BannerPlant.KAM, x.BannerPlant.Banner.Id }).ToList();
 
@@ -349,20 +350,20 @@ namespace FSAWebSystem.Services
                             if (weeklyBucketSourceByMonthly.MonthlyBucket > weeklyBucketSourceByRemFSA.RemFSA)
                             {
                                 weeklyBucketSource = weeklyBucketSourceByMonthly;
+                                break;
                             }
                             else
                             {
                                 weeklyBucketSource = weeklyBucketSourceByRemFSA;
+                                break;
                             }
                         }
                         else
                         {
                             weeklyBucketSource = weeklyBucketSourceByMonthly != null ? weeklyBucketSourceByMonthly : weeklyBucketSourceByRemFSA;
-
+                            break;
                         }
-                        proposeAdditionalBucket.GroupedBucket = weeklyBucketSource;
-                        proposeAdditionalBucket.WeeklyBucketSource = weeklyBucketSources.Where(x=> x.BannerPlant.CDM == weeklyBucketSource.CDM && x.BannerPlant.KAM == weeklyBucketSource.KAM && x.BannerPlant.Banner.Id == weeklyBucketSource.Banner.Id).ToList();
-                        break;
+                        
                     }
 
                 }
@@ -371,6 +372,10 @@ namespace FSAWebSystem.Services
                     i++;
                 }
             }
+
+            //proposeAdditionalBucket.GroupedBucket = weeklyBucketSource;
+            proposeAdditionalBucket.WeeklyBucketSource = weeklyBucketSources.Where(x => x.BannerPlant.CDM == weeklyBucketSource.CDM && x.BannerPlant.KAM == weeklyBucketSource.KAM && x.BannerPlant.Banner.Id == weeklyBucketSource.Banner.Id).ToList();
+      
             return proposeAdditionalBucket;
         }
     }

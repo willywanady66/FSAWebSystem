@@ -518,7 +518,8 @@ namespace FSAWebSystem.Controllers
 
                     var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant();
                     var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
-                    var proposeAdditionalBucket = await _bucketService.GetWeeklyBucketSource(bannerPlants, skus, proposal.ProposeAdditional, proposal, proposal.Month, proposal.Year, proposalTypeInit);
+                    var weeklyBuckets = _bucketService.GetWeeklyBuckets().Where(x => x.Month == proposal.Month && x.Year == proposal.Year).ToList();
+                    var proposeAdditionalBucket = await _bucketService.GetWeeklyBucketSource(bannerPlants, skus, weeklyBuckets, proposal.ProposeAdditional, proposal, proposal.Month, proposal.Year, proposalTypeInit);
                     //proposalHistory.BannerId = weekBucketTarget.BannerPlant.Banner.Id;
                     //var proposalDetailTarget = proposal.ProposalDetails.Single(x => x.ProposeAdditional < 0);
 

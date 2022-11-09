@@ -214,6 +214,7 @@ namespace FSAWebSystem.Controllers
                 {
                     var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant();
                     var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
+                    var weeklyBuckets = _bucketService.GetWeeklyBuckets().Where(x => x.Month == fsaDetail.Month && x.Year == fsaDetail.Year).ToList();
 
                     foreach (var proposalInput in proposals.Where(x => (x.proposeAdditional > 0 || x.rephase > 0) && !x.isWaitingApproval))
                     {
@@ -232,7 +233,7 @@ namespace FSAWebSystem.Controllers
                             }
                             else if (proposalInput.proposeAdditional > 0)
                             {
-                                proposal = await CreateProposalProposeAdditional(proposalInput, fsaDetail, (Guid)user.UserUnileverId, bannerPlants, skus);
+                                proposal = await CreateProposalProposeAdditional(proposalInput, fsaDetail, (Guid)user.UserUnileverId, bannerPlants, skus, weeklyBuckets);
                                 approval = CreateApproval(approvalId, proposal.Type.Value);
                                 approval.Proposal = proposal;
                             }
@@ -429,7 +430,7 @@ namespace FSAWebSystem.Controllers
         //    return proposeAdditionalBucket;
         //}
 
-        public async Task<Proposal> CreateProposalProposeAdditional(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId, IQueryable<BannerPlant> bannerPlants, IQueryable<SKU> skus)
+        public async Task<Proposal> CreateProposalProposeAdditional(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId, IQueryable<BannerPlant> bannerPlants, IQueryable<SKU> skus, List<WeeklyBucket> weeklyBuckets)
         {
             var banners = _bannerService.GetAllBanner();
             var proposeAdditional = proposalInput.proposeAdditional;
@@ -451,7 +452,7 @@ namespace FSAWebSystem.Controllers
 
             var proposeAdditionalBucket = new ProposeAddtionalBucket();
 
-            proposeAdditionalBucket = await _bucketService.GetWeeklyBucketSource(bannerPlants, skus, proposeAdditional, proposal, fsaDetail.Month, fsaDetail.Year);
+            proposeAdditionalBucket = await _bucketService.GetWeeklyBucketSource(bannerPlants, skus, weeklyBuckets, proposeAdditional, proposal, fsaDetail.Month, fsaDetail.Year);
 
      
             foreach(var weeklyBucket in proposeAdditionalBucket.WeeklyBucketTargets)
