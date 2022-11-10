@@ -44,15 +44,17 @@ namespace FSAWebSystem.Services
 
             if (workLevel == "CCD")
             {
+                var zz = _db.Proposals.Include(x => x.Banner)
+                                                            .Include(x => x.Sku).ThenInclude(y => y.ProductCategory)
+                                                            .ThenInclude(x => x.UserUnilevers).ToList();
                 approvals = (from approval in _db.Approvals
                              join proposal in _db.Proposals.Include(x => x.Banner)
                                                             .Include(x => x.Sku).ThenInclude(y => y.ProductCategory)
-                                                            .ThenInclude(x => x.UserUnilevers).Where(y => y.Sku.UserUnilevers.Any(z => z.Id == user.Id) || y.Sku.ProductCategory.UserUnilevers.Any(u => u.Id == user.Id))
+                                                            .Where(y => y.Sku.UserUnilevers.Any(z => z.Id == user.Id) || y.Sku.ProductCategory.UserUnilevers.Any(u => u.Id == user.Id))
                              on approval.Proposal.Id equals proposal.Id
                              where approval.ApprovalStatus == ApprovalStatus.Pending || approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel
                              select new Approval
                              {
-                                 Proposal = proposal,
                                  ProposalType = proposal.Type.Value,
                                  Id = approval.Id,
                                  ProposalSubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
@@ -76,7 +78,6 @@ namespace FSAWebSystem.Services
                              where approval.ApprovalStatus == ApprovalStatus.Pending || approval.ApprovalStatus == ApprovalStatus.WaitingNextLevel
                              select new Approval
                              {
-                                 Proposal = proposal,
                                  ProposalType = proposal.Type.Value,
                                  Id = approval.Id,
                                  ProposalSubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
