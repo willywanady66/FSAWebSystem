@@ -57,7 +57,7 @@ namespace FSAWebSystem.Services
                              {
                                  ProposalType = proposal.Type.Value,
                                  Id = approval.Id,
-                                 ProposalSubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
+                                 ProposalSubmitDate = proposal.SubmittedAt,
                                  BannerName = proposal.Banner.BannerName,
                                  PCMap = proposal.Sku.PCMap,
                                  DescriptionMap = proposal.Sku.DescriptionMap,
@@ -80,7 +80,7 @@ namespace FSAWebSystem.Services
                              {
                                  ProposalType = proposal.Type.Value,
                                  Id = approval.Id,
-                                 ProposalSubmitDate = proposal.SubmittedAt.ToString("dd/MM/yyyy"),
+                                 ProposalSubmitDate = proposal.SubmittedAt,
                                  BannerName = proposal.Banner.BannerName,
                                  PCMap = proposal.Sku.PCMap,
                                  DescriptionMap = proposal.Sku.DescriptionMap,
@@ -104,7 +104,45 @@ namespace FSAWebSystem.Services
                 var search = param.search.value.ToLower();
                 approvals = approvals.Where(x => x.BannerName.ToLower().Contains(search) || x.PCMap.ToLower().Contains(search) || x.DescriptionMap.ToLower().Contains(search));
             }
-            var totalCount = approvals.Count();
+
+
+			if (param.order.Any())
+			{
+				var order = param.order[0];
+				switch (order.column)
+				{
+					case 1:
+						approvals = order.dir == "desc" ? approvals.OrderByDescending(x => x.ProposalSubmitDate) : approvals.OrderBy(x => x.ProposalSubmitDate);
+						break;
+					case 2:
+						approvals = order.dir == "desc" ? approvals.OrderByDescending(x => x.BannerName) : approvals.OrderBy(x => x.BannerName);
+						break;
+					case 3:
+						approvals = order.dir == "desc" ? approvals.OrderByDescending(x => x.PCMap) : approvals.OrderBy(x => x.PCMap);
+						break;
+					case 4:
+						approvals = order.dir == "desc" ? approvals.OrderByDescending(x => x.DescriptionMap) : approvals.OrderBy(x => x.DescriptionMap);
+						break;
+					case 5:
+						approvals = order.dir == "desc" ? approvals.OrderByDescending(x => x.ProposeAdditional) : approvals.OrderBy(x => x.ProposeAdditional);
+						break;
+					case 6:
+						approvals = order.dir == "desc" ? approvals.OrderByDescending(x => x.Rephase) : approvals.OrderBy(x => x.Rephase);
+						break;
+					case 7:
+						approvals = order.dir == "desc" ? approvals.OrderByDescending(x => x.Remark) : approvals.OrderBy(x => x.Remark);
+						break;
+					case 8:
+						approvals = order.dir == "desc" ? approvals.OrderByDescending(x => x.ApprovedBy) : approvals.OrderBy(x => x.ApprovedBy);
+						break;
+					default:
+						break;
+
+				}
+			}
+
+
+			var totalCount = approvals.Count();
             var listApproval = approvals.Skip(param.start).Take(param.length).ToList();
             return new ApprovalPagingData
             {
@@ -124,7 +162,7 @@ namespace FSAWebSystem.Services
                 var proposalThisApproval = apprvl.Proposal;
                 //var weeklyBucketProposal = _db.WeeklyBuckets.Single(x => x.Id == proposalThisApproval.WeeklyBucketId);
                 var weeklyBucketProposal = new WeeklyBucket();
-                apprvl.ProposalSubmitDate = proposalThisApproval.SubmittedAt.ToString("dd/MM/yyyy");
+                apprvl.ProposalSubmitDate = proposalThisApproval.SubmittedAt;
                 apprvl.Week = proposalThisApproval.Week;
                 apprvl.RequestedBy = (await _db.UsersUnilever.SingleAsync(x => x.Id == proposalThisApproval.SubmittedBy)).Email;
                 apprvl.ProposalType = proposalThisApproval.Type.Value;

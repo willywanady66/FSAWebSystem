@@ -34,6 +34,13 @@
                }
            },
            {
+               targets: 1,
+               render: function (data) {
+                   var date = moment(data).format("DD-MMM-yyyy HH:mm");
+                   return date;
+               },
+           },
+           {
                "targets": [10],
                "className": "hide_column"
            },

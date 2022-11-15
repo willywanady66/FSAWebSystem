@@ -18,7 +18,17 @@ var connectionString = builder.Configuration.GetConnectionString("FSAWebSystemDb
 builder.Services.AddDbContext<FSAWebSystemDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+        new CultureInfo("en-US")
+    };
 
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("en-US");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
 
 builder.Services.AddDefaultIdentity<FSAWebSystemUser>(options => {
     options.SignIn.RequireConfirmedAccount = false;

@@ -537,7 +537,7 @@ namespace FSAWebSystem.Controllers
                 Rephase = proposal.Rephase,
                 ProposeAdditional = proposal.ProposeAdditional,
                 Remark = proposal.Remark,
-                SubmittedAt = proposal.SubmittedAt.ToString(),
+                SubmittedAt = proposal.SubmittedAt,
                 SubmittedBy = proposal.SubmittedBy.Value,
             };
             //foreach (var detail in proposal.ProposalDetails)

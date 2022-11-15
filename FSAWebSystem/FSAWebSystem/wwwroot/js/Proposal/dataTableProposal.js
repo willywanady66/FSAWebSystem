@@ -62,7 +62,7 @@
         },
         "columnDefs": [
             {
-                "targets": [12,13, 14, 15, 16, 17],
+                "targets": [12, 13, 14, 15, 16, 17],
                 "className": "hide_column"
             },
             {
@@ -108,7 +108,7 @@
                     var options = "";
                     //var remarks2 = ["Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year"];
 
-                        
+
                     remarks.forEach(function (item) {
                         var remark = item;
                         if (remark == full.remark) {
@@ -124,7 +124,7 @@
 
                         if (!remarks.includes(full.remark)) {
                             options += `<option selected>Other</option>`
-                        }                        
+                        }
 
                         select = `<select class="form-control form-select" style="width:100%" disabled id="row-${meta.row}-remark" name="row-${meta.row}-remark">${options}</select>`;
                         if (!remarks.includes(full.remark)) {
@@ -199,11 +199,11 @@
                         else {
                             proposalInputs[index] = proposal;
                         }
-                     
+
                     }
                 }
             }
-           
+
         });
         return proposalInputs;
     };
@@ -236,7 +236,7 @@
                 Swal.close();
                 var ul = document.getElementById('error-messages');
                 ul.innerHTML = '';
-              
+
                 if (data.value) {
                     if (data.value.errorMessages) {
                         var errorMessages = data.value.errorMessages;
@@ -251,14 +251,14 @@
                         document.body.scrollTop = 0;
                         document.documentElement.scrollTop = 0;
                     }
-             
+
                 }
                 else {
                     redrawTable();
                 }
             },
             error: function (data) {
-                
+
             }
         });
     });
@@ -276,7 +276,7 @@
         columns: [
             { "data": "submittedAt" }, //0
             { "data": "week" }, //1
-            { "data": "uliWeek", orderable:false }, //2
+            { "data": "uliWeek", orderable: false }, //2
             { "data": "bannerName" }, //3
             { "data": "pcMap" },       //4
             { "data": "descriptionMap" }, //5
@@ -291,7 +291,15 @@
         "columnDefs": [{
             "targets": 9,
             "orderable": false
-        }],
+        },
+        {
+            "targets": 0,
+            "render": function (data) {
+                var date = moment(data).format("DD-MMM-yyyy HH:mm");
+                return date;
+            },
+        }
+        ],
         "rowCallback": function (row, data, index) {
             if (data.approvalStatus == "Approved") {
                 $('td:eq(9)', row).css({ color: "green" });
@@ -318,7 +326,7 @@
             }
         },
         columns: [
-            { "data": "uploadedDate" }, //0
+            { "data": "createdAt" }, //0
             { "data": "year" }, //1
             { "data": "month" }, //2
             { "data": "bannerName" },//3
@@ -331,6 +339,13 @@
             { "data": "monthlyTarget" }, //10
         ],
         columnDefs: [
+            {
+                targets: 0,
+                render: function (data) {
+                    var date = moment(data).format("DD-MMM-yyyy HH:mm");
+                    return date;
+                },
+            },
             {
                 targets: 6,
                 render: $.fn.dataTable.render.number(',', '.', 0, '')
@@ -361,18 +376,28 @@
             }
         },
         columns: [
-            { "data": "uploadedDate" },
+            { "data": "createdAt" },
             { "data": "year" },
             { "data": "month" },
             { "data": "week" },
-            { "data": "uliWeek", orderable:false },
+            { "data": "uliWeek", orderable: false },
             { "data": "bannerName" },
             { "data": "plantName" },
             { "data": "pcMap" },
             { "data": "descriptionMap" },
             { "data": "dispatchConsume" },
         ],
+        columnDefs: [
+            {
+                targets: 0,
+                render: function (data) {
+                    var date = moment(data).format("DD-MMM-yyyy HH:mm");
+                    return date;
+                },
+            },
+        ],
         error: {
+
         }
     });
 
@@ -401,7 +426,7 @@ function remarkChanged(obj) {
     var id = obj.id.split('-');
     var inputRemarkId = '#' + id[0] + '-' + id[1] + '-' + 'otherRemark';
     if (obj.options[index].text == "Other") {
-        
+
         $(`#dataTableProposal ${inputRemarkId}`).show();
     }
     else {

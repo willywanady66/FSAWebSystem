@@ -63,7 +63,7 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public string DescriptionMap { get; set; }
         [NotMapped]
-        public string ProposalSubmitDate { get; set; }
+        public DateTime ProposalSubmitDate { get; set; }
         [NotMapped]
         public string RequestedBy { get; set; }
 

@@ -16,7 +16,7 @@ namespace FSAWebSystem.Models
         public decimal ProposeAdditional { get; set; }
         public string Remark { get; set; }
         public Guid SubmittedBy { get; set; }
-        public string SubmittedAt { get; set; }
+        public DateTime SubmittedAt { get; set; }
 
         [NotMapped]
         public string BannerName { get; set; }

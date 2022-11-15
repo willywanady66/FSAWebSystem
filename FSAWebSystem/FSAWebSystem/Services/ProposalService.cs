@@ -244,11 +244,11 @@ namespace FSAWebSystem.Services
 
             var totalCount = proposalHistories.Count();
             var listProposalHistory = proposalHistories.Skip(param.start).Take(param.length).ToList();
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("id-ID");
+            //Thread.CurrentThread.CurrentCulture = new CultureInfo("id-ID");
             foreach (var proposalHistory in listProposalHistory)
             {
-                var submitDate = DateTime.Parse(proposalHistory.SubmittedAt);
-                var uliCalendarDetail = _db.ULICalendarDetails.SingleOrDefault(x => submitDate.Date >= x.StartDate.Value.Date && submitDate.Date <= x.EndDate);
+                //var submitDate = DateTime.Parse(proposalHistory.SubmittedAt);
+                var uliCalendarDetail = _db.ULICalendarDetails.SingleOrDefault(x => proposalHistory.SubmittedAt >= x.StartDate.Value.Date && proposalHistory.SubmittedAt <= x.EndDate);
                 proposalHistory.ULIWeek = uliCalendarDetail != null ? uliCalendarDetail.Week.ToString() : string.Empty;
             }
             return new ProposalHistoryPagingData

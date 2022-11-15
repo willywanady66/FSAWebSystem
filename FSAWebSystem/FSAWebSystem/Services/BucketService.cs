@@ -27,7 +27,6 @@ namespace FSAWebSystem.Services
                                           where monthlyBucket.Year == Convert.ToInt32(param.year) && monthlyBucket.Month == Convert.ToInt32(param.month)
                                           select new MonthlyBucket
                                           {
-                                              UploadedDate = monthlyBucket.CreatedAt.Value.ToString("dd/MM/yyyy"),
                                               KAM = bannerPlant.KAM,
                                               CDM = bannerPlant.CDM,
                                               CreatedAt = monthlyBucket.CreatedAt,
@@ -45,7 +44,6 @@ namespace FSAWebSystem.Services
                                               MonthlyTarget = monthlyBucket.MonthlyTarget
                                           }).AsEnumerable().GroupBy(x => new { x.KAM, x.CDM, x.BnrId, SKUId = x.SKUId }).Select(y => new MonthlyBucket
                                           {
-                                              UploadedDate = y.First().UploadedDate,
                                               KAM = y.Key.KAM,
                                               CDM = y.Key.CDM,
                                               CreatedAt = y.First().CreatedAt,
@@ -147,7 +145,6 @@ namespace FSAWebSystem.Services
                                           {
                                               BannerPlantId = bannerPlant.Id,
                                               CreatedAt = weeklyBucketHistory.CreatedAt,
-                                              UploadedDate = weeklyBucketHistory.CreatedAt.Value.ToShortDateString(),
                                               BannerName = bannerPlant.Banner.BannerName,
                                               PCMap = sku.PCMap,
                                               DescriptionMap = sku.DescriptionMap,
@@ -186,12 +183,15 @@ namespace FSAWebSystem.Services
                         weeklyBucketHistories = order.dir == "desc" ? weeklyBucketHistories.OrderByDescending(x => x.BannerName) : weeklyBucketHistories.OrderBy(x => x.BannerName);
                         break;
                     case 6:
-                        weeklyBucketHistories = order.dir == "desc" ? weeklyBucketHistories.OrderByDescending(x => x.PCMap) : weeklyBucketHistories.OrderBy(x => x.PCMap);
+                        weeklyBucketHistories = order.dir == "desc" ? weeklyBucketHistories.OrderByDescending(x => x.PlantName) : weeklyBucketHistories.OrderBy(x => x.PlantName);
                         break;
                     case 7:
+                        weeklyBucketHistories = order.dir == "desc" ? weeklyBucketHistories.OrderByDescending(x => x.PCMap) : weeklyBucketHistories.OrderBy(x => x.PCMap);
+                        break;  
+                    case 8:
                         weeklyBucketHistories = order.dir == "desc" ? weeklyBucketHistories.OrderByDescending(x => x.DescriptionMap) : weeklyBucketHistories.OrderBy(x => x.DescriptionMap);
                         break;
-                    case 8:
+                    case 9:
                         weeklyBucketHistories = order.dir == "desc" ? weeklyBucketHistories.OrderByDescending(x => x.DispatchConsume) : weeklyBucketHistories.OrderBy(x => x.DispatchConsume);
                         break;
                     default:
