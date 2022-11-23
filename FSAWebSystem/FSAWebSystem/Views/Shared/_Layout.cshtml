@@ -64,7 +64,7 @@
 				@if (User.Claims.Any(x => x.Type == "Menu" && x.Value == "Report"))
 				{
 					<li class="nav-item active ">
-						<a class="nav-link text-center" asp-area="" asp-controller="Home" asp-action="Privacy">
+						<a class="nav-link text-center" asp-area="" asp-controller="Report" asp-action="Index">
 							<h5 class="font-weight-bold">REPORT</h5>
 						</a>
 					</li>

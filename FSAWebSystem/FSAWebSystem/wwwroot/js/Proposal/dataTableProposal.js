@@ -161,7 +161,7 @@
     });
 
 
-    function getUserInput(proposalInputs) {
+    function getUserInput(proposalInputs) { 
         $("#dataTableProposal TBODY TR").each(function () {
             var proposal = {};
             var row = $(this);

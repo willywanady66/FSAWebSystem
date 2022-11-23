@@ -9,8 +9,8 @@ using AspNetCoreHero.ToastNotification;
 using AspNetCoreHero.ToastNotification.Extensions;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using MailKit;
-
-
+using FluentScheduler;
+using FSAWebSystem.Services.Job;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOptions();
@@ -18,17 +18,7 @@ var connectionString = builder.Configuration.GetConnectionString("FSAWebSystemDb
 builder.Services.AddDbContext<FSAWebSystemDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.Configure<RequestLocalizationOptions>(options =>
-{
-    var supportedCultures = new[]
-    {
-        new CultureInfo("en-US")
-    };
 
-    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("en-US");
-    options.SupportedCultures = supportedCultures;
-    options.SupportedUICultures = supportedCultures;
-});
 
 builder.Services.AddDefaultIdentity<FSAWebSystemUser>(options => {
     options.SignIn.RequireConfirmedAccount = false;
@@ -53,6 +43,11 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISKUService, SKUService>();
 builder.Services.AddScoped<IProposalService, ProposalService>();
 builder.Services.AddScoped<IBucketService, BucketService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+//builder.Services.AddScoped<IGenerateReportService, GenerateReportService>();
+
+builder.Services.AddTransient<ReportDailyJob>();
+builder.Services.AddTransient<ReportWeeklyJob>();
 // Add services to the container.
 builder.Services.AddNotyf(config => { config.DurationInSeconds = 5; config.IsDismissable = true; config.Position = NotyfPosition.BottomRight; });
 builder.Services.AddControllersWithViews();
@@ -82,6 +77,9 @@ context.Database.Migrate();
 Configuration.Initialize(context, userMgr, roleSvc);
 
 
+
+
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -105,4 +103,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+JobManager.Initialize(new ReportRegistry(app.Services));
 app.Run();
+
+

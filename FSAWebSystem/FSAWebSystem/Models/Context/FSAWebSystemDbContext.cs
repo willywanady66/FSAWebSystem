@@ -71,5 +71,6 @@ namespace FSAWebSystem.Models.Context
         public DbSet<AndromedaModel> Andromedas { get; set; }
         public DbSet<BottomPriceModel> BottomPrices { get; set; }
         public DbSet<ITrustModel> ITrusts{ get; set; }
+        public DbSet<Report> Reports { get; set; }
     }
 }

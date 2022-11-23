@@ -1,0 +1,96 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    	ViewData["Title"] = "Report";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<SelectListItem> listMonths = ViewData["listMonth"] as List<SelectListItem>;
+	List<SelectListItem> listYears = ViewData["listYear"] as List<SelectListItem>;
+}
+
+<script>
+    var getDailyReports = '@Url.Action("GetDailyReports", "Report")';
+    var getWeeklyReports = '@Url.Action("GetWeeekyReports", "Report")';
+</script>
+
+<script src="~/js/Report/report.js"></script>
+<div>
+    <h1>Report</h1>
+        <div class="card shadow mb-4 pt-4 pl-2 pb-4 rounded">
+            <div class="card-header py-3">
+                <h5 class="m-0 font-weight-bold text-primary d-inline">DAILY REPORT</h5>
+            </div>
+       
+            <div class="row px-4 py-4">
+		<div class="col-4">
+			<label class="form-label d-inline">Month:</label>
+			<select class="form-control form-select" id="dropDownMonthDaily" name="month"
+					asp-items="@listMonths"></select>
+		</div>
+		<div class="col-4"></div>
+		<div class="col-4">
+			<label class="form-label d-inline">Year:</label>
+                <select class="form-control form-select" id="dropDownYearDaily" name="year"
+					asp-items="@listYears"></select>
+		</div>
+            </div>
+
+            	<div class="card-body">
+	<div class="row" style="overflow-x:auto">
+                <table class="table table-bordered responsive" id="dataTableDailyReport">
+            <thead>
+                    <tr>
+                        <th>REPORT NAME</th>
+                        <th>PUBLISH DATE</th>
+                        <th>STATUS</th>
+                        <th>DOWNLOAD</th>
+                    </tr>
+            </thead>
+       
+        </table>
+            </div>
+            </div>
+        </div>
+    </div>
+
+
+
+<div class="card shadow mb-4 pt-4 pl-2 pb-4 rounded">
+
+
+
+    <div class="card-header py-3">
+        <h5 class="m-0 font-weight-bold text-primary d-inline">WEEKLY   REPORT</h5>
+    </div>
+
+
+    <div class="row px-4 py-4">
+        <div class="col-4">
+            <label class="form-label d-inline">Month:</label>
+            <select class="form-control form-select" id="dropDownMonthWeekly" name="month"
+                    asp-items="@listMonths"></select>
+        </div>
+        <div class="col-4"></div>
+        <div class="col-4">
+            <label class="form-label d-inline">Year:</label>
+            <select class="form-control form-select" id="dropDownYearWeekly" name="year"
+                    asp-items="@listYears"></select>
+        </div>
+    </div>
+          	<div class="card-body">
+	<div class="row" style="overflow-x:auto">
+            <table class="table table-bordered responsive" id="dataTableWeeklyReport">
+            <thead>
+                <tr>
+                    <th>REPORT NAME</th>
+                    <th>PUBLISH DATE</th>
+                    <th>STATUS</th>
+                    <th>DOWNLOAD</th>
+                </tr>
+            </thead>
+        
+        </table>
+        </div>
+        </div>
+</div>        
