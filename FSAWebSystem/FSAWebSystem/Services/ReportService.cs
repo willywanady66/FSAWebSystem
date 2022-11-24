@@ -181,10 +181,10 @@ namespace FSAWebSystem.Services
                 row.CreateCell(i).SetCellValue(Convert.ToDouble(item.GetProperty("RR").GetValue(data, null)));  
                 i++;
                 row.CreateCell(i).SetCellValue(Convert.ToDouble(item.GetProperty("TCT").GetValue(data, null))/100);
-                row.GetCell(i).CellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("0.00%");
+                row.GetCell(i).CellStyle = percentStyle;
                 i++;
                 row.CreateCell(i).SetCellValue(Convert.ToDouble(item.GetProperty("Target").GetValue(data, null)) / 100);
-                row.GetCell(i).CellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("0.00%");
+                row.GetCell(i).CellStyle  = percentStyle;
                 i++;
                 row.CreateCell(i).SetCellValue(Convert.ToDouble(item.GetProperty("MonthlyBucket").GetValue(data, null)));
                 i++;
