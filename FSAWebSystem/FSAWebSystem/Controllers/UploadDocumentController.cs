@@ -962,10 +962,6 @@ namespace FSAWebSystem.Controllers
                 weeklyBucket.BucketWeek1 = mBucket * ((decimal)50 / (decimal)100);
                 weeklyBucket.BucketWeek2 = mBucket * ((decimal)50 / (decimal)100);
                 weeklyBuckets.Add(weeklyBucket);
-
-
-
-
             }
 
             await _uploadDocService.SaveWeeklyBuckets(weeklyBuckets);

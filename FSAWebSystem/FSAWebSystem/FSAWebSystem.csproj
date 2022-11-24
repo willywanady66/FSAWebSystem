@@ -50,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="ReportExcel\" />
     <Folder Include="wwwroot\assets\" />
   </ItemGroup>
 

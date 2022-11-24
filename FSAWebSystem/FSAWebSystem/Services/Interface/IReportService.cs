@@ -9,5 +9,8 @@ namespace FSAWebSystem.Services.Interface
 
 		public Task<ReportPagingData> GetDailyReports(DataTableParam param);
 		public Task<ReportPagingData> GetWeeklyReports(DataTableParam param);
+		public Task GenerateDailyReport();
+		public Task GenerateWeeklyReport();
+		public Task<IEnumerable<object>> GenerateFirstReportOfMonth(int month, int year);	
     }
 }
