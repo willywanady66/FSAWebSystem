@@ -148,6 +148,11 @@ namespace FSAWebSystem.Services
             var month = currDate.ToString("MMM").ToUpper();
             var year = currDate.ToString("yy");
 
+            var percentStyle = workbook.CreateCellStyle();
+            percentStyle.DataFormat = workbook.CreateDataFormat().GetFormat("0.00%");
+
+            var accountingStyle = workbook.CreateCellStyle();
+            accountingStyle.DataFormat = workbook.CreateDataFormat().GetFormat("_(* #,##0.00_);_(* (#,##0.00);_(* \"-\"??_);_(@_)");
             int x = 0;
             foreach (var data in datas)
             {
@@ -171,7 +176,7 @@ namespace FSAWebSystem.Services
                 row.CreateCell(i).SetCellValue(Convert.ToDouble(item.GetProperty("Price").GetValue(data, null)));
                 i++;
                 row.CreateCell(i).SetCellValue(Convert.ToDouble(item.GetProperty("PlantContribution").GetValue(data, null))/100);
-                row.GetCell(i).CellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("0.00%");
+                row.GetCell(i).CellStyle = percentStyle;
                 i++;
                 row.CreateCell(i).SetCellValue(Convert.ToDouble(item.GetProperty("RR").GetValue(data, null)));  
                 i++;
@@ -190,7 +195,7 @@ namespace FSAWebSystem.Services
                 row.CreateCell(i).SetCellValue(Convert.ToDouble(item.GetProperty("ValidBJ").GetValue(data, null)));
                 i++;
                 row.CreateCell(i).SetCellValue(Convert.ToDouble(item.GetProperty("RemFSA").GetValue(data, null)));
-                row.GetCell(i).CellStyle.DataFormat = workbook.CreateDataFormat().GetFormat("_(* #,##0.00_);_(* (#,##0.00);_(* \"-\"??_);_(@_)");
+                row.GetCell(i).CellStyle = accountingStyle;
                 i++;
                 x++;
             }
