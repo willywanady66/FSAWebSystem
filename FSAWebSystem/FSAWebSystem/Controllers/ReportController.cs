@@ -92,7 +92,8 @@ namespace FSAWebSystem.Controllers
         
         public async Task<IActionResult> GetDailyReportData()
         {
-            var currDate = DateTime.Now;
+            //var currDate = DateTime.Now;
+            var currDate = new DateTime(2022, 11, 15);
             //var datas = await _reportService.GenerateFirstReportOfMonth(currDate.Month, currDate.Year);
 
             var dt = await _reportService.GenerateDailyReportData(currDate);

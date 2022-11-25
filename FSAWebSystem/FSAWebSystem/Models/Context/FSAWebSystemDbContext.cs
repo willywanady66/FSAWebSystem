@@ -72,5 +72,6 @@ namespace FSAWebSystem.Models.Context
         public DbSet<BottomPriceModel> BottomPrices { get; set; }
         public DbSet<ITrustModel> ITrusts{ get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<MonthlyBucketHistory> MonthlyBucketHistories{ get; set; }
     }
 }

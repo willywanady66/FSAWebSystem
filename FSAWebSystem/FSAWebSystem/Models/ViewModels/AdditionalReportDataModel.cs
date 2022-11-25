@@ -1,4 +1,6 @@
-﻿namespace FSAWebSystem.Models.ViewModels
+﻿using System.Composition.Convention;
+
+namespace FSAWebSystem.Models.ViewModels
 {
     public class AdditionalReportDataModel
     {
@@ -15,7 +17,6 @@
         public Guid WeeklyBucketId { get; set; }
         public decimal Rephase { get; set; }
         public decimal ProposeAdditional { get; set; }
-        public decimal Reallocate { get; set; }
         public ProposalType Type { get; set; }
         public DateTime SubmitDate { get; set; }
     }
