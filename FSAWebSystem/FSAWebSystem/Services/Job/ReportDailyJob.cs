@@ -16,9 +16,9 @@ namespace FSAWebSystem.Services.Job
 
         public void Execute()
         {
-            var generateReportService = new ReportService(_db, _calendarService);
-            //generateReportService.GenerateWeeklyReport();
-            generateReportService.GenerateDailyReport();
+            //var generateReportService = new ReportService(_db, _calendarService);
+            ////generateReportService.GenerateWeeklyReport();
+            //generateReportService.GenerateDailyReport();
         }
     }
 }

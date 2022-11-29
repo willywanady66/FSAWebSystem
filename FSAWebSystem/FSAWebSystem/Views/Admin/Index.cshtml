@@ -22,7 +22,7 @@
 	var getULICal = '@Url.Action("GetULICalendar", "Admin")';
 	var getBannerPlantUrl = '@Url.Action("GetBannerPlantPagination", "Admin")';
 	var editUserUrl = '@Url.Action("Edit", "UserUnilevers")';
-	var editBannerUrl = '@Url.Action("Edit", "BannerPlants")';
+	var editBannerPlantUrl = '@Url.Action("Edit", "BannerPlants")';
 	var editSKUUrl = '@Url.Action("Edit", "SKUs")';
 	var editFSACalUrl = '@Url.Action("Edit", "FSACalendarHeaders")';
 	var editULICalUrl = '@Url.Action("Edit", "ULICalendars")';
@@ -32,6 +32,8 @@
 	var getITrustUrl = '@Url.Action("GetITrustPagination","Admin")'
 	var getBannerUrl = '@Url.Action("GetBannersPagination","Admin")'
 	var getPlantUrl = '@Url.Action("GetPlantsPagination","Admin")'
+	var editBannerUrl = '@Url.Action("Edit","Banners")'
+	var editPlantUrl = '@Url.Action("Edit","Plants")'
 </script>
 
 
@@ -429,6 +431,7 @@
 							<tr>
 								<th>No</th>
 								<th>Banner Name</th>
+								<th class="text-center">Action</th>
 							</tr>
 						</thead>
 					</table>
@@ -449,6 +452,7 @@
 							<tr>
 								<th>Plant Code</th>
 								<th>Plant Name</th>
+								<th class="text-center">Action</th>
 							</tr>
 						</thead>
 					</table>

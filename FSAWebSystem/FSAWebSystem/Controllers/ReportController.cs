@@ -90,6 +90,11 @@ namespace FSAWebSystem.Controllers
             return Ok();
         }
         
+        public async Task<IActionResult> GetBegOfMonth()
+        {
+            await _reportService.GenerateFirstReportOfMonth(11, 2022);
+            return Ok();
+        }
         public async Task<IActionResult> GetDailyReportData()
         {
             //var currDate = DateTime.Now;

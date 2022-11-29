@@ -160,7 +160,8 @@ $(document).ready(function () {
                     },
                     "columns": [
                         { "data": "id" },  //0
-                        { "data": "bannerName" }       //1
+                        { "data": "bannerName" },       //1
+                        { "data": "id" }       //2
                     ],
                     columnDefs: [
                         {
@@ -169,6 +170,20 @@ $(document).ready(function () {
                             orderable: false,
                             "render": function (data, type, full, meta) {
                                 return meta.row + 1 + meta.settings._iDisplayStart;
+                            }
+                        },
+                        {
+                            targets: 2,
+                            orderable: false,
+                            className: 'text-center',
+                            "render": function (data, type, full, meta) {
+
+                                return `<a href="${editBannerUrl}/${full.id}">
+                                <i class="fas fa-pen"></i>
+                            <a/>`
+
+                                return null;
+
                             }
                         }
                     ]
@@ -185,9 +200,24 @@ $(document).ready(function () {
                             type: "POST"
                         },
                         "columns": [
-                            { "data": "plantCode" },       //1
-                            { "data": "plantName" }       //2
-                        ]
+                            { "data": "plantCode" },       //0
+                            { "data": "plantName" },       //1
+                            { "data": "id" }       //2
+                        ],
+                        columnDefs: [{
+                            targets: 2,
+                            orderable: false,
+                            className: 'text-center',
+                            "render": function (data, type, full, meta) {
+
+                                return `<a href="${editPlantUrl}/${full.id}">
+                                <i class="fas fa-pen"></i>
+                            <a/>`
+
+                                return null;
+
+                            }
+                        }]
                     });
                     break;
                 }
@@ -307,7 +337,7 @@ $(document).ready(function () {
                 orderable: false,
                 className: 'text-center',
                 "render": function (data, type, full, meta) {
-                    return `<a href="${editBannerUrl}/${full.id}">
+                    return `<a href="${editBannerPlantUrl}/${full.id}">
                                 <i class="fas fa-pen"></i>
                             <a/>`
                 }

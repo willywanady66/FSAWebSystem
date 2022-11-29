@@ -19,7 +19,6 @@ builder.Services.AddDbContext<FSAWebSystemDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 
-
 builder.Services.AddDefaultIdentity<FSAWebSystemUser>(options => {
     options.SignIn.RequireConfirmedAccount = false;
     options.User.RequireUniqueEmail = true;

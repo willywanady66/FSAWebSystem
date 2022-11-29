@@ -39,7 +39,7 @@
             { "data": "bannerName" }, //0
             { "data": "pcMap" },       //1
             { "data": "descriptionMap" }, //2
-            { "data": "ratingRate" },      //3 
+            { "data": "runningRate" },      //3 
             { "data": "monthlyBucket" },   //4
             { "data": "currentBucket" },   //5
             { "data": "nextBucket" },      //6
@@ -60,7 +60,13 @@
             proposals = data.ajax.proposalInputs;
             $("#week").text("Week: " + data.json.week);
         },
-        "columnDefs": [
+        "columnDefs":
+            [{
+            "targets": [3, 4, 8],
+            "render": function (data) {
+                return data.toLocaleString('id-ID');
+                },
+            },
             {
                 "targets": [12, 13, 14, 15, 16, 17],
                 "className": "hide_column"
@@ -73,7 +79,8 @@
                     }
                     return data;
                 },
-                "orderable": false
+                "orderable": false,
+               
             },
             {
                 "targets": 9,
@@ -83,24 +90,27 @@
                         input = `<input type="number" class="form-control" id="row-${meta.row}-rephase" name="row-${meta.row}-rephase" disabled min=0 value=${full.rephase} />`;
                     }
                     else {
-                        input = `<input type="number" class="form-control" id="row-${meta.row}-rephase" name="row-${meta.row}-rephase" min=0 value=${full.rephase} />`
+                        input = `<input type="number" class="form-control" id="row-${meta.row}-rephase" name="row-${meta.row}-rephase" min=0 data-type="currency" value=${full.rephase} onchange="rephaseChanged(this)" />`
                     }
                     return input;
                 },
-                "orderable": false
+                "orderable": false,
+                "className": "rephaseColumn"
+
             },
             {
                 "targets": 10,
                 "render": function (data, type, full, meta) {
                     if (full.week != 1 && !full.isWaitingApproval) {
-                        input = `<input type="number" class="form-control" id="row-${meta.row}-additional" name="row-${meta.row}-additional" min=0 value=${full.proposeAdditional} />`;
+                        input = `<input type="number" class="form-control" id="row-${meta.row}-additional" name="row-${meta.row}-additional" min=0 value=${full.proposeAdditional} onchange="proposeChanged(this)" />`;
                     }
                     else {
                         input = `<input type="number" class="form-control" id="row-${meta.row}-additional" name="row-${meta.row}-additional" disabled min=0 value=${full.proposeAdditional} />`;
                     }
                     return input;
                 },
-                "orderable": false
+                "orderable": false,
+                "className": "proposeColumn"
             },
             {
                 "targets": 11,
@@ -139,6 +149,7 @@
                     return select;
                 },
                 "orderable": false,
+                "className": "remarkColumn"
 
             }
         ],
@@ -158,10 +169,10 @@
         error: {
 
         }
-    });
+    }).columns.adjust();
 
 
-    function getUserInput(proposalInputs) { 
+    function getUserInput(proposalInputs) {
         $("#dataTableProposal TBODY TR").each(function () {
             var proposal = {};
             var row = $(this);
@@ -288,17 +299,19 @@
             { "data": "approvalNote" },   //11
 
         ],
-        "columnDefs": [{
-            "targets": 9,
-            "orderable": false
-        },
-        {
-            "targets": 0,
-            "render": function (data) {
-                var date = moment(data).format("DD-MMM-yyyy HH:mm");
-                return date;
+        "columnDefs": [
+            {
+                "targets": 9,
+                "orderable": false
             },
-        }
+            {
+                "targets": 0,
+                "render": function (data) {
+                    var date = moment(data).format("DD-MMM-yyyy HH:mm");
+                    return date;
+                },
+            },
+            {}
         ],
         "rowCallback": function (row, data, index) {
             if (data.approvalStatus == "Approved") {
@@ -334,7 +347,7 @@
             { "data": "descriptionMap" }, //5
             { "data": "price" }, //6
             { "data": "plantContribution" }, //7
-            { "data": "ratingRate" }, //8
+            { "data": "runningRate" }, //8
             { "data": "tct" }, //9
             { "data": "monthlyTarget" }, //10
         ],
@@ -432,5 +445,23 @@ function remarkChanged(obj) {
     else {
         $(`#dataTableProposal ${inputRemarkId}`).hide();
     }
+
+}
+
+function rephaseChanged(obj) {
+    var index = obj.selectedIndex;
+    var id = obj.id.split('-');
+    var inputId = '#' + id[0] + '-' + id[1] + '-' + 'rephase';
+    if (obj.valueAsNumber > 0) {
+        $(`#dataTableProposal ${inputId}`).val(obj.value);
+
+    }
+    else {
+        $(`#dataTableProposal ${inputId}`).val("0");
+    }
+    console.log(obj.valueAsNumber.toLocaleString('id-ID'));
+}
+
+function proposeChanged(obj) {
 
 }

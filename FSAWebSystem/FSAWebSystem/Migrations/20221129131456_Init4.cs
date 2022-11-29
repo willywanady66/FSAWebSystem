@@ -16,7 +16,10 @@ namespace FSAWebSystem.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     WeeklyBucketId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MonthlyBucket = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Version = table.Column<int>(type: "int", nullable: false)
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    Week = table.Column<int>(type: "int", nullable: false),
+                    Month = table.Column<int>(type: "int", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

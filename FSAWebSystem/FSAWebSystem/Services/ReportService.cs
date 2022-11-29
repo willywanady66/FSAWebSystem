@@ -101,8 +101,8 @@ namespace FSAWebSystem.Services
             dynamic obj = new ExpandoObject();
 
             var data = GetBaseReportData(month, year);
-
-            CreateFile(data, "Publish Beginning of Month", 1);
+            var dailyRecords = new List<DailyRecordModel>().AsEnumerable();
+            await CreateFile(data, "Publish Beginning of Month", new DateTime(2022, 11, 01), dailyRecords);
         }
 
 
@@ -140,7 +140,7 @@ namespace FSAWebSystem.Services
 
                 var obj = new DailyRecordModel();
 
-                CreateFile(baseData, "Publish Day 1", fsaCalDetail.Week, dailyRecord);
+                await CreateFile(baseData, "Publish Day 1", new DateTime(2022, 11, 16), dailyRecord);
 
                 return obj;
             }
@@ -154,7 +154,7 @@ namespace FSAWebSystem.Services
         private IEnumerable<BaseReportModel> GetBaseReportData(int month, int year)
         {
             var data = (from weeklyBucket in _db.WeeklyBuckets.Include(x => x.BannerPlant).Include(x => x.BannerPlant.Banner).Include(x => x.BannerPlant.Plant).Where(x => x.Month == month && x.Year == year)
-                        join monthlyBucket in _db.MonthlyBuckets.Include(x => x.BannerPlant) on new { BannerPlantId = weeklyBucket.BannerPlant.Id, SKUId = weeklyBucket.SKUId } equals new { BannerPlantId = monthlyBucket.BannerPlant.Id, SKUId = monthlyBucket.SKUId }
+                        join monthlyBucket in _db.MonthlyBuckets.Include(x => x.BannerPlant) on new { BannerPlantId = weeklyBucket.BannerPlant.Id, SKUId = weeklyBucket.SKUId, Month = weeklyBucket.Month, Year = weeklyBucket.Year } equals new { BannerPlantId = monthlyBucket.BannerPlant.Id, SKUId = monthlyBucket.SKUId, Month = monthlyBucket.Month,  Year = monthlyBucket.Year }
                         join sku in _db.SKUs.Include(x => x.ProductCategory) on weeklyBucket.SKUId equals sku.Id
                         select new BaseReportModel
                         {
@@ -167,29 +167,27 @@ namespace FSAWebSystem.Services
                             PlantName = weeklyBucket.BannerPlant.Plant.PlantName,
                             Price = monthlyBucket.Price,
                             PlantContribution = weeklyBucket.PlantContribution,
-                            RR = weeklyBucket.RatingRate,
+                            RR = weeklyBucket.RunningRate,
                             TCT = monthlyBucket.TCT,
                             Target = monthlyBucket.MonthlyTarget,
-                            MonthlyBucket = monthlyBucket.RatingRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100),
-                            Week1 = monthlyBucket.RatingRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) * ((decimal)50 / (decimal)100),
-                            Week2 = monthlyBucket.RatingRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) * ((decimal)50 / (decimal)100),
+                            MonthlyBucket = monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100),
+                            Week1 = monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) * ((decimal)50 / (decimal)100),
+                            Week2 = monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) * ((decimal)50 / (decimal)100),
                             ValidBJ = weeklyBucket.ValidBJ,
-                            RemFSA = monthlyBucket.RatingRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) - weeklyBucket.ValidBJ
+                            RemFSA = monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) - weeklyBucket.ValidBJ
                         }).AsEnumerable();
 
             return data;
         }
 
-        private void CreateFile(IEnumerable<BaseReportModel> baseReportData, string title, int week, IEnumerable<DailyRecordModel>? dailyRecord = null)
+        private async Task CreateFile(IEnumerable<BaseReportModel> baseReportData, string title, DateTime currDate, IEnumerable<DailyRecordModel> dailyRecord)
         {
-            //var currDate = DateTime.Now;
-            var currDate = new DateTime(2022, 11, 16);
             var colToAddRephase = 0;
             var colToAddReallocate = 0;
             var colToAddPropose = 0;
             var month = currDate.ToString("MMM").ToUpper();
             var year = currDate.ToString("yy");
-            var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "ReportExcel", "Daily Report.xls");
+     
             var listHistoryMonthly = new List<MonthlyBucketHistory>();
 
             var workbook = new HSSFWorkbook();
@@ -200,13 +198,18 @@ namespace FSAWebSystem.Services
             style.Alignment = HorizontalAlignment.Center;
             var listCol = baseReportData.First().GetType().GetProperties().Select(x => x.Name).ToList();
 
+            var fsaCalDetail = await _calendarService.GetCalendarDetail(currDate);
+            int week = fsaCalDetail.Week;
+
             var groupDailyRecord = dailyRecord.GroupBy(x => new { x.WeeklyBucketId, x.SubmitDate.Date, x.Type }).ToList();
-            var recordRephase = groupDailyRecord.Where(x => x.Key.Type == ProposalType.Rephase);
-            colToAddRephase = recordRephase.Any() ? recordRephase.Max(x => x.Count()) : 0;
-            var recordReallocate = groupDailyRecord.Where(x => x.Key.Type == ProposalType.ReallocateAcrossCDM || x.Key.Type == ProposalType.ReallocateAcrossKAM || x.Key.Type == ProposalType.ReallocateAcrossMT);
-            colToAddReallocate = recordReallocate.Any() ? recordReallocate.Max(x => x.Count()) : 0;
-            var recordPropose = groupDailyRecord.Where(x => x.Key.Type == ProposalType.ProposeAdditional);
-            colToAddPropose = recordPropose.Any() ? recordPropose.Max(x => x.Count()) : 0;
+                var recordRephase = groupDailyRecord.Where(x => x.Key.Type == ProposalType.Rephase);
+                colToAddRephase = recordRephase.Any() ? recordRephase.Max(x => x.Count()) : 0;
+                var recordReallocate = groupDailyRecord.Where(x => x.Key.Type == ProposalType.ReallocateAcrossCDM || x.Key.Type == ProposalType.ReallocateAcrossKAM || x.Key.Type == ProposalType.ReallocateAcrossMT);
+                colToAddReallocate = recordReallocate.Any() ? recordReallocate.Max(x => x.Count()) : 0;
+                var recordPropose = groupDailyRecord.Where(x => x.Key.Type == ProposalType.ProposeAdditional);
+                colToAddPropose = recordPropose.Any() ? recordPropose.Max(x => x.Count()) : 0;
+
+       
 
             var listColToAdd = new List<int>
             {
@@ -215,7 +218,7 @@ namespace FSAWebSystem.Services
                 colToAddRephase
             };
 
-            var bucketHistory = _db.MonthlyBucketHistories.Where(x => x.Week == week && x.Year == currDate.Year).ToList();
+            var bucketHistory = _db.MonthlyBucketHistories.Where(x => x.Month == currDate.Month && x.Year == currDate.Year).ToList();
 
             var maxVersion = 0;
             if (bucketHistory.Any()){
@@ -228,7 +231,7 @@ namespace FSAWebSystem.Services
             var indexAfterWeek1 = 14;
             var indexAfterWeek2 = 15;
 
-            for (var i = 1; i <= maxVersion+1; i++)
+            for (var i = 1; i < maxVersion+1; i++)
             {
                 listCol.Insert(indexAfterMonthlyBucket, string.Format("{0}'{1} v1.{2}", month, year, (i)));
                 indexAfterMonthlyBucket++;
@@ -265,11 +268,15 @@ namespace FSAWebSystem.Services
                 indexAfterWeek2++;
             }
 
+            if(maxVersion != 0)
+            {
+                listCol.Insert(indexAfterWeek1, "Week " + week + " v1");
+                indexAfterWeek1++;
+                indexAfterWeek2++;
+                listCol.Insert(indexAfterWeek2, "Week " + (week + 1) + " v1");
+                indexAfterWeek2++;
+            }    
 
-            listCol.Insert(indexAfterWeek1, "Week " + week + " v1");
-            indexAfterWeek1++;
-            listCol.Insert(indexAfterWeek2, "Week " + (week + 1) + " v1");
-            indexAfterWeek2++;
 
 
             CellRangeAddress range = new CellRangeAddress(0, 0, 0, listCol.Count - 1);
@@ -403,17 +410,17 @@ namespace FSAWebSystem.Services
                         }
                     }
 
-                    for(var j = 1; j <= maxVersion; j++)
+                    for(var j = 1; j < maxVersion + 1; j++)
                     {
                         var monthlyBucketData = bucketHistory.SingleOrDefault(x => x.WeeklyBucketId == weeklyBucketId && x.Version == j) != null ? bucketHistory.Single(x => x.WeeklyBucketId == weeklyBucketId && x.Version == j).MonthlyBucket : decimal.Zero;
                         row.CreateCell(i).SetCellValue((double)monthlyBucketData);
                         i++;
                     }
 
-                    var updatedMonthlyBucket = decimal.Zero;
+                    var updatedMonthlyBucket = monthlyBucket;
                     for (var j = 0; j < maxColToAdd; j++)
                     {
-                        updatedMonthlyBucket = monthlyBucket + reallocateDataThisRowSource[j] + reallocateDataThisRowTarget[j];
+                        updatedMonthlyBucket += reallocateDataThisRowSource[j] + reallocateDataThisRowTarget[j];
                         row.CreateCell(i).SetCellValue((double)updatedMonthlyBucket);
                         i++;
                     }
@@ -449,10 +456,13 @@ namespace FSAWebSystem.Services
                     row.CreateCell(i).SetCellValue(week1);
                     i++;
 
-                    week1Val += (double)rephaseDataThisRow.Sum(x => x) + (double)reallocateDataThisRowTarget.Sum(x => x) + (double)reallocateDataThisRowSource.Sum(x => x);
-                    row.CreateCell(i).SetCellValue(week1Val);
-                    i++;
 
+                    if (maxVersion != 0)
+                    {
+                        week1Val += (double)rephaseDataThisRow.Sum(x => x) + (double)reallocateDataThisRowTarget.Sum(x => x) + (double)reallocateDataThisRowSource.Sum(x => x);
+                        row.CreateCell(i).SetCellValue(week1Val);
+                        i++;
+                    }
 
 
                     var week2 = Convert.ToDouble(data.Week2);
@@ -460,10 +470,12 @@ namespace FSAWebSystem.Services
                     row.CreateCell(i).SetCellValue(week2);
                     i++;
 
-
-                    week2Val -= (double)rephaseDataThisRow.Sum(x => x);
-                    row.CreateCell(i).SetCellValue(week2Val);
-                    i++;
+                    if (maxVersion != 0)
+                    {
+                        week2Val -= (double)rephaseDataThisRow.Sum(x => x);
+                        row.CreateCell(i).SetCellValue(week2Val);
+                        i++;
+                    }
 
                     var validBJ = data.ValidBJ;
                     row.CreateCell(i).SetCellValue((double)validBJ);
@@ -479,7 +491,7 @@ namespace FSAWebSystem.Services
                     historyMonthly.Id = Guid.NewGuid();
                     historyMonthly.MonthlyBucket = updatedMonthlyBucket;
                     historyMonthly.WeeklyBucketId = weeklyBucketId;
-                    historyMonthly.Version = currDate.Day;
+                    historyMonthly.Version = maxVersion + 1;
                     historyMonthly.Month = currDate.Month;
                     historyMonthly.Year = currDate.Year;
                     historyMonthly.Week = week;
@@ -520,6 +532,7 @@ namespace FSAWebSystem.Services
                 MemoryStream ms = new MemoryStream();
                 workbook.Write(ms);
 
+                var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "ReportExcel", "FSA_" + currDate.Day + "_" + currDate.Month + "_" + currDate.Year + ".xls");
                 using (FileStream outputStream = new FileStream(outputPath, FileMode.Create))
                 {
                     ms.Position = 0;

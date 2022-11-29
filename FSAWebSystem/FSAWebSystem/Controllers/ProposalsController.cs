@@ -637,7 +637,7 @@ namespace FSAWebSystem.Controllers
                 "Banner Week 3",
                 "Banner Week 4",
                 "Banner Week 5",
-                "Rating Rate",
+                "Running Rate",
                 "Dispatch Consume",
                 "Valid + BJ",
                 "Remaining FSA",
@@ -694,7 +694,7 @@ namespace FSAWebSystem.Controllers
                 i++;
                 row.CreateCell(i).SetCellValue((double)item.BucketWeek5);
                 i++;
-                row.CreateCell(i).SetCellValue((double)item.RatingRate);
+                row.CreateCell(i).SetCellValue((double)item.RunningRate);
                 i++;
                 row.CreateCell(i).SetCellValue((double)item.DispatchConsume);
                 i++;

@@ -3,7 +3,6 @@
     public class DailyOrder
     {
         public string BannerName {get;set;}
-        public string PlantCode {get;set;}
         public string PCMap {get;set;}
         public decimal OriginalOrder {get;set;}
         public decimal ValidBJ {get;set;}

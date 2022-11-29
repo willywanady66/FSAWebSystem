@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    [Migration("20221125094252_Init5")]
-    partial class Init5
+    [Migration("20221129131456_Init4")]
+    partial class Init4
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

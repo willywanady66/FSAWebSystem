@@ -11,7 +11,7 @@ namespace FSAWebSystem.Models.Bucket
         public Guid SKUId { get; set; }
         public decimal PlantContribution { get; set; }
         public decimal MonthlyBucket { get; set; }
-        public decimal RatingRate { get; set; }
+        public decimal RunningRate { get; set; }
         public decimal BucketWeek1 { get; set; }
         public decimal BucketWeek2 { get; set; }
         public decimal BucketWeek3 { get; set; }

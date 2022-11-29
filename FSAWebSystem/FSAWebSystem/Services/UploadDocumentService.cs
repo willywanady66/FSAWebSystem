@@ -48,7 +48,7 @@ namespace FSAWebSystem.Services
                 "Plant",    
                 "Price",
                 "Plant Contribution",
-                "Rating Rate",
+                "Running Rate",
                 "TCT",
                 "Monthly Target"
             };
@@ -139,7 +139,6 @@ namespace FSAWebSystem.Services
                 "Unik",
                 "Account",
                 "Banner Name",
-                "Plant Code",
                 "Material",
                 "Material Description",
                 "Description",
@@ -153,7 +152,6 @@ namespace FSAWebSystem.Services
             {
                 "Account",
                 "Banner Name",
-                "Plant Code",
                 "Category Name",
                 "Market Name",
                 "Corp Brand Name",

@@ -12,14 +12,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FSAWebSystem.Migrations
 {
     [DbContext(typeof(FSAWebSystemDbContext))]
-    [Migration("20221125091811_Init4")]
-    partial class Init4
+    [Migration("20221129161003_Init5")]
+    partial class Init5
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.8")
+                .HasAnnotation("ProductVersion", "6.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -412,7 +412,7 @@ namespace FSAWebSystem.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("RatingRate")
+                    b.Property<decimal>("RunningRate")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -491,11 +491,11 @@ namespace FSAWebSystem.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("RatingRate")
+                    b.Property<decimal>("RemFSA")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("RemFSA")
+                    b.Property<decimal>("RunningRate")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -659,6 +659,9 @@ namespace FSAWebSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("MonthlyBucket")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -666,8 +669,14 @@ namespace FSAWebSystem.Migrations
                     b.Property<int>("Version")
                         .HasColumnType("int");
 
+                    b.Property<int>("Week")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("WeeklyBucketId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

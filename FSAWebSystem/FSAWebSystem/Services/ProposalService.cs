@@ -41,7 +41,7 @@ namespace FSAWebSystem.Services
                                  SKUId = sku.Id,
                                  PCMap = sku.PCMap,
                                  DescriptionMap = sku.DescriptionMap,
-                                 RatingRate = weeklyBucket.RatingRate,
+                                 RunningRate = weeklyBucket.RunningRate,
                                  MonthlyBucket = weeklyBucket.MonthlyBucket,
                                  ValidBJ = weeklyBucket.ValidBJ,
                                  RemFSA = weeklyBucket.MonthlyBucket - weeklyBucket.ValidBJ,
@@ -65,7 +65,7 @@ namespace FSAWebSystem.Services
                                  SKUId = y.Key.SKUId,
                                  PCMap = y.First().PCMap,
                                  DescriptionMap = y.First().DescriptionMap,
-                                 RatingRate = y.Sum(z => z.RatingRate),
+                                 RunningRate = y.Sum(z => z.RunningRate),
                                  MonthlyBucket = y.Sum(z => z.MonthlyBucket),
                                  ValidBJ = y.Sum(z => z.ValidBJ),
                                  RemFSA = y.Sum(z => z.RemFSA),
@@ -111,7 +111,7 @@ namespace FSAWebSystem.Services
                         proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.DescriptionMap) : proposals.OrderBy(x => x.DescriptionMap);
                         break;
                     case 3:
-                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RatingRate) : proposals.OrderBy(x => x.RatingRate);
+                        proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.RunningRate) : proposals.OrderBy(x => x.RunningRate);
                         break;
                     case 4:
                         proposals = order.dir == "desc" ? proposals.OrderByDescending(x => x.MonthlyBucket) : proposals.OrderBy(x => x.MonthlyBucket);
@@ -320,7 +320,7 @@ namespace FSAWebSystem.Services
                             BucketWeek3 = weeklyBucket.BucketWeek3,
                             BucketWeek4 = weeklyBucket.BucketWeek4,
                             BucketWeek5 = weeklyBucket.BucketWeek5,
-                            RatingRate = weeklyBucket.RatingRate,
+                            RunningRate = weeklyBucket.RunningRate,
                             SubmittedBy = p != null ? p.SubmittedBy.Value : Guid.Empty
                         }).AsEnumerable().GroupBy(x => new { x.KAM, x.CDM, x.Banner.Id, SKUId = x.SKU.Id }).Select(y => new ProposalExcelModel
                         {
@@ -331,7 +331,7 @@ namespace FSAWebSystem.Services
                             CDM = y.First().CDM,
                             PCMap = y.First().PCMap,
                             DescriptionMap = y.First().DescriptionMap,
-                            RatingRate = y.Sum(z => z.RatingRate),
+                            RunningRate = y.Sum(z => z.RunningRate),
                             MonthlyBucket = y.Sum(z => z.MonthlyBucket),
                             ValidBJ = y.Sum(z => z.ValidBJ),
                             RemFSA = y.Sum(z => z.RemFSA),

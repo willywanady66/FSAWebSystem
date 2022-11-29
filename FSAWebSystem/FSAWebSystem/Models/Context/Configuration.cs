@@ -14,11 +14,11 @@ namespace FSAWebSystem.Models.Context
             {
                 var listMenus = new List<Menu>
                 {
-                    //new Menu
-                    //{
-                    //    Id = Guid.NewGuid(),
-                    //    Name = "Dashboard"
-                    //},
+                    new Menu
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Dashboard"
+                    },
                     new Menu
                     {
                         Id = Guid.NewGuid(),

@@ -50,7 +50,7 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public string DescriptionMap { get; set; }
         [NotMapped]
-        public decimal RatingRate { get; set; }
+        public decimal RunningRate { get; set; }
         [NotMapped]
         public decimal MonthlyBucket { get; set; }
         [NotMapped]

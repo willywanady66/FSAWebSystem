@@ -39,7 +39,7 @@ namespace FSAWebSystem.Services
                                               Month = monthlyBucket.Month,
                                               Price = monthlyBucket.Price,
                                               PlantContribution = monthlyBucket.PlantContribution,
-                                              RatingRate = monthlyBucket.RatingRate,
+                                              RunningRate = monthlyBucket.RunningRate,
                                               TCT = monthlyBucket.TCT,
                                               MonthlyTarget = monthlyBucket.MonthlyTarget
                                           }).AsEnumerable().GroupBy(x => new { x.KAM, x.CDM, x.BnrId, SKUId = x.SKUId }).Select(y => new MonthlyBucket
@@ -55,7 +55,7 @@ namespace FSAWebSystem.Services
                                               Month = y.First().Month,
                                               Price = y.Sum(z => z.Price),
                                               PlantContribution = y.Sum(z => z.PlantContribution),
-                                              RatingRate = y.Sum(z => z.RatingRate),
+                                              RunningRate = y.Sum(z => z.RunningRate),
                                               TCT = y.Sum(z => z.TCT),
                                               MonthlyTarget = y.Sum(z => z.MonthlyTarget)
                                           });
@@ -102,7 +102,7 @@ namespace FSAWebSystem.Services
                         monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.PlantContribution) : monthlyBucketHistories.OrderBy(x => x.PlantContribution);
                         break;
                     case 8:
-                        monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.RatingRate) : monthlyBucketHistories.OrderBy(x => x.RatingRate);
+                        monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.RunningRate) : monthlyBucketHistories.OrderBy(x => x.RunningRate);
                         break;
                     case 9:
                         monthlyBucketHistories = order.dir == "desc" ? monthlyBucketHistories.OrderByDescending(x => x.TCT) : monthlyBucketHistories.OrderBy(x => x.TCT);

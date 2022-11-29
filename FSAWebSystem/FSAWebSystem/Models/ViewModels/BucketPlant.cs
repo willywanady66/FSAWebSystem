@@ -13,7 +13,7 @@ namespace FSAWebSystem.Models.ViewModels
     {
         public bool Equals(BucketPlant? x, BucketPlant? y)
         {
-            return x.BannerName == y.BannerName && x.PlantCode == y.PlantCode;
+            return x.BannerName == y.BannerName;
         }
 
         public int GetHashCode([DisallowNull] BucketPlant obj)

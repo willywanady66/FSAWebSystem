@@ -8,7 +8,8 @@
     $('#dropDownListBanners').multiselect({
         enableFiltering:true,
         includeSelectAllOption: true,
-        maxHeight: 450
+        maxHeight: 450,
+        enableCaseInsensitiveFiltering: true,
     });
 
     $('#dropDownListMenu').multiselect({
@@ -22,13 +23,15 @@
     $('#dropDownListCategory').multiselect({
         enableFiltering: true,
         includeSelectAllOption: true,
-        maxHeight: 450
+        maxHeight: 450,
+        enableCaseInsensitiveFiltering: true,
     });
 
     $('#dropDownListSku').multiselect({
         enableFiltering: true,
         includeSelectAllOption: true,
-        maxHeight: 450
+        maxHeight: 450,
+        enableCaseInsensitiveFiltering: true,
     });
 
 

@@ -67,8 +67,7 @@ namespace FSAWebSystem.Models
         [NotMapped]
         public string RequestedBy { get; set; }
 
-        [NotMapped]
-        public decimal RatingRate { get; set; }
+
         [NotMapped]
         public decimal MonthlyBucket { get; set; }
         [NotMapped]

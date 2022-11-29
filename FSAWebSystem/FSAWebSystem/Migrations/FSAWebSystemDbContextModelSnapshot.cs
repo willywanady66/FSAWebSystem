@@ -17,7 +17,7 @@ namespace FSAWebSystem.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.8")
+                .HasAnnotation("ProductVersion", "6.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -410,7 +410,7 @@ namespace FSAWebSystem.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("RatingRate")
+                    b.Property<decimal>("RunningRate")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -489,11 +489,11 @@ namespace FSAWebSystem.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("RatingRate")
+                    b.Property<decimal>("RemFSA")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("RemFSA")
+                    b.Property<decimal>("RunningRate")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 

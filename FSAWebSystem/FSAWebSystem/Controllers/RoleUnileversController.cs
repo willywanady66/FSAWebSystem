@@ -51,6 +51,8 @@ namespace FSAWebSystem.Controllers
             ModelState.Remove("CreatedAt");
             ModelState.Remove("CreatedBy");
             ModelState.Remove("Menu");
+            var listMenu = _roleService.GetMenuDropdown();
+            ViewData["ListMenu"] = listMenu;
             if (ModelState.IsValid)
             {
                 var savedRole = await _roleService.GetRoleByName(roleUnilever.RoleName);

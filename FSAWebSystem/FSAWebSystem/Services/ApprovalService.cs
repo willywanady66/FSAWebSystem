@@ -199,7 +199,7 @@ namespace FSAWebSystem.Services
                     approvalDetail.PCMap = sku.PCMap;
                     approvalDetail.DescriptionMap = sku.DescriptionMap;
                     approvalDetail.MonthlyBucket += weeklyBucket.MonthlyBucket;
-                    approvalDetail.RatingRate += weeklyBucket.RatingRate;
+                    approvalDetail.RunningRate += weeklyBucket.RunningRate;
                     approvalDetail.CurrentBucket += Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (apprvl.Week).ToString()).GetValue(weeklyBucket, null));
                     approvalDetail.NextBucket += apprvl.Week <= 4 ? Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (apprvl.Week + 1).ToString()).GetValue(weeklyBucket, null)) : 0;
                     approvalDetail.ValidBJ += weeklyBucket.ValidBJ;
@@ -225,7 +225,7 @@ namespace FSAWebSystem.Services
                         approvalDetailSource.PCMap = sku.PCMap;
                         approvalDetailSource.DescriptionMap = sku.DescriptionMap;
                         approvalDetailSource.MonthlyBucket += weeklyBucket.MonthlyBucket;
-                        approvalDetailSource.RatingRate += weeklyBucket.RatingRate;
+                        approvalDetailSource.RunningRate += weeklyBucket.RunningRate;
                         approvalDetailSource.CurrentBucket += Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (apprvl.Week).ToString()).GetValue(weeklyBucket, null));
                         approvalDetailSource.NextBucket += apprvl.Week <= 4 ? Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (apprvl.Week + 1).ToString()).GetValue(weeklyBucket, null)) : 0;
                         approvalDetailSource.ValidBJ += weeklyBucket.ValidBJ;
