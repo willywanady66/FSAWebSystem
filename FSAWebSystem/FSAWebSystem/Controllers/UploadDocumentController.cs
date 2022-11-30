@@ -228,7 +228,10 @@ namespace FSAWebSystem.Controllers
                 for(var i = 0; i < dt.Columns.Count ; i++)
                 {
                     var row = dt.Rows[1];
-                    listColumn.Add(row[i].ToString());
+                    if (!string.IsNullOrEmpty(row[i].ToString())){
+                        listColumn.Add(row[i].ToString());
+                    }
+             
                 }
 
                 try
@@ -304,19 +307,46 @@ namespace FSAWebSystem.Controllers
                             break;
                         case DocumentUpload.DailyOrder:
                             columns = _uploadDocService.GetDailyOrderColumns();
-                            //dt = CreateDataTable(sheet, columns, errorMessages);
+                            if (!columns.SequenceEqual(listColumn))
+                            {
+                                errorMessages.Add("Wrong File! File format must be same with provided format");
+
+                                _notyfService.Error("Wrong File!");
+                                return Ok(Json(new { errorMessages }));
+                            }
                             await SaveDailyOrder(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.Andromeda:
                             columns = _uploadDocService.GetAndromedaColumns();
+                            if (!columns.SequenceEqual(listColumn))
+                            {
+                                errorMessages.Add("Wrong File! File format must be same with provided format");
+
+                                _notyfService.Error("Wrong File!");
+                                return Ok(Json(new { errorMessages }));
+                            }
                             fileContent = await SaveAndromeda(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.ITRUST:
                             columns = _uploadDocService.GetITrustColumns();
+                            if (!columns.SequenceEqual(listColumn))
+                            {
+                                errorMessages.Add("Wrong File! File format must be same with provided format");
+
+                                _notyfService.Error("Wrong File!");
+                                return Ok(Json(new { errorMessages }));
+                            }
                             fileContent = await SaveITrust(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.BottomPrice:
                             columns = _uploadDocService.GetBottomPriceColumns();
+                            if (!columns.SequenceEqual(listColumn))
+                            {
+                                errorMessages.Add("Wrong File! File format must be same with provided format");
+
+                                _notyfService.Error("Wrong File!");
+                                return Ok(Json(new { errorMessages }));
+                            }
                             fileContent = await SaveBottomPrice(dt, excelDocument.FileName, loggedUser, doc, errorMessages);
                             break;
                     }
@@ -971,11 +1001,20 @@ namespace FSAWebSystem.Controllers
                 var skus = _skuService.GetAllProducts();
                 foreach (var dailyOrder in dailyOrders)
                 {
-                    var bannerPlantId = (await bannerPlants.SingleAsync(x => x.Banner.BannerName == dailyOrder.BannerName)).Id;
+                    //var bannerPlantId = (await bannerPlants.SingleAsync(x => x.Banner.BannerName == dailyOrder.BannerName)).Id;
+                    var bannerPlantIds = bannerPlants.Where(x => x.Banner.BannerName == dailyOrder.BannerName).Select(x => x.Id);
                     var skuId = (await skus.SingleAsync(x => x.PCMap == dailyOrder.PCMap)).Id;
-                    var weeklyBucket = await weeklyBuckets.SingleAsync(x => x.BannerPlant.Id == bannerPlantId && x.SKUId == skuId && x.Year == dailyOrder.Year && x.Month == dailyOrder.Month);
-                    weeklyBucket.ValidBJ += dailyOrder.ValidBJ;
-                    weeklyBucket.RemFSA = weeklyBucket.MonthlyBucket - dailyOrder.ValidBJ;
+                    foreach(var bannerPlantId in bannerPlantIds)
+                    {
+                        var weeklyBucket = await weeklyBuckets.SingleOrDefaultAsync(x => x.BannerPlant.Id == bannerPlantId && x.SKUId == skuId && x.Year == dailyOrder.Year && x.Month == dailyOrder.Month);
+                        if(weeklyBucket != null)
+                        {
+                            weeklyBucket.ValidBJ += dailyOrder.ValidBJ;
+                            weeklyBucket.RemFSA = weeklyBucket.MonthlyBucket - dailyOrder.ValidBJ;
+                        }
+           
+                    }
+                   
                 }
             }
         }
@@ -998,8 +1037,8 @@ namespace FSAWebSystem.Controllers
                 weeklyBucket.PlantContribution = monthlyBucket.PlantContribution;
                 var mBucket = monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100);
                 weeklyBucket.MonthlyBucket = decimal.Round(mBucket);
-                weeklyBucket.BucketWeek1 = decimal.Round(mBucket * (decimal)(50 / 100));
-                weeklyBucket.BucketWeek2 = decimal.Round(mBucket * (decimal)(50 / 100));
+                weeklyBucket.BucketWeek1 = decimal.Round(mBucket * ((decimal)50 / (decimal)100));
+                weeklyBucket.BucketWeek2 = decimal.Round(mBucket * ((decimal)50 / (decimal)100));
                 weeklyBuckets.Add(weeklyBucket);
             }
 
