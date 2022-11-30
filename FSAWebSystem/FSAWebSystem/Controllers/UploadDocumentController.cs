@@ -934,35 +934,39 @@ namespace FSAWebSystem.Controllers
                         weeklyBucketHistory.Week = calendarDetail.Week;
 
                         weeklyBucketHistories.Add(weeklyBucketHistory);
-                        var savedWeeklyBucket = savedWeeklyBuckets.Single(x => x.BannerPlant.Id == bannerPlantId && x.SKUId == skuId);
-                        var currentWeekBucket = decimal.Zero;
-                        var remainingBucket = decimal.Zero;
-                        var totalDispatch = decimal.Zero;
-                        if (calendarDetail.Week == 2)
+                        var savedWeeklyBucket = savedWeeklyBuckets.SingleOrDefault(x => x.BannerPlant.Id == bannerPlantId && x.SKUId == skuId);
+                        if(savedWeeklyBucket != null)
                         {
-                            remainingBucket = savedWeeklyBucket.BucketWeek1;
-                            //remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek1;
-                        }
-                        else if (calendarDetail.Week == 3)
-                        {
-                            remainingBucket = savedWeeklyBucket.BucketWeek2;
-                            //remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek2;
-                        }
-                        else if (calendarDetail.Week == 4)
-                        {
-                            remainingBucket = savedWeeklyBucket.BucketWeek3;
-                            //remainingBucket = /*savedWeeklyBucket.ValidBJ*/ - savedWeeklyBucket.BucketWeek3;
-                        }
-                        else
-                        {
-                            errorMessages.Add("Cannot Upload Weekly Dispatch on Week: " + calendarDetail.Week);
-                            return;
-                        }
-                        totalDispatch = weeklyBucket.DispatchConsume * (savedWeeklyBucket.PlantContribution / 100);
+                            var currentWeekBucket = decimal.Zero;
+                            var remainingBucket = decimal.Zero;
+                            var totalDispatch = decimal.Zero;
+                            if (calendarDetail.Week == 2)
+                            {
+                                remainingBucket = savedWeeklyBucket.BucketWeek1;
+                                //remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek1;
+                            }
+                            else if (calendarDetail.Week == 3)
+                            {
+                                remainingBucket = savedWeeklyBucket.BucketWeek2;
+                                //remainingBucket = savedWeeklyBucket.ValidBJ - savedWeeklyBucket.BucketWeek2;
+                            }
+                            else if (calendarDetail.Week == 4)
+                            {
+                                remainingBucket = savedWeeklyBucket.BucketWeek3;
+                                //remainingBucket = /*savedWeeklyBucket.ValidBJ*/ - savedWeeklyBucket.BucketWeek3;
+                            }
+                            else
+                            {
+                                errorMessages.Add("Cannot Upload Weekly Dispatch on Week: " + calendarDetail.Week);
+                                return;
+                            }
+                            totalDispatch = weeklyBucket.DispatchConsume * (savedWeeklyBucket.PlantContribution / 100);
 
-                        currentWeekBucket = remainingBucket - totalDispatch;
-                        savedWeeklyBucket.GetType().GetProperty("BucketWeek" + (calendarDetail.Week + 1).ToString()).SetValue(savedWeeklyBucket, currentWeekBucket);
-                        savedWeeklyBucket.DispatchConsume += weeklyBucket.DispatchConsume;
+                            currentWeekBucket = remainingBucket - totalDispatch;
+                            savedWeeklyBucket.GetType().GetProperty("BucketWeek" + (calendarDetail.Week + 1).ToString()).SetValue(savedWeeklyBucket, currentWeekBucket);
+                            savedWeeklyBucket.DispatchConsume += weeklyBucket.DispatchConsume;
+                        }
+                       
                     }
                 }
 
@@ -1009,7 +1013,7 @@ namespace FSAWebSystem.Controllers
                         var weeklyBucket = await weeklyBuckets.SingleOrDefaultAsync(x => x.BannerPlant.Id == bannerPlantId && x.SKUId == skuId && x.Year == dailyOrder.Year && x.Month == dailyOrder.Month);
                         if(weeklyBucket != null)
                         {
-                            weeklyBucket.ValidBJ += dailyOrder.ValidBJ;
+                            weeklyBucket.ValidBJ = dailyOrder.ValidBJ;
                             weeklyBucket.RemFSA = weeklyBucket.MonthlyBucket - dailyOrder.ValidBJ;
                         }
            
