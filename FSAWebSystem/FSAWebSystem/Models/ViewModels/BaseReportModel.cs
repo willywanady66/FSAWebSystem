@@ -19,5 +19,7 @@
         public decimal Week2 { get; set; }
         public decimal ValidBJ { get; set; }
         public decimal RemFSA { get; set; }
+        public Guid BannerPlantId { get; set; }
+        public Guid SKUId { get; set; }
     }
 }

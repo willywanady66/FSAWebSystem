@@ -292,7 +292,7 @@ namespace FSAWebSystem.Controllers
                                 return Ok(Json(new { errorMessages }));
                             }
                             var calendarDetail = await _calendarService.GetCalendarDetail(currentDate);
-                            if (calendarDetail.Week == 1)
+                            if (calendarDetail.Week == 1 && calendarDetail.Week == 5)
                             {
                                 errorMessages.Add("Cannot Upload Weekly Dispatch on Week: " + calendarDetail.Week);
 
@@ -757,11 +757,11 @@ namespace FSAWebSystem.Controllers
                         PCMap = dr[3].ToString(),
                         PlantCode = dr[6].ToString(),
 
-                        Price = Decimal.Parse(ConvertNumber(dr[8].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
-                        PlantContribution = Decimal.Parse(ConvertNumber(dr[9].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }) * 100,
-                        RunningRate = Decimal.Parse(ConvertNumber(dr[10].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
-                        TCT = Decimal.Parse(ConvertNumber(dr[11].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }) * 100,
-                        MonthlyTarget = Decimal.Parse(ConvertNumber(dr[12].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }) * 100,
+                        Price = Decimal.Parse(ConvertNumber(dr[8].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
+                        PlantContribution = Decimal.Parse(ConvertNumber(dr[9].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }) * 100,
+                        RunningRate = decimal.Round(Decimal.Parse(ConvertNumber(dr[10].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." })),
+                        TCT = Decimal.Parse(ConvertNumber(dr[11].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }) * 100,
+                        MonthlyTarget = decimal.Round(Decimal.Parse(ConvertNumber(dr[12].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." })) * 100,
                         Month = month,
                         Year = currentDate.Year,
                         CreatedAt = DateTime.Now,
@@ -898,7 +898,7 @@ namespace FSAWebSystem.Controllers
                 {
                     BannerName = dr[2].ToString(),
                     PCMap = dr[3].ToString(),
-                    DispatchConsume = Decimal.Parse(ConvertNumber(dr[6].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                    DispatchConsume = Decimal.Parse(ConvertNumber(dr[6].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
                     Month = currentDate.Month,
                     Year = currentDate.Year
                 };
@@ -906,14 +906,14 @@ namespace FSAWebSystem.Controllers
                 weeklyBuckets.Add(weeklyBucket);
             }
 
-            ValidateWeeklyBucketExcel(weeklyBuckets, errorMessages);
+            ValidateWeeklyBucketExcel(weeklyBuckets, errorMessages, currentDate.Month, currentDate.Year);
 
             if (!errorMessages.Any())
             {
                 var calendarDetail = await _calendarService.GetCalendarDetail(currentDate);
-                var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
-                var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant();
-                var savedWeeklyBuckets = _bucketService.GetWeeklyBuckets().Include(x => x.BannerPlant).Where(x => x.Year == currentDate.Year && x.Month == currentDate.Month);
+                var skus = _skuService.GetAllProducts().Where(x => x.IsActive).ToList();
+                var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant().ToList();
+                var savedWeeklyBuckets = _bucketService.GetWeeklyBuckets().Include(x => x.BannerPlant).Where(x => x.Year == currentDate.Year && x.Month == currentDate.Month).ToList();
                 List<WeeklyBucketHistory> weeklyBucketHistories = new List<WeeklyBucketHistory>();
                 foreach (var weeklyBucket in weeklyBuckets)
                 {
@@ -988,7 +988,7 @@ namespace FSAWebSystem.Controllers
                 {
                     BannerName = dr[1].ToString(),
                     PCMap = dr[5].ToString(),
-                    ValidBJ = Decimal.Parse(ConvertNumber(dr[9].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                    ValidBJ = Decimal.Parse(ConvertNumber(dr[9].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
                     Month = currentDate.Month,
                     Year = currentDate.Year
                 };
@@ -1000,17 +1000,17 @@ namespace FSAWebSystem.Controllers
 
             if (!errorMessages.Any())
             {
-                var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant();
-                var weeklyBuckets = _bucketService.GetWeeklyBuckets();
-                var skus = _skuService.GetAllProducts();
+                var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant().ToList();
+                var weeklyBuckets = _bucketService.GetWeeklyBuckets().Where(x => x.Month == currentDate.Month && x.Year == currentDate.Year).ToList();
+                var skus = _skuService.GetAllProducts().Where(x => x.IsActive).ToList();
                 foreach (var dailyOrder in dailyOrders)
                 {
                     //var bannerPlantId = (await bannerPlants.SingleAsync(x => x.Banner.BannerName == dailyOrder.BannerName)).Id;
                     var bannerPlantIds = bannerPlants.Where(x => x.Banner.BannerName == dailyOrder.BannerName).Select(x => x.Id);
-                    var skuId = (await skus.SingleAsync(x => x.PCMap == dailyOrder.PCMap)).Id;
+                    var skuId = skus.Single(x => x.PCMap == dailyOrder.PCMap).Id;
                     foreach(var bannerPlantId in bannerPlantIds)
                     {
-                        var weeklyBucket = await weeklyBuckets.SingleOrDefaultAsync(x => x.BannerPlant.Id == bannerPlantId && x.SKUId == skuId && x.Year == dailyOrder.Year && x.Month == dailyOrder.Month);
+                        var weeklyBucket = weeklyBuckets.SingleOrDefault(x => x.BannerPlant.Id == bannerPlantId && x.SKUId == skuId && x.Year == dailyOrder.Year && x.Month == dailyOrder.Month);
                         if(weeklyBucket != null)
                         {
                             weeklyBucket.ValidBJ = dailyOrder.ValidBJ;
@@ -1053,7 +1053,7 @@ namespace FSAWebSystem.Controllers
         private void ValidateMonthlyBucketExcel(List<MonthlyBucket> listMonthlyBucket, IQueryable<MonthlyBucket> savedMonthlyBuckets, List<string> errorMessages)
         {
             var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant().AsEnumerable();
-            var skus = _skuService.GetAllProducts();
+            var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
             if (listMonthlyBucket.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
             {
                 errorMessages.Add("Please fill all PCMap and BannerName column");
@@ -1107,7 +1107,7 @@ namespace FSAWebSystem.Controllers
             //}
         }
 
-        private void ValidateWeeklyBucketExcel(List<WeeklyBucket> listWeeklyBucket, List<string> errorMessages)
+        private void ValidateWeeklyBucketExcel(List<WeeklyBucket> listWeeklyBucket, List<string> errorMessages, int month, int year)
         {
             var currDate = DateTime.Now;
             if (listWeeklyBucket.Any(x => string.IsNullOrEmpty(x.PCMap) || string.IsNullOrEmpty(x.BannerName)))
@@ -1115,29 +1115,32 @@ namespace FSAWebSystem.Controllers
                 errorMessages.Add("Please fill all PCMap and BannerName column");
             }
 
-            var bucketPlants = (from monthlyBucket in _bucketService.GetMonthlyBuckets().Where(x => x.Month == currDate.Month && x.Year == currDate.Year).Select(x => x.BannerPlant).AsEnumerable().DistinctBy(x => x.Id)
-                                join bannerPlant in _bannerPlantService.GetAllActiveBannerPlant() on monthlyBucket.Id equals bannerPlant.Id
-                                select new BucketPlant
+            var bannerPcMapMonthly = (from monthlyBucket in _bucketService.GetMonthlyBuckets().Where(x => x.Month == month && x.Year == year)
+                                join bannerPlant in _bannerPlantService.GetAllActiveBannerPlant() on monthlyBucket.BannerPlant.Id equals bannerPlant.Id
+                               join sku in _skuService.GetAllProducts().Where(x => x.IsActive).AsEnumerable() on monthlyBucket.SKUId equals sku.Id
+                               select new
                                 {
                                     BannerName = bannerPlant.Banner.BannerName,
+                                    PCMap = sku.PCMap
                                 }).ToList();
+            var zzz = _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.SKUId }).ToList();
 
-            var bannerBuckets = listWeeklyBucket.Select(x => new BucketPlant
-            {
-                BannerName = x.BannerName,
-            }).ToList();
+            var bannerNameMonthly = bannerPcMapMonthly.Select(x => x.BannerName);
+    
+            var bannerBuckets = listWeeklyBucket.Select(x => x.BannerName).ToList();
 
-            var equalityComparer = new BucketPlantEqualityComparer();
-            var bannersNotExist = bannerBuckets.Except(bucketPlants, equalityComparer).ToList();
+            var bannersNotExist = bannerBuckets.Except(bannerNameMonthly).ToList();
 
             foreach (var banner in bannersNotExist)
             {
-                errorMessages.Add("Banner Name: " + banner.BannerName + " doesn't exist on Monthly Bucket");
+                errorMessages.Add("Banner Name: " + banner + " doesn't exist on Monthly Bucket");
             }
 
-            var skuMonthlyBuckets = (from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.SKUId })
-                                     join sku in _skuService.GetAllProducts().Where(x => x.IsActive).AsEnumerable() on monthlyBucket.SKUId equals sku.Id
-                                     select sku.PCMap).ToList();
+            //var skuMonthlyBuckets = (from monthlyBucket in _bucketService.GetMonthlyBuckets().AsEnumerable().DistinctBy(x => new { x.BannerPlant.Id, x.SKUId })
+            //                         join sku in _skuService.GetAllProducts().Where(x => x.IsActive).AsEnumerable() on monthlyBucket.SKUId equals sku.Id
+            //                         select sku.PCMap).ToList();
+
+            var skuMonthlyBuckets = bannerPcMapMonthly.Select(x => x.PCMap).ToList();
 
             var skuWeeklys = listWeeklyBucket.Select(x => x.PCMap).ToList();
 
@@ -1427,9 +1430,9 @@ namespace FSAWebSystem.Controllers
                     {
                         PCMap = row[0].ToString(),
                         Description = row[1].ToString(),
-                        UUStock = Decimal.Parse(ConvertNumber(row[2].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
-                        ITThisWeek = Decimal.Parse(ConvertNumber(row[3].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
-                        RRACT13Wk = Decimal.Parse(ConvertNumber(row[4].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        UUStock = Decimal.Parse(ConvertNumber(row[2].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
+                        ITThisWeek = Decimal.Parse(ConvertNumber(row[3].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
+                        RRACT13Wk = Decimal.Parse(ConvertNumber(row[4].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
                     };
 
                     listAndromeda.Add(andromedaMdl);
@@ -1491,9 +1494,9 @@ namespace FSAWebSystem.Controllers
                     {
                         PCMap = row[0].ToString(),
                         Description = row[1].ToString(),
-                        SumIntransit = Decimal.Parse(ConvertNumber(row[2].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
-                        SumStock = Decimal.Parse(ConvertNumber(row[3].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
-                        SumFinalRpp = Decimal.Parse(ConvertNumber(row[4].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," })
+                        SumIntransit = Decimal.Parse(ConvertNumber(row[2].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
+                        SumStock = Decimal.Parse(ConvertNumber(row[3].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
+                        SumFinalRpp = Decimal.Parse(ConvertNumber(row[4].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." })
                     };
 
                     listITrust.Add(iTrust);
@@ -1543,11 +1546,11 @@ namespace FSAWebSystem.Controllers
                     {
                         PCMap = row[0].ToString(),
                         Description = row[1].ToString(),
-                        AvgNormalPrice = Decimal.Parse(ConvertNumber(row[2].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
-                        AvgBottomPrice = Decimal.Parse(ConvertNumber(row[3].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
-                        AvgActualPrice = Decimal.Parse(ConvertNumber(row[4].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
-                        MinActualPrice = Decimal.Parse(ConvertNumber(row[5].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
-                        Gap = Decimal.Parse(ConvertNumber(row[6].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "," }),
+                        AvgNormalPrice = Decimal.Parse(ConvertNumber(row[2].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
+                        AvgBottomPrice = Decimal.Parse(ConvertNumber(row[3].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
+                        AvgActualPrice = Decimal.Parse(ConvertNumber(row[4].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
+                        MinActualPrice = Decimal.Parse(ConvertNumber(row[5].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
+                        Gap = Decimal.Parse(ConvertNumber(row[6].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
                         Remarks = row[7].ToString()
                     };
 

@@ -252,14 +252,15 @@
 					<div class="col-md-6">
 						<form enctype="multipart/form-data" asp-controller="UploadDocument" asp-action="UploadFile" id="uploadFileForm">
 							<input type="hidden" value=@Model.LoggedUser id="loggedUser" name="loggedUser" />
-							<div class="form-group row" id="uploadMonthGroup">
-								<label class="col-3 form-label my-auto">Month</label>
-								<select class="col-5 form-control form-select" id="dropdownMonth" name="uploadMonth" asp-items="@listMonths"></select>
-							</div>
+							
 							<div class="form-group row">
 								<label class="col-3 form-label my-auto">Select Document</label>
 								<select class="col-5 form-control form-select" id="documentType" name="documentType" asp-items="Model.DocumentUploads"></select>
 								<button class="col-3 ml-4 btn btn-primary" asp-controller="UploadDocument" asp-action="GetFileFormat">Get Excel Format</button>
+							</div>
+							<div class="form-group row" id="uploadMonthGroup">
+								<label class="col-3 form-label my-auto">Month</label>
+								<select class="col-5 form-control form-select" id="dropdownMonthUpload" name="uploadMonth" asp-items="@listMonths"></select>
 							</div>
 							<div class="form-group row">
 								<label class="col-3 form-label my-auto">File</label>

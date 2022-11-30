@@ -452,17 +452,8 @@ $(document).ready(function () {
     if (doc !== "Monthly Bucked") {
         $('#uploadMonthGroup').hide();
     }
-    var month = $('#dropdownMonth option:selected').val();
+    var month = $('#dropdownMonthUpload option:selected').val();
 
-
-    //if (doc === "Andromeda" || doc === "Bottom Price" || doc === "I-TRUST") {
-    //    $('#uploadBtn').show(false);
-    //    $('#submitUploadDoc').hide(false);
-    //}
-    //else {
-    //    $('#uploadBtn').hide(false);
-    //    $('#submitUploadDoc').show(false);
-    //}
 
     $('#documentType').change(function () {
         doc = $('#documentType option:selected').text();
@@ -485,8 +476,8 @@ $(document).ready(function () {
     });
 
 
-    $('#dropdownMonth').change(function () {
-        month = $("#dropdownMonth option:selected").val();
+    $('#dropdownMonthUpload').change(function () {
+        month = $("#dropdownMonthUpload option:selected").val();
     });
 
     var files;
@@ -547,6 +538,9 @@ $(document).ready(function () {
                             ul.appendChild(li);
                         }
 
+                        $('#uploadMonthGroup').hide();
+                   
+                     
                         //document.body.scrollTop = 0;
                         //document.documentElement.scrollTop = 0;
                     }

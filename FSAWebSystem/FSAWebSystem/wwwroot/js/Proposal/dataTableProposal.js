@@ -62,9 +62,9 @@
         },
         "columnDefs":
             [{
-            "targets": [3, 4, 8],
+            "targets": [3, 4, 5, 6, 7, 8],
             "render": function (data) {
-                return data.toLocaleString('id-ID');
+                return data.toLocaleString('en-US');
                 },
             },
             {

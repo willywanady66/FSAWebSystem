@@ -279,16 +279,16 @@ namespace FSAWebSystem.Controllers
 
                     var nextBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null));
                     //NEXTWEEK
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).SetValue(weeklyBucket, nextBucket - detail.ActualRephase);
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).SetValue(weeklyBucket, decimal.Round(nextBucket - detail.ActualRephase));
 
                     var currentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).GetValue(weeklyBucket, null));
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, currentBucket + detail.ActualRephase);
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, decimal.Round(currentBucket + detail.ActualRephase));
                 }
                 else
                 {
-                    weeklyBucket.MonthlyBucket = weeklyBucket.MonthlyBucket + detail.ActualProposeAdditional;
+                    weeklyBucket.MonthlyBucket = decimal.Round(weeklyBucket.MonthlyBucket + detail.ActualProposeAdditional);
                     var currentBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).GetValue(weeklyBucket, null));
-                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, currentBucket + detail.ActualProposeAdditional);
+                    weeklyBucket.GetType().GetProperty("BucketWeek" + (week).ToString()).SetValue(weeklyBucket, decimal.Round(currentBucket + detail.ActualProposeAdditional));
                 }
             }
         }

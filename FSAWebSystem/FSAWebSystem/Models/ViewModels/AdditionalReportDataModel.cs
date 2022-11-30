@@ -19,5 +19,6 @@ namespace FSAWebSystem.Models.ViewModels
         public decimal ProposeAdditional { get; set; }
         public ProposalType Type { get; set; }
         public DateTime SubmitDate { get; set; }
+        public int Week { get; set; }
     }
 }
