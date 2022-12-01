@@ -90,7 +90,8 @@ $(document).ready(function () {
                     },
                     "columns": [
                         { "data": "id" },  //0
-                        { "data": "categoryProduct" }       //1
+                        { "data": "categoryProduct" },       //1
+                        { "data": "id" }       //2
                     ],
                     columnDefs: [
                         {
@@ -99,6 +100,20 @@ $(document).ready(function () {
                             orderable: false,
                             "render": function (data, type, full, meta) {
                                 return meta.row + 1 + meta.settings._iDisplayStart;
+                            },
+                        },
+                        {
+                            targets: 2,
+                            orderable: false,
+                            className: 'text-center',
+                            "render": function (data, type, full, meta) {
+
+                                return `<a href="${editCategoryUrl}/${full.id}">
+                                <i class="fas fa-pen"></i>
+                            <a/>`
+
+                                return null;
+
                             }
                         }
                     ]
@@ -449,11 +464,13 @@ $(document).ready(function () {
     var loggedUser = $('#loggedUser').val();
     var docVal = $('#documentType option:selected').val();
     var doc = $('#documentType option:selected').text();
-    if (doc !== "Monthly Bucked") {
-        $('#uploadMonthGroup').hide();
-    }
+
+
+    $('#uploadMonthGroup').hide();
+    $('#uploadYearGroup').hide();   
     var month = $('#dropdownMonthUpload option:selected').val();
 
+    var uploadYear = $('#dropdownYearUpload option:selected').val();
 
     $('#documentType').change(function () {
         doc = $('#documentType option:selected').text();
@@ -465,19 +482,27 @@ $(document).ready(function () {
             $('#uploadMonthGroup').show();
         }
 
-        //if (doc === "Andromeda" || doc === "Bottom Price" || doc === "I-TRUST") {
-        //    $('#uploadBtn').show(false);
-        //    $('#submitUploadDoc').hide(false);
-        //}
-        //else {
-        //    $('#uploadBtn').hide(false);
-        //    $('#submitUploadDoc').show(false);
-        //}
+        if (month == 12) {
+            $('#uploadYearGroup').show();
+        }
+        else {
+            $('#uploadYearGroup').hide();
+        }
     });
 
 
     $('#dropdownMonthUpload').change(function () {
         month = $("#dropdownMonthUpload option:selected").val();
+        if (month == 12) {
+            $('#uploadYearGroup').show();
+        }
+        else {
+            $('#uploadYearGroup').hide();
+        }
+    });
+
+    $('#dropdownYearUpload').change(function () {
+        uploadYear = $("#dropdownYearUpload option:selected").val();
     });
 
     var files;
@@ -503,6 +528,7 @@ $(document).ready(function () {
         });
 
         formData.append("uploadMonth", month);
+        formData.append("uploadYear", uploadYear);
         formData.append("documentType", docVal);
         formData.append("loggedUser", loggedUser);
 
@@ -539,7 +565,7 @@ $(document).ready(function () {
                         }
 
                         $('#uploadMonthGroup').hide();
-                   
+                        $('#uploadYearGroup').hide();   
                      
                         //document.body.scrollTop = 0;
                         //document.documentElement.scrollTop = 0;

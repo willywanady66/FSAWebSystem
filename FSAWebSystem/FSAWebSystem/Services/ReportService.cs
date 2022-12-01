@@ -146,7 +146,7 @@ namespace FSAWebSystem.Services
 
                 var zza = _db.ProposalDetails.Include(x => x.BannerPlant).Include(x => x.Proposal).Where(y => y.Proposal.SubmittedAt.Date >= startDate.Date && y.Proposal.SubmittedAt.Date <= currDate.Date).ToList();
 
-                var dt = await CreateFile(baseData, "Publish Day 1", currDate, dailyRecord);
+                var dt = await CreateFile(baseData, "Publish Day " + currDate.Day, currDate, dailyRecord);
 
                 return dt;
             }
@@ -210,7 +210,7 @@ namespace FSAWebSystem.Services
             var fsaCalDetail = await _calendarService.GetCalendarDetail(currDate);
             int week = fsaCalDetail.Week;
 
-            var listDate = dailyRecord.Select(x => x.SubmitDate.Date).Distinct().OrderBy(x => x).ToList();
+            var listDate = dailyRecord.Select(x => new { x.SubmitDate.Date, x.Week }).Distinct().OrderBy(x => x.Date).ToList();
 
             var listDatePropose = dailyRecord.Where(x => x.Type == ProposalType.ProposeAdditional).Select(x => x.SubmitDate.Date).Distinct().OrderBy(x => x).ToList();
             var listDateReallocate = dailyRecord.Where(x => x.Type == ProposalType.ReallocateAcrossCDM || x.Type == ProposalType.ReallocateAcrossKAM || x.Type == ProposalType.ReallocateAcrossMT).Select(x => x.SubmitDate.Date).Distinct().OrderBy(x => x).ToList();
@@ -286,6 +286,8 @@ namespace FSAWebSystem.Services
 
             var maxWeek = 0;
             var maxWeek2 = 0;
+            var maxWeek3 = 0;
+            var indexAfterWeek3 = 0;
             for (var i = 1; i <= week; i++)
             {
                 if (i < 6)
@@ -302,23 +304,43 @@ namespace FSAWebSystem.Services
                                 listCol.Insert(indexAfterWeek1, "Week " + i + " v" + j);
                                 indexAfterWeek1++;
                                 indexAfterWeek2++;
-                                listCol.Insert(indexAfterWeek2, "Week " + (i+1) + " v" + j);
+                                listCol.Insert(indexAfterWeek2, "Week " + (i + 1) + " v" + j);
                                 indexAfterWeek2++;
                             }
                             else
                             {
-                                
+
                             }
                         }
                     }
-                    else if(i == 2)
+                    else if (i == 2)
                     {
-                        maxWeek2 = maxWeek + (reportWeekVersions.SingleOrDefault(x => x.Week == 2) != null ? reportWeekVersions.SingleOrDefault(x => x.Week == 2).MaxVersion : 0);
-                        for (var j = maxWeek; j < maxWeek2; j++)
+                        maxWeek2 = (reportWeekVersions.SingleOrDefault(x => x.Week == 2) != null ? reportWeekVersions.SingleOrDefault(x => x.Week == 2).MaxVersion : 0);
+                        for (var j = 1; j < maxWeek2 + 1; j++)
                         {
 
-                                listCol.Insert(indexAfterWeek2, "Week " + (i + 1) + " v" + j);
-                                indexAfterWeek2++;
+                            listCol.Insert(indexAfterWeek2, "Week " + (i) + " v" + (j + maxWeek));
+                            indexAfterWeek2++;
+
+                            listCol.Insert(indexAfterWeek2, "Week " + (i + 1) + " v" + j);
+                            indexAfterWeek2++;
+                            
+                        }
+                        indexAfterWeek3 = indexAfterWeek2;
+                            listCol.Insert(indexAfterWeek3, "Week " + (i + 1));
+                            indexAfterWeek3++;
+                            listCol.Insert(indexAfterWeek3, "Week " + (i + 1) + " v1");
+                        indexAfterWeek3++;
+                 
+                    }
+                    else if (i == 3)
+                    {
+                        maxWeek3 = maxWeek2 + (reportWeekVersions.SingleOrDefault(x => x.Week == 3) != null ? reportWeekVersions.SingleOrDefault(x => x.Week == 3).MaxVersion : 0);
+                        for (var j = maxWeek2; j < maxWeek3; j++)
+                        {
+
+                            listCol.Insert(indexAfterWeek2, "Week " + (i + 1) + " v" + j);
+                            indexAfterWeek2++;
 
                         }
                     }
@@ -327,10 +349,10 @@ namespace FSAWebSystem.Services
 
             for (var i = 2; i <= week; i++)
             {
-                listCol.Insert(indexAfterWeek2, "Dispatch Wk" + (i - 1));
-                indexAfterWeek2++;
-                listCol.Insert(indexAfterWeek2, "Rem Wk" + (i - 1));
-                indexAfterWeek2++;
+                listCol.Insert(indexAfterWeek3, "Dispatch Wk" + (i - 1));
+                indexAfterWeek3++;
+                listCol.Insert(indexAfterWeek3, "Rem Wk" + (i - 1));
+                indexAfterWeek3++;
             }
             //for (var i = 1; i < maxVersion + 1; i++)
             //{
@@ -362,7 +384,7 @@ namespace FSAWebSystem.Services
             {
                 foreach (var data in baseReportData.OrderBy(x => x.BannerName.ToString()))
                 {
-                    if(x == 2236)
+                    if (x == 47)
                     {
                         var zzzz = 5;
                     }
@@ -412,7 +434,7 @@ namespace FSAWebSystem.Services
                     i++;
 
 
-                    var rephaseDataThisRow = Enumerable.Repeat(decimal.Zero, colToAddRephase).ToList();
+                    var rephaseDataThisRow = Enumerable.Repeat(new ReportRephaseData(), colToAddRephase).ToList();
                     var reallocateDataThisRowTarget = Enumerable.Repeat(decimal.Zero, colToAddReallocate).ToList();
                     var reallocateDataThisRowSource = Enumerable.Repeat(decimal.Zero, colToAddReallocate).ToList();
                     var proposeDataThisRow = Enumerable.Repeat(decimal.Zero, colToAddPropose).ToList();
@@ -429,12 +451,13 @@ namespace FSAWebSystem.Services
                             //foreach(var date in listDate)
                             for (var j = 0; j < colToAddRephase; j++)
                             {
-                                var groupRephaseDate = rephaseDatas.SingleOrDefault(x => x.Key.Date == listDate.ElementAt(j)).AsEnumerable();
-                                if(groupRephaseDate != null)
+                                var date = listDate.ElementAt(j);
+                                var groupRephaseDate = rephaseDatas.SingleOrDefault(x => x.Key.Date == date.Date).AsEnumerable();
+                                if (groupRephaseDate != null)
                                 {
                                     totalRephase = groupRephaseDate.Sum(x => x.Rephase);
                                 }
-                                rephaseDataThisRow[j] = totalRephase;
+                                rephaseDataThisRow[j] = new ReportRephaseData { Rephase = totalRephase, Week = date.Week};
                             }
 
                         }
@@ -450,7 +473,6 @@ namespace FSAWebSystem.Services
                             //proposeDatas = proposeDatas.OrderBy(x => x.SubmitDate).AsEnumerable();
                             for (var j = 0; j < colToAddPropose; j++)
                             {
-
                                 if (j < proposeDatas.Count())
                                 {
                                     proposeDataThisRow[j] = groupProposeData.Where(x => x.Key == listDatePropose.ElementAt(j)).Sum(y => y.Sum(z => z.ProposeAdditional));
@@ -475,11 +497,11 @@ namespace FSAWebSystem.Services
                                 {
                                     var proposes = groupReallocateData.Where(x => x.Key == listDateReallocate.ElementAt(j)).AsEnumerable();
 
-                                    foreach(var propose in proposes)
+                                    foreach (var propose in proposes)
                                     {
-                                        foreach(var proposeAdd in propose)
+                                        foreach (var proposeAdd in propose)
                                         {
-                                            if(proposeAdd.ProposeAdditional > 0)
+                                            if (proposeAdd.ProposeAdditional > 0)
                                             {
                                                 reallocateDataThisRowTarget[j] += proposeAdd.ProposeAdditional;
                                             }
@@ -489,8 +511,8 @@ namespace FSAWebSystem.Services
                                             }
                                         }
                                     }
-                                   
-                                    
+
+
                                 }
                             }
                         }
@@ -506,9 +528,9 @@ namespace FSAWebSystem.Services
                     var updatedMonthlyBucket = monthlyBucket;
                     for (var j = 0; j < bucketMaxVersion; j++)
                     {
-                        if(listDateReallocate.Contains(listDate.ElementAt(j)))
+                        if (listDateReallocate.Contains(listDate.ElementAt(j).Date))
                         {
-                            for(var k = 0; k < colToAddReallocate; k++)
+                            for (var k = 0; k < colToAddReallocate; k++)
                             {
                                 if (k >= 0 && k < reallocateDataThisRowSource.Count)
                                 {
@@ -528,10 +550,10 @@ namespace FSAWebSystem.Services
                                     updatedMonthlyBucket += 0;
                                 }
                             }
-                            
+
                         }
 
-                        if (listDatePropose.Contains(listDate.ElementAt(j)))
+                        if (listDatePropose.Contains(listDate.ElementAt(j).Date))
                         {
                             if (j >= 0 && j < proposeDataThisRow.Count)
                             {
@@ -560,7 +582,7 @@ namespace FSAWebSystem.Services
                     //Rephase
                     for (var j = 0; j < colToAddRephase; j++)
                     {
-                        row.CreateCell(i).SetCellValue((double)rephaseDataThisRow.ElementAt(j));
+                        row.CreateCell(i).SetCellValue((double)rephaseDataThisRow.ElementAt(j).Rephase);
                         i++;
                     }
 
@@ -585,14 +607,14 @@ namespace FSAWebSystem.Services
                     {
                         if (j >= 0 && j < rephaseDataThisRow.Count)
                         {
-                            week1Val += (double)rephaseDataThisRow[j];
+                            week1Val += (double)rephaseDataThisRow[j].Rephase;
                         }
 
                         row.CreateCell(i).SetCellValue(week1Val);
                         i++;
                     }
 
-      
+
                     var week2 = Convert.ToDouble(data.Week2);
                     var week2Val = week2;
                     row.CreateCell(i).SetCellValue(week2);
@@ -604,7 +626,7 @@ namespace FSAWebSystem.Services
                     {
                         if (j >= 0 && j < rephaseDataThisRow.Count)
                         {
-                            week2Val -= (double)rephaseDataThisRow[j];
+                            week2Val -= (double)rephaseDataThisRow[j].Rephase;
 
                         }
 
@@ -614,7 +636,7 @@ namespace FSAWebSystem.Services
 
                         }
 
-                        if (listDateReallocate.Contains(listDate.ElementAt(j)))
+                        if (listDateReallocate.Contains(listDate.ElementAt(j).Date))
                         {
                             for (var k = 0; k < colToAddReallocate; k++)
                             {
@@ -622,19 +644,41 @@ namespace FSAWebSystem.Services
                             }
                         }
 
-
                         row.CreateCell(i).SetCellValue(week2Val);
                         i++;
                     }
 
+
                     for (var j = 2; j <= week; j++)
                     {
-                        //var dispatch = weeklyBucketHistories.Single(x => x.BannerPlantId == data.BannerPlantId && x.SKUId == data.SKUId).DispatchConsume;
-                        var dispatch = decimal.Zero;
+                        var weeklyBucket = weeklyBucketHistories.FirstOrDefault(x => x.BannerPlantId == data.BannerPlantId && x.SKUId == data.SKUId && x.Week == j);
+                        var dispatch = weeklyBucket != null ? weeklyBucket.DispatchConsume : decimal.Zero;
+                        var remWk = week1Val - (double)dispatch;
+                        var week3Val = Convert.ToDouble(remWk);
+                        row.CreateCell(i).SetCellValue(week3Val);
+                        i++;
+
+                        if(j == 2)
+                        {
+                            var rephaseThisWeek = rephaseDataThisRow.Where(x => x.Week == 2).ToList();
+                            for (var k = 0; k < week2Version + 1; k++)
+                            {
+                                if (k >= 0 && k < rephaseThisWeek.Count)
+                                {
+                                    week3Val += (double)rephaseThisWeek[k].Rephase;
+                                }
+                            }
+                            row.CreateCell(i).SetCellValue(week3Val);
+                            i++;
+                        }
+                      
+
+                        //var dispatch = decimal.Zero;
                         row.CreateCell(i).SetCellValue((double)dispatch);
                         i++;
-                        var remWk = decimal.Zero;
+                      
                         row.CreateCell(i).SetCellValue((double)remWk);
+                        i++;
                     }
 
                     var validBJ = data.ValidBJ;
@@ -647,7 +691,7 @@ namespace FSAWebSystem.Services
                     i++;
                     x++;
 
-      
+
 
                 }
 
@@ -685,14 +729,14 @@ namespace FSAWebSystem.Services
 
                 var folder = Path.Combine(Directory.GetCurrentDirectory(), "ReportExcel");
 
-                if(!Directory.Exists(folder))
+                if (!Directory.Exists(folder))
                 {
                     Directory.CreateDirectory(folder);
                 }
 
                 var outputPath = Path.Combine(folder, "FSA_" + day + "_" + currDate.Month + "_" + currDate.Year + ".xls");
 
-                
+
 
                 using (FileStream outputStream = new FileStream(outputPath, FileMode.Create))
                 {
@@ -702,7 +746,7 @@ namespace FSAWebSystem.Services
 
 
                 var reportWeekVersion = reportWeekVersions.SingleOrDefault(x => x.Week == week);
-                if(reportWeekVersion != null)
+                if (reportWeekVersion != null)
                 {
                     reportWeekVersion.MaxVersion += 1;
                 }
@@ -717,8 +761,8 @@ namespace FSAWebSystem.Services
                     _db.ReportWeekVersions.Add(newReportWeekVersion);
                 }
 
-                
-                if(bucketHistory != null)
+
+                if (bucketHistory != null)
                 {
                     bucketHistory.Version += 1;
                 }

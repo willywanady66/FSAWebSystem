@@ -89,7 +89,7 @@ namespace FSAWebSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryProduct,IsActive,CreatedAt,CreatedBy,ModifiedAt,ModifiedBy")] ProductCategory productCategory)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryProduct, CreatedAt, CreatedBy, FSADocumentId")] ProductCategory productCategory)
         {
             if (id != productCategory.Id)
             {
@@ -100,6 +100,8 @@ namespace FSAWebSystem.Controllers
             {
                 try
                 {
+                    productCategory.ModifiedBy = User.Identity.Name;
+                    productCategory.ModifiedAt = DateTime.Now;
                     _context.Update(productCategory);
                     await _context.SaveChangesAsync();
                 }
@@ -114,7 +116,7 @@ namespace FSAWebSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Admin");
             }
             return View(productCategory);
         }

@@ -17,7 +17,6 @@
 	var getCategUrl = '@Url.Action("GetCategoryPagination", "Admin")';
 	var getWLUrl = '@Url.Action("GetWorkLevelPagination", "Admin")'
 	var getSKUUrl = '@Url.Action("GetSKUPagination", "Admin")';
-	var getCategUrl = '@Url.Action("GetCategoryPagination", "Admin")';
 	var getFSACal = '@Url.Action("GetFSACalendar", "Admin")';
 	var getULICal = '@Url.Action("GetULICalendar", "Admin")';
 	var getBannerPlantUrl = '@Url.Action("GetBannerPlantPagination", "Admin")';
@@ -27,13 +26,14 @@
 	var editFSACalUrl = '@Url.Action("Edit", "FSACalendarHeaders")';
 	var editULICalUrl = '@Url.Action("Edit", "ULICalendars")';
 	var uploadDocumentUrl = '@Url.Action("UploadFile", "UploadDocument")';
-	var getAndromedaUrl = '@Url.Action("GetAndromedaPagination","Admin")'
-	var getBottomPriceUrl = '@Url.Action("GetBottomPricePagination","Admin")'
-	var getITrustUrl = '@Url.Action("GetITrustPagination","Admin")'
-	var getBannerUrl = '@Url.Action("GetBannersPagination","Admin")'
-	var getPlantUrl = '@Url.Action("GetPlantsPagination","Admin")'
-	var editBannerUrl = '@Url.Action("Edit","Banners")'
-	var editPlantUrl = '@Url.Action("Edit","Plants")'
+	var getAndromedaUrl = '@Url.Action("GetAndromedaPagination","Admin")';
+	var getBottomPriceUrl = '@Url.Action("GetBottomPricePagination","Admin")';
+	var getITrustUrl = '@Url.Action("GetITrustPagination","Admin")';
+	var getBannerUrl = '@Url.Action("GetBannersPagination","Admin")';
+	var getPlantUrl = '@Url.Action("GetPlantsPagination","Admin")';
+	var editBannerUrl = '@Url.Action("Edit","Banners")';
+	var editPlantUrl = '@Url.Action("Edit","Plants")';
+	var editCategoryUrl = '@Url.Action("Edit", "ProductCategories")';
 </script>
 
 
@@ -261,6 +261,10 @@
 							<div class="form-group row" id="uploadMonthGroup">
 								<label class="col-3 form-label my-auto">Month</label>
 								<select class="col-5 form-control form-select" id="dropdownMonthUpload" name="uploadMonth" asp-items="@listMonths"></select>
+							</div>
+							<div class="form-group row" id="uploadYearGroup">
+								<label class="col-3 form-label my-auto">Year</label>
+								<select class="col-5 form-control form-select" id="dropdownYearUpload" name="uploadYear" asp-items="@listYears"></select>
 							</div>
 							<div class="form-group row">
 								<label class="col-3 form-label my-auto">File</label>
@@ -498,6 +502,7 @@
 							<tr>
 								<th>No.</th>
 								<th>Category</th>
+								<th>Action</th>
 							</tr>
 						</thead>
 					</table>

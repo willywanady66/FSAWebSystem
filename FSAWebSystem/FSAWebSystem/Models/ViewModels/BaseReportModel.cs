@@ -22,4 +22,10 @@
         public Guid BannerPlantId { get; set; }
         public Guid SKUId { get; set; }
     }
+
+    public class ReportRephaseData
+    {
+        public int Week { get; set; }
+        public decimal Rephase { get; set; }
+    }
 }

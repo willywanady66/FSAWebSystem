@@ -149,15 +149,21 @@ namespace FSAWebSystem.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> UploadFile(IFormFile excelDocument, string documentType, string loggedUser, string? uploadMonth)
+        public async Task<IActionResult> UploadFile(IFormFile excelDocument, string documentType, string loggedUser, string? uploadMonth, string? uploadYear)
         {
             string fileContent = string.Empty;
             var currDate = DateTime.Now;
             var month = currDate.Month;
-
+            var year = currDate.Year;
             if (!string.IsNullOrEmpty(uploadMonth))
             {
                 month = Convert.ToInt32(uploadMonth);
+
+            }
+
+            if (!string.IsNullOrEmpty(uploadYear))
+            {
+                year = Convert.ToInt32(uploadYear);
 
             }
             var desc = string.Empty;
@@ -183,11 +189,11 @@ namespace FSAWebSystem.Controllers
 
                 if (doc == DocumentUpload.MonthlyBucket)
                 {
-                    var isCalendarExist = await _db.FSACalendarHeaders.AnyAsync(x => x.Month == month && x.Year == currDate.Year);
+                    var isCalendarExist = await _db.FSACalendarHeaders.AnyAsync(x => x.Month == month && x.Year == year);
                     var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
                     if (!isCalendarExist)
                     {
-                        errorMessages.Add("Please Input FSACalendar for " + monthName + "-" + currDate.Year.ToString());
+                        errorMessages.Add("Please Input FSACalendar for " + monthName + "-" + year.ToString());
                         return Ok(Json(new { errorMessages }));
                     }
                 }
@@ -280,7 +286,7 @@ namespace FSAWebSystem.Controllers
                                 _notyfService.Error("Wrong File! File format must be same with provided format");
                                 return Ok(Json(new { errorMessages }));
                             }
-                            await SaveMonthlyBuckets(dt, excelDocument.FileName, month, loggedUser, doc, errorMessages);
+                            await SaveMonthlyBuckets(dt, excelDocument.FileName, month, year, loggedUser, doc, errorMessages);
                             break;
                         case DocumentUpload.WeeklyDispatch:
                             columns = _uploadDocService.GetWeeklyDispatchColumns();
@@ -731,7 +737,7 @@ namespace FSAWebSystem.Controllers
 
         }
 
-        private async Task SaveMonthlyBuckets(DataTable dt, string fileName, int month, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
+        private async Task SaveMonthlyBuckets(DataTable dt, string fileName, int month, int year, string loggedUser, DocumentUpload documentType, List<string> errorMessages)
         {
             List<MonthlyBucket> listMonthlyBucket = new List<MonthlyBucket>();
 
@@ -763,7 +769,7 @@ namespace FSAWebSystem.Controllers
                         TCT = Decimal.Parse(ConvertNumber(dr[11].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }) * 100,
                         MonthlyTarget = decimal.Round(Decimal.Parse(ConvertNumber(dr[12].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." })) * 100,
                         Month = month,
-                        Year = currentDate.Year,
+                        Year = year,
                         CreatedAt = DateTime.Now,
                         CreatedBy = loggedUser,
                         FSADocument = fsaDoc
