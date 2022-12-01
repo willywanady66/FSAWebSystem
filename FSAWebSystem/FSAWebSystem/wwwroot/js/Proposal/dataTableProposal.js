@@ -62,10 +62,8 @@
         },
         "columnDefs":
             [{
-            "targets": [3, 4, 5, 6, 7, 8],
-            "render": function (data) {
-                return data.toLocaleString('en-US');
-                },
+                "targets": [3, 4, 5, 6, 7, 8],
+                render: $.fn.dataTable.render.number(',', '.', 0, '')
             },
             {
                 "targets": [12, 13, 14, 15, 16, 17],
@@ -80,7 +78,7 @@
                     return data;
                 },
                 "orderable": false,
-               
+
             },
             {
                 "targets": 9,
@@ -116,8 +114,6 @@
                 "targets": 11,
                 "render": function (data, type, full, meta) {
                     var options = "";
-                    //var remarks2 = ["Big Promotion Period", "Grand Opening", "Additional Store", "Rephase", "Spike Order", "No Baseline Last Year"];
-
 
                     remarks.forEach(function (item) {
                         var remark = item;
@@ -152,7 +148,7 @@
                 "className": "remarkColumn"
 
             }
-        ],
+            ],
         "rowCallback": function (row, data, index) {
             if (data.nextBucket < 0) {
                 $('td:eq(6)', row).css({ color: "red" });
@@ -346,10 +342,8 @@
             { "data": "pcMap" }, //4
             { "data": "descriptionMap" }, //5
             { "data": "price" }, //6
-            { "data": "plantContribution" }, //7
-            { "data": "runningRate" }, //8
-            { "data": "tct" }, //9
-            { "data": "monthlyTarget" }, //10
+            { "data": "runningRate" }, //7
+            { "data": "monthlyTarget" }, //8
         ],
         columnDefs: [
             {
@@ -364,7 +358,7 @@
                 render: $.fn.dataTable.render.number(',', '.', 0, '')
             },
             {
-                targets: [7, 8, 9],
+                targets: 7,
                 render: function (data, type, row) {
                     return data + ' %';
                 }
@@ -459,7 +453,7 @@ function rephaseChanged(obj) {
     else {
         $(`#dataTableProposal ${inputId}`).val("0");
     }
-    console.log(obj.valueAsNumber.toLocaleString('id-ID'));
+    //console.log(obj.valueAsNumber.toLocaleString('id-ID'));
 }
 
 function proposeChanged(obj) {
