@@ -92,8 +92,8 @@ namespace FSAWebSystem.Controllers
         
         public async Task<IActionResult> GetBegOfMonth()
         {
-            await _reportService.GenerateFirstReportOfMonth(12, 2022);
-            return Ok();
+            var dt = await _reportService.GenerateFirstReportOfMonth(12, 2022);
+            return Ok(Json(new { dt }));
         }
         public async Task<IActionResult> GetDailyReportData()
         {
@@ -194,16 +194,7 @@ namespace FSAWebSystem.Controllers
             //MemoryStream ms = new MemoryStream();
             //workbook.Write(ms);
             //ms.Position = 0;
-            try
-            {
-                //FileStreamResult file = File(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Daily Report.xls");
-                //return file;
-            }
-            catch (Exception ex)
-            {
-                //return Ok();
-            }
-            return Ok();
+            return Ok(Json(new { dt }));
         }
     }
         

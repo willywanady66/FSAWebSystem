@@ -212,8 +212,8 @@ namespace FSAWebSystem.Controllers
             {
                 try
                 {
-                    var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant();
-                    var skus = _skuService.GetAllProducts().Where(x => x.IsActive);
+                    var bannerPlants = _bannerPlantService.GetAllActiveBannerPlant().ToList();
+                    var skus = _skuService.GetAllProducts().Where(x => x.IsActive).ToList();
                     var weeklyBuckets = _bucketService.GetWeeklyBuckets().Where(x => x.Month == fsaDetail.Month && x.Year == fsaDetail.Year).ToList();
 
                     foreach (var proposalInput in proposals.Where(x => (x.proposeAdditional > 0 || x.rephase > 0) && !x.isWaitingApproval))
@@ -430,7 +430,7 @@ namespace FSAWebSystem.Controllers
         //    return proposeAdditionalBucket;
         //}
 
-        public async Task<Proposal> CreateProposalProposeAdditional(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId, IQueryable<BannerPlant> bannerPlants, IQueryable<SKU> skus, List<WeeklyBucket> weeklyBuckets)
+        public async Task<Proposal> CreateProposalProposeAdditional(ProposalInput proposalInput, FSACalendarDetail fsaDetail, Guid userId, List<BannerPlant> bannerPlants, List<SKU> skus, List<WeeklyBucket> weeklyBuckets)
         {
             var banners = _bannerService.GetAllBanner();
             var proposeAdditional = proposalInput.proposeAdditional;

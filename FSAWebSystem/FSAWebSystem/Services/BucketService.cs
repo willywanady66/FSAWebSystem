@@ -254,7 +254,7 @@ namespace FSAWebSystem.Services
         }
 
 
-        public async Task<ProposeAddtionalBucket> GetWeeklyBucketSource(IQueryable<BannerPlant> bannerPlants, IQueryable<SKU> skus, List<WeeklyBucket> weeklyBuckets, decimal proposeAdditional, Proposal proposal, int month, int year, ProposalType? proposalType = null)
+        public async Task<ProposeAddtionalBucket> GetWeeklyBucketSource(List<BannerPlant> bannerPlants, List<SKU> skus, List<WeeklyBucket> weeklyBuckets, decimal proposeAdditional, Proposal proposal, int month, int year, ProposalType? proposalType = null)
         {
             var i = 0;
             if(proposalType != null)
@@ -290,7 +290,7 @@ namespace FSAWebSystem.Services
                 {
                     //REALLOCATE ACROSS KAM
                     case 0:
-                        bannerPlantSourceIds = await bannerPlants.Where(x => x.IsActive && x.CDM == proposal.CDM && x.KAM == proposal.KAM && !targetBannerPlants.Contains(x.Id) && x.Banner.Id != proposal.Banner.Id).Select(x => x.Id).ToListAsync();
+                        bannerPlantSourceIds = bannerPlants.Where(x => x.IsActive && x.CDM == proposal.CDM && x.KAM == proposal.KAM && !targetBannerPlants.Contains(x.Id) && x.Banner.Id != proposal.Banner.Id).Select(x => x.Id).ToList();
 
                         proposal.Type = ProposalType.ReallocateAcrossKAM;
 
@@ -300,13 +300,13 @@ namespace FSAWebSystem.Services
                         break;
                     //REALLOCATE ACROSS CDM
                     case 1:
-                        bannerPlantSourceIds = await bannerPlants.Where(x => x.IsActive && x.CDM == proposal.CDM && !targetBannerPlants.Contains(x.Id) && x.Banner.Id != proposal.Banner.Id).Select(x => x.Id).ToListAsync();
+                        bannerPlantSourceIds =  bannerPlants.Where(x => x.IsActive && x.CDM == proposal.CDM && !targetBannerPlants.Contains(x.Id) && x.Banner.Id != proposal.Banner.Id).Select(x => x.Id).ToList();
 
                         proposal.Type = ProposalType.ReallocateAcrossCDM;
                         break;
                     //REALLOCATE ACROSS MT
                     case 2:
-                        bannerPlantSourceIds = await bannerPlants.Where(x => x.IsActive && !targetBannerPlants.Contains(x.Id) && x.Banner.Id != proposal.Banner.Id).Select(x => x.Id).ToListAsync();
+                        bannerPlantSourceIds =  bannerPlants.Where(x => x.IsActive && !targetBannerPlants.Contains(x.Id) && x.Banner.Id != proposal.Banner.Id).Select(x => x.Id).ToList();
                         proposal.Type = ProposalType.ReallocateAcrossMT;
                         break;
                     default:
