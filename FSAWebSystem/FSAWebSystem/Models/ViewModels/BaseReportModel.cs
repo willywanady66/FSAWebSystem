@@ -28,4 +28,10 @@
         public int Week { get; set; }
         public decimal Rephase { get; set; }
     }
+
+    public class ReportProposeData
+    {
+        public int Week { get; set; }
+        public decimal Propose { get; set; }
+    }
 }

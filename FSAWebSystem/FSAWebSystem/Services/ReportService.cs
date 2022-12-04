@@ -98,8 +98,7 @@ namespace FSAWebSystem.Services
 
         public async Task<string> GenerateFirstReportOfMonth(int month, int year)
         {
-            dynamic obj = new ExpandoObject();
-
+ 
             var data = GetBaseReportData(month, year);
             var dailyRecords = new List<DailyRecordModel>().AsEnumerable();
             var dt = await CreateFile(data, "Publish Beginning of Month", new DateTime(2022, 12, 01), dailyRecords);
@@ -178,11 +177,11 @@ namespace FSAWebSystem.Services
                             RR = weeklyBucket.RunningRate,
                             TCT = monthlyBucket.TCT,
                             Target = monthlyBucket.MonthlyTarget,
-                            MonthlyBucket = monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100),
-                            Week1 = monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) * ((decimal)50 / (decimal)100),
-                            Week2 = monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) * ((decimal)50 / (decimal)100),
+                            MonthlyBucket = decimal.Round(monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100)),
+                            Week1 = decimal.Round(monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) * ((decimal)50 / (decimal)100)),
+                            Week2 = decimal.Round(monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) * ((decimal)50 / (decimal)100)),
                             ValidBJ = weeklyBucket.ValidBJ,
-                            RemFSA = monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) - weeklyBucket.ValidBJ,
+                            RemFSA = decimal.Round(monthlyBucket.RunningRate * (monthlyBucket.TCT / 100) * (monthlyBucket.MonthlyTarget / 100) - weeklyBucket.ValidBJ),
 
                         }).AsEnumerable();
 
@@ -191,200 +190,286 @@ namespace FSAWebSystem.Services
 
         private async Task<string> CreateFile(IEnumerable<BaseReportModel> baseReportData, string title, DateTime currDate, IEnumerable<DailyRecordModel> dailyRecord)
         {
-            var colToAddRephase = 0;
-            var colToAddReallocate = 0;
-            var colToAddPropose = 0;
-            var month = currDate.ToString("MMM").ToUpper();
-            var year = currDate.ToString("yy");
+            int x = 0;
+            try
+            {
+                var colToAddRephase = 0;
+                var colToAddReallocate = 0;
+                var colToAddPropose = 0;
+                var month = currDate.ToString("MMM").ToUpper();
+                var year = currDate.ToString("yy");
 
-            var listHistoryMonthly = new List<MonthlyBucketHistory>();
+                var listHistoryMonthly = new List<MonthlyBucketHistory>();
 
-            var workbook = new HSSFWorkbook();
-            ISheet worksheet = workbook.CreateSheet("v1.0");
-            var titleRow = worksheet.CreateRow(0).CreateCell(0);
+                var workbook = new HSSFWorkbook();
+                ISheet worksheet = workbook.CreateSheet("v1.0");
+                var titleRow = worksheet.CreateRow(0).CreateCell(0);
 
-            var style = workbook.CreateCellStyle();
-            style.Alignment = HorizontalAlignment.Center;
-            var listCol = baseReportData.First().GetType().GetProperties().Select(x => x.Name).Where(x => x != "BannerPlantId" && x != "SKUId").ToList();
+                var style = workbook.CreateCellStyle();
+                style.Alignment = HorizontalAlignment.Center;
+                var listCol = baseReportData.First().GetType().GetProperties().Select(x => x.Name).Where(x => x != "BannerPlantId" && x != "SKUId" && x != "WeeklyBucketId").ToList();
 
-            var fsaCalDetail = await _calendarService.GetCalendarDetail(currDate);
-            int week = fsaCalDetail.Week;
+                var fsaCalDetail = await _calendarService.GetCalendarDetail(currDate);
+                int week = fsaCalDetail.Week;
 
-            var listDate = dailyRecord.Select(x => new { x.SubmitDate.Date, x.Week }).Distinct().OrderBy(x => x.Date).ToList();
+                var listDate = dailyRecord.Select(x => new { x.SubmitDate.Date, x.Week }).Distinct().OrderBy(x => x.Date).ToList();
 
-            var listDatePropose = dailyRecord.Where(x => x.Type == ProposalType.ProposeAdditional).Select(x => x.SubmitDate.Date).Distinct().OrderBy(x => x).ToList();
-            var listDateReallocate = dailyRecord.Where(x => x.Type == ProposalType.ReallocateAcrossCDM || x.Type == ProposalType.ReallocateAcrossKAM || x.Type == ProposalType.ReallocateAcrossMT).Select(x => x.SubmitDate.Date).Distinct().OrderBy(x => x).ToList();
+                var t4st = dailyRecord.Where(x => x.Type == ProposalType.Rephase).Select(x => new { x.SubmitDate.Date, x.Week }).Distinct().ToList();
+                var listDateRephase = dailyRecord.Where(x => x.Type == ProposalType.Rephase).Select(x => new { x.SubmitDate.Date, x.Week }).Distinct().OrderBy(x => x.Date).ToList();
+                var listDatePropose = dailyRecord.Where(x => x.Type == ProposalType.ProposeAdditional).Select(x => new { x.SubmitDate.Date, x.Week }).Distinct().OrderBy(x => x.Date).ToList();
+                var listDateReallocate = dailyRecord.Where(x => x.Type == ProposalType.ReallocateAcrossCDM || x.Type == ProposalType.ReallocateAcrossKAM || x.Type == ProposalType.ReallocateAcrossMT).Select(x => new { x.SubmitDate.Date, x.Week }).Distinct().OrderBy(x => x.Date).ToList();
 
-            var weeklyBucketHistories = _db.WeeklyBucketHistories.Where(x => x.Month == currDate.Month && x.Year == currDate.Year).ToList();
+                var weeklyBucketHistories = _db.WeeklyBucketHistories.Where(x => x.Month == currDate.Month && x.Year == currDate.Year).ToList();
 
-            var groupDailyRecord = dailyRecord.GroupBy(x => new { x.WeeklyBucketId, x.SubmitDate.Date, x.Type, x.Week }).ToList();
-            var recordRephase = groupDailyRecord.Where(x => x.Key.Type == ProposalType.Rephase);
-            colToAddRephase = recordRephase.Select(x => x.Key.Date).Distinct().Count();
-            var recordReallocate = groupDailyRecord.Where(x => x.Key.Type == ProposalType.ReallocateAcrossCDM || x.Key.Type == ProposalType.ReallocateAcrossKAM || x.Key.Type == ProposalType.ReallocateAcrossMT);
-            colToAddReallocate = recordReallocate.Any() ? recordReallocate.Max(x => x.Count()) : 0;
-            var recordPropose = groupDailyRecord.Where(x => x.Key.Type == ProposalType.ProposeAdditional);
-            colToAddPropose = recordPropose.Any() ? recordPropose.Max(x => x.Count()) : 0;
+                var groupDailyRecord = dailyRecord.GroupBy(x => new { x.WeeklyBucketId, x.SubmitDate.Date, x.Type, x.Week }).ToList();
+                var recordRephase = groupDailyRecord.Where(x => x.Key.Type == ProposalType.Rephase);
+                colToAddRephase = listDateRephase.Count;
+                var recordReallocate = groupDailyRecord.Where(x => x.Key.Type == ProposalType.ReallocateAcrossCDM || x.Key.Type == ProposalType.ReallocateAcrossKAM || x.Key.Type == ProposalType.ReallocateAcrossMT);
+                colToAddReallocate = listDateReallocate.Count;
+                var recordPropose = groupDailyRecord.Where(x => x.Key.Type == ProposalType.ProposeAdditional);
+                colToAddPropose = listDatePropose.Count;
 
-            var listColToAdd = new List<int>
+                var listColToAdd = new List<int>
             {
                 colToAddReallocate,
                 colToAddPropose,
                 colToAddRephase
             };
 
-            var bucketHistory = _db.MonthlyBucketHistories.SingleOrDefault(x => x.Month == currDate.Month && x.Year == currDate.Year);
-            var bucketMaxVersion = bucketHistory != null ? bucketHistory.Version : 0;
-            var reportWeekVersions = _db.ReportWeekVersions.Where(x => x.Month == currDate.Month && x.Year == currDate.Year).ToList();
+                var bucketHistory = _db.MonthlyBucketHistories.SingleOrDefault(x => x.Month == currDate.Month && x.Year == currDate.Year);
+                //var bucketMaxVersion = bucketHistory != null ? bucketHistory.Version : 0;
+                var bucketMaxVersion = listDate.Count;
+                var reportWeekVersions = _db.ReportWeekVersions.Where(x => x.Month == currDate.Month && x.Year == currDate.Year).ToList();
 
-            //var maxVersionWeeks = bucketHistories.GroupBy(x => new { x.Week }).Select(y => new { Version = y.Max(x => x.Version), Week = y.Key.Week }).ToList();
+                //var maxVersionWeeks = bucketHistories.GroupBy(x => new { x.Week }).Select(y => new { Version = y.Max(x => x.Version), Week = y.Key.Week }).ToList();
 
-            var maxColToAdd = listColToAdd.Max();
+                var maxColToAdd = listColToAdd.Max();
 
-            var indexAfterMonthlyBucket = 13;
-            var indexAfterWeek1 = 14;
-            var indexAfterWeek2 = 15;
+                var indexAfterMonthlyBucket = 12;
+                var indexAfterWeek1 = 13;
+                var indexAfterWeek2 = 14;
 
-            for (var i = 1; i < bucketMaxVersion + 1; i++)
-            {
-                listCol.Insert(indexAfterMonthlyBucket, string.Format("{0}'{1} v1.{2}", month, year, (i)));
-                indexAfterMonthlyBucket++;
-                indexAfterWeek1++;
-                indexAfterWeek2++;
-            }
-
-
-            for (var i = 0; i < colToAddReallocate; i++)
-            {
-
-                listCol.Insert(indexAfterMonthlyBucket, "Reallocate " + (i + 1) + "(+)");
-                indexAfterMonthlyBucket++;
-                indexAfterWeek1++;
-                indexAfterWeek2++;
-                listCol.Insert(indexAfterMonthlyBucket, "Reallocate " + (i + 1) + "(-)");
-                indexAfterMonthlyBucket++;
-                indexAfterWeek1++;
-                indexAfterWeek2++;
-            }
-
-            for (var i = 0; i < colToAddRephase; i++)
-            {
-                listCol.Insert(indexAfterMonthlyBucket, "Rephase " + (i + 1) + "(+/-)");
-                indexAfterMonthlyBucket++;
-                indexAfterWeek1++;
-                indexAfterWeek2++;
-            }
-
-
-            for (var i = 0; i < colToAddPropose; i++)
-            {
-                listCol.Insert(indexAfterMonthlyBucket, "Additional " + (i + 1) + "(+)");
-                indexAfterMonthlyBucket++;
-                indexAfterWeek1++;
-                indexAfterWeek2++;
-            }
-
-
-            var maxWeek = 0;
-            var maxWeek2 = 0;
-            var maxWeek3 = 0;
-            var indexAfterWeek3 = 0;
-            for (var i = 1; i <= week; i++)
-            {
-                if (i < 6)
+                for (var i = 1; i < bucketMaxVersion + 1; i++)
                 {
-                    if (i == 1)
+                    listCol.Insert(indexAfterMonthlyBucket, string.Format("{0}'{1} v1.{2}", month, year, (i)));
+                    indexAfterMonthlyBucket++;
+                    indexAfterWeek1++;
+                    indexAfterWeek2++;
+                }
+
+
+                for (var i = 0; i < colToAddReallocate; i++)
+                {
+
+                    listCol.Insert(indexAfterMonthlyBucket, "Reallocate " + (i + 1) + "(+)");
+                    indexAfterMonthlyBucket++;
+                    indexAfterWeek1++;
+                    indexAfterWeek2++;
+                    listCol.Insert(indexAfterMonthlyBucket, "Reallocate " + (i + 1) + "(-)");
+                    indexAfterMonthlyBucket++;
+                    indexAfterWeek1++;
+                    indexAfterWeek2++;
+                }
+
+                for (var i = 0; i < colToAddRephase; i++)
+                {
+                    listCol.Insert(indexAfterMonthlyBucket, "Rephase " + (i + 1) + "(+/-)");
+                    indexAfterMonthlyBucket++;
+                    indexAfterWeek1++;
+                    indexAfterWeek2++;
+                }
+
+
+                for (var i = 0; i < colToAddPropose; i++)
+                {
+                    listCol.Insert(indexAfterMonthlyBucket, "Additional " + (i + 1) + "(+)");
+                    indexAfterMonthlyBucket++;
+                    indexAfterWeek1++;
+                    indexAfterWeek2++;
+                }
+
+
+                var maxWeek = listDate.Where(x => x.Week == 1).Count();
+                var maxWeek2 = listDate.Where(x => x.Week == 2).Count();
+                var maxWeek3 = listDate.Where(x => x.Week == 3).Count();
+                var maxWeek4 = listDate.Where(x => x.Week == 4).Count();
+                var maxWeek5 = listDate.Where(x => x.Week == 5).Count();
+                var indexAfterWeek3 = 0;
+                var indexAfterWeek4 = 0;
+                var indexAfterWeek5 = 0;
+                var indexAfterWeek = 0;
+                for (var i = 1; i <= week; i++)
+                {
+                    if (i < 6)
                     {
-                        maxWeek = reportWeekVersions.SingleOrDefault(x => x.Week == 1) != null ? reportWeekVersions.SingleOrDefault(x => x.Week == 1).MaxVersion : 0;
-
-                        for (var j = 1; j < maxWeek + 1; j++)
+                        if (i == 1)
                         {
-
-                            if (i == 1)
+                            for (var j = 1; j < maxWeek + 1; j++)
                             {
-                                listCol.Insert(indexAfterWeek1, "Week " + i + " v" + j);
-                                indexAfterWeek1++;
-                                indexAfterWeek2++;
-                                listCol.Insert(indexAfterWeek2, "Week " + (i + 1) + " v" + j);
-                                indexAfterWeek2++;
-                            }
-                            else
-                            {
-
+                                if (i == 1)
+                                {
+                                    listCol.Insert(indexAfterWeek1, "Week " + i + " v" + j);
+                                    indexAfterWeek1++;
+                                    indexAfterWeek2++;
+                                    listCol.Insert(indexAfterWeek2, "Week " + (i + 1) + " v" + j);
+                                    indexAfterWeek2++;
+                                }
                             }
                         }
-                    }
-                    else if (i == 2)
-                    {
-                        maxWeek2 = (reportWeekVersions.SingleOrDefault(x => x.Week == 2) != null ? reportWeekVersions.SingleOrDefault(x => x.Week == 2).MaxVersion : 0);
-                        for (var j = 1; j < maxWeek2 + 1; j++)
+                        else if (i == 2)
                         {
+                            for (var j = 0; j < maxWeek2; j++)
+                            {
+                                listCol.Insert(indexAfterWeek2, "Week " + (i) + " v" + (j + maxWeek + 1));
+                                indexAfterWeek2++;
+                            }
 
-                            listCol.Insert(indexAfterWeek2, "Week " + (i) + " v" + (j + maxWeek));
-                            indexAfterWeek2++;
-
-                            listCol.Insert(indexAfterWeek2, "Week " + (i + 1) + " v" + j);
-                            indexAfterWeek2++;
-                            
+                            if (listDateRephase.Any(x => x.Week == 2))
+                            {
+                                indexAfterWeek3 = indexAfterWeek2;
+                                
+                                for (var j = 0; j < maxWeek2; j++)
+                                {
+                                    if (j == 0)
+                                    {
+                                        listCol.Insert(indexAfterWeek3, "Week " + (i + 1));
+                                        indexAfterWeek3++;
+                                    }
+                                    listCol.Insert(indexAfterWeek3, "Week " + (i + 1) + " v" + (j + 1));
+                                    indexAfterWeek3++;
+                                }
+                            }
+                            indexAfterWeek = indexAfterWeek3;
                         }
-                        indexAfterWeek3 = indexAfterWeek2;
-                            listCol.Insert(indexAfterWeek3, "Week " + (i + 1));
-                            indexAfterWeek3++;
-                            listCol.Insert(indexAfterWeek3, "Week " + (i + 1) + " v1");
-                        indexAfterWeek3++;
-                 
-                    }
-                    else if (i == 3)
-                    {
-                        maxWeek3 = maxWeek2 + (reportWeekVersions.SingleOrDefault(x => x.Week == 3) != null ? reportWeekVersions.SingleOrDefault(x => x.Week == 3).MaxVersion : 0);
-                        for (var j = maxWeek2; j < maxWeek3; j++)
+                        else if (i == 3)
                         {
 
-                            listCol.Insert(indexAfterWeek2, "Week " + (i + 1) + " v" + j);
-                            indexAfterWeek2++;
+                            for (var j = 0; j < maxWeek3; j++)
+                            {
 
+                                listCol.Insert(indexAfterWeek3, "Week " + (i) + " v" + (j + maxWeek2 + 1));
+                                indexAfterWeek3++;
+                            }
+
+
+                            if (listDateRephase.Any(x => x.Week == 3))
+                            {
+                                indexAfterWeek4 = indexAfterWeek3;
+                                for (var j = 0; j < maxWeek3; j++)
+                                {
+                                    if (j == 0)
+                                    {
+                                        listCol.Insert(indexAfterWeek4, "Week " + (i + 1));
+                                        indexAfterWeek4++;
+                                    }
+                                    listCol.Insert(indexAfterWeek4, "Week " + (i + 1) + " v" + (j + 1));
+                                    indexAfterWeek4++;
+                                }
+                            }
+                            indexAfterWeek = indexAfterWeek4;
+                        }
+                        else if (i == 4)
+                        {
+                            for (var j = 0; j < maxWeek4; j++)
+                            {
+
+                                listCol.Insert(indexAfterWeek4, "Week " + (i) + " v" + (j + maxWeek3 + 1));
+                                indexAfterWeek4++;
+                            }
+
+                            indexAfterWeek5 = indexAfterWeek4;
+                            if (listDateRephase.Any(x => x.Week == 4))
+                            {
+                                
+                                for (var j = 0; j < maxWeek4; j++)
+                                {
+                                    if (j == 0)
+                                    {
+                                        listCol.Insert(indexAfterWeek5, "Week " + (i + 1));
+                                        indexAfterWeek5++;
+                                    }
+                                    listCol.Insert(indexAfterWeek5, "Week " + (i + 1) + " v" + (j + 1));
+                                    indexAfterWeek5++;
+                                }
+                            }
+                            indexAfterWeek = indexAfterWeek4;
                         }
                     }
                 }
-            }
 
-            for (var i = 2; i <= week; i++)
-            {
-                listCol.Insert(indexAfterWeek3, "Dispatch Wk" + (i - 1));
-                indexAfterWeek3++;
-                listCol.Insert(indexAfterWeek3, "Rem Wk" + (i - 1));
-                indexAfterWeek3++;
-            }
-            //for (var i = 1; i < maxVersion + 1; i++)
-            //{
-            //    listCol.Insert(indexAfterWeek1, "Week " + week + " v" + i);
-            //    indexAfterWeek1++;
-            //    indexAfterWeek2++;
-            //    listCol.Insert(indexAfterWeek2, "Week " + (week + 1) + " v" + i);
-            //    indexAfterWeek2++;
-            //}    
+
+                if (listDateRephase.Any(x => x.Week == 2) || week == 3)
+                {
+                    listCol.Insert(indexAfterWeek, "Dispatch Wk1");
+                    indexAfterWeek++;
+                    listCol.Insert(indexAfterWeek, "Rem Wk1");
+                    indexAfterWeek++;
+                }
 
 
 
-            CellRangeAddress range = new CellRangeAddress(0, 0, 0, listCol.Count - 1);
-            worksheet.AddMergedRegion(range);
+                if (listDateRephase.Any(x => x.Week == 3) || week == 4)
+                {
+                    listCol.Insert(indexAfterWeek, "Dispatch Wk2");
+                    indexAfterWeek++;
+                    listCol.Insert(indexAfterWeek, "Rem Wk2");
+                    indexAfterWeek++;
+                }
 
-            titleRow.CellStyle = style;
-            titleRow.SetCellValue(title);
+
+                if (listDateRephase.Any(x => x.Week == 4) || week == 5)
+                {
+                    listCol.Insert(indexAfterWeek, "Dispatch Wk3");
+                    indexAfterWeek++;
+                    listCol.Insert(indexAfterWeek, "Rem Wk3");
+                    indexAfterWeek++;
+                }
+
+
+                //for (var i = 2; i <= week; i++)
+                //{
+                //    if (listDateRephase.Any(x => x.Week == i) || i > 2)
+                //    {
+                //        listCol.Insert(indexAfterWeek5, "Dispatch Wk" + (i - 1));
+                //        indexAfterWeek5++;
+                //        listCol.Insert(indexAfterWeek5, "Rem Wk" + (i - 1));
+                //        indexAfterWeek5++;
+                //    }
+
+                //    //else if(listDateRephase.Any(x => x.Week == 3) || i == 4) 
+                //    //{
+
+                //    //        listCol.Insert(indexAfterWeek4, "Dispatch Wk" + (i - 1));
+                //    //        indexAfterWeek4++;
+                //    //        listCol.Insert(indexAfterWeek4, "Rem Wk" + (i - 1));
+                //    //        indexAfterWeek4++;
+
+                //    //}
+
+
+                //}
+
+
+
+                CellRangeAddress range = new CellRangeAddress(0, 0, 0, listCol.Count - 1);
+                worksheet.AddMergedRegion(range);
+
+                titleRow.CellStyle = style;
+                titleRow.SetCellValue(title);
 
 
 
 
-            var percentStyle = workbook.CreateCellStyle();
-            percentStyle.DataFormat = workbook.CreateDataFormat().GetFormat("0.00%");
+                var percentStyle = workbook.CreateCellStyle();
+                percentStyle.DataFormat = workbook.CreateDataFormat().GetFormat("0.00%");
 
-            var accountingStyle = workbook.CreateCellStyle();
-            accountingStyle.DataFormat = workbook.CreateDataFormat().GetFormat("_(* #,##0.00_);_(* (#,##0.00);_(* \"-\"??_);_(@_)");
-            int x = 0;
-            try
-            {
+                var accountingStyle = workbook.CreateCellStyle();
+                accountingStyle.DataFormat = workbook.CreateDataFormat().GetFormat("_(* #,##0_);_(* (#,##0);_(* \"-\"_);_(@_)");
+
+
                 foreach (var data in baseReportData.OrderBy(x => x.BannerName.ToString()))
                 {
-                    if (x == 47)
+                    if (x == 2330)
                     {
                         var zzzz = 5;
                     }
@@ -431,92 +516,84 @@ namespace FSAWebSystem.Services
 
                     var monthlyBucket = data.MonthlyBucket;
                     row.CreateCell(i).SetCellValue((double)monthlyBucket);
+                    row.GetCell(i).CellStyle = accountingStyle;
                     i++;
 
 
                     var rephaseDataThisRow = Enumerable.Repeat(new ReportRephaseData(), colToAddRephase).ToList();
-                    var reallocateDataThisRowTarget = Enumerable.Repeat(decimal.Zero, colToAddReallocate).ToList();
-                    var reallocateDataThisRowSource = Enumerable.Repeat(decimal.Zero, colToAddReallocate).ToList();
-                    var proposeDataThisRow = Enumerable.Repeat(decimal.Zero, colToAddPropose).ToList();
-                    decimal totalRephase = decimal.Zero;
-                    if (recordRephase.Any())
+                    var reallocateDataThisRowTarget = Enumerable.Repeat(new ReportProposeData(), colToAddReallocate).ToList();
+                    var reallocateDataThisRowSource = Enumerable.Repeat(new ReportProposeData(), colToAddReallocate).ToList();
+                    var proposeDataThisRow = Enumerable.Repeat(new ReportProposeData(), colToAddPropose).ToList();
+
+
+
+                    var rephaseDatas = recordRephase.Where(x => x.Key.WeeklyBucketId == weeklyBucketId).ToList();
+                    //var rephaseDatas = recordRephase.SingleOrDefault(x => x.Key.WeeklyBucketId == weeklyBucketId).AsEnumerable();
+
+                    if (rephaseDatas.Any())
                     {
-                        var rephaseDatas = recordRephase.Where(x => x.Key.WeeklyBucketId == weeklyBucketId).ToList();
-                        //var rephaseDatas = recordRephase.SingleOrDefault(x => x.Key.WeeklyBucketId == weeklyBucketId).AsEnumerable();
-
-                        if (rephaseDatas.Any())
+                        //foreach(var date in listDate)
+                        for (var j = 0; j < colToAddRephase; j++)
                         {
-
-
-                            //foreach(var date in listDate)
-                            for (var j = 0; j < colToAddRephase; j++)
+                            decimal totalRephase = decimal.Zero;
+                            var date = listDateRephase.ElementAt(j);
+                            var groupRephaseDate = rephaseDatas.SingleOrDefault(x => x.Key.Date == date.Date).AsEnumerable();
+                            if (groupRephaseDate != null)
                             {
-                                var date = listDate.ElementAt(j);
-                                var groupRephaseDate = rephaseDatas.SingleOrDefault(x => x.Key.Date == date.Date).AsEnumerable();
-                                if (groupRephaseDate != null)
-                                {
-                                    totalRephase = groupRephaseDate.Sum(x => x.Rephase);
-                                }
-                                rephaseDataThisRow[j] = new ReportRephaseData { Rephase = totalRephase, Week = date.Week};
+                                totalRephase = groupRephaseDate.Sum(x => x.Rephase);
                             }
+                            rephaseDataThisRow[j] = new ReportRephaseData { Rephase = totalRephase, Week = date.Week };
+
+                        }
+
+                    }
+
+
+                    var proposeDatas = recordPropose.Where(x => x.Key.WeeklyBucketId == weeklyBucketId).ToList();
+                    if (proposeDatas.Any())
+                    {
+                        for (var j = 0; j < colToAddPropose; j++)
+                        {
+                            decimal totalPropose = decimal.Zero;
+                            var date = listDatePropose.ElementAt(j);
+                            var groupProposeData = proposeDatas.SingleOrDefault(x => x.Key.Date == date.Date).AsEnumerable();
+                            if (groupProposeData != null)
+                            {
+                                totalPropose = groupProposeData.Sum(x => x.ProposeAdditional);
+
+                            }
+                            proposeDataThisRow[j] = new ReportProposeData { Propose = totalPropose, Week = date.Week };
+                        }
+                    }
+
+
+
+
+                    var reallocateDatas = recordReallocate.Where(x => x.Key.WeeklyBucketId == weeklyBucketId).ToList();
+
+                    if (reallocateDatas.Any())
+                    {
+                        for (var j = 0; j < colToAddReallocate; j++)
+                        {
+                            decimal totalReallocSource = decimal.Zero;
+                            decimal totalReallocTarget = decimal.Zero;
+                            var date = listDateReallocate.ElementAt(j);
+                            var groupReallocateData = reallocateDatas.SingleOrDefault(x => x.Key.Date == date.Date).AsEnumerable();
+
+                            if (groupReallocateData != null)
+                            {
+                                totalReallocSource += groupReallocateData.Where(x => x.ProposeAdditional < 0).Sum(x => x.ProposeAdditional);
+                                totalReallocTarget += groupReallocateData.Where(x => x.ProposeAdditional > 0).Sum(x => x.ProposeAdditional);
+                            }
+                            reallocateDataThisRowSource[j] = new ReportProposeData { Propose = totalReallocSource, Week = date.Week };
+                            reallocateDataThisRowTarget[j] = new ReportProposeData { Propose = totalReallocTarget, Week = date.Week }; ;
+
 
                         }
                     }
 
-                    if (recordPropose.Any())
-                    {
-                        var proposeDatas = recordPropose.SingleOrDefault(x => x.Key.WeeklyBucketId == weeklyBucketId).AsEnumerable();
-
-                        if (proposeDatas != null)
-                        {
-                            var groupProposeData = proposeDatas.OrderBy(x => x.SubmitDate).GroupBy(x => x.SubmitDate.Date).AsEnumerable();
-                            //proposeDatas = proposeDatas.OrderBy(x => x.SubmitDate).AsEnumerable();
-                            for (var j = 0; j < colToAddPropose; j++)
-                            {
-                                if (j < proposeDatas.Count())
-                                {
-                                    proposeDataThisRow[j] = groupProposeData.Where(x => x.Key == listDatePropose.ElementAt(j)).Sum(y => y.Sum(z => z.ProposeAdditional));
-                                }
-                            }
-                        }
-                    }
 
 
-                    if (recordReallocate.Any())
-                    {
-                        var reallocateDatas = recordReallocate.SingleOrDefault(x => x.Key.WeeklyBucketId == weeklyBucketId).AsEnumerable();
-
-                        if (reallocateDatas != null)
-                        {
-                            var groupReallocateData = reallocateDatas.OrderBy(x => x.SubmitDate).GroupBy(x => x.SubmitDate.Date).AsEnumerable();
-                            //reallocateDatas = reallocateDatas.OrderBy(x => x.SubmitDate).AsEnumerable();
-                            for (var j = 0; j < colToAddReallocate; j++)
-                            {
-
-                                if (j < reallocateDatas.Count())
-                                {
-                                    var proposes = groupReallocateData.Where(x => x.Key == listDateReallocate.ElementAt(j)).AsEnumerable();
-
-                                    foreach (var propose in proposes)
-                                    {
-                                        foreach (var proposeAdd in propose)
-                                        {
-                                            if (proposeAdd.ProposeAdditional > 0)
-                                            {
-                                                reallocateDataThisRowTarget[j] += proposeAdd.ProposeAdditional;
-                                            }
-                                            else
-                                            {
-                                                reallocateDataThisRowSource[j] += proposeAdd.ProposeAdditional;
-                                            }
-                                        }
-                                    }
-
-
-                                }
-                            }
-                        }
-                    }
 
                     //for (var j = 1; j < maxVersion + 1; j++)
                     //{
@@ -526,54 +603,70 @@ namespace FSAWebSystem.Services
                     //}
 
                     var updatedMonthlyBucket = monthlyBucket;
-                    for (var j = 0; j < bucketMaxVersion; j++)
+                    for (var j = 0; j < listDate.Count; j++)
                     {
-                        if (listDateReallocate.Contains(listDate.ElementAt(j).Date))
+                        var date = listDate.ElementAt(j);
+                        var indexReallocate = listDateReallocate.IndexOf(date);
+
+                        if(indexReallocate >= 0)
                         {
-                            for (var k = 0; k < colToAddReallocate; k++)
-                            {
-                                if (k >= 0 && k < reallocateDataThisRowSource.Count)
-                                {
-                                    updatedMonthlyBucket += reallocateDataThisRowSource[k];
-                                }
-                                else
-                                {
-                                    updatedMonthlyBucket += 0;
-                                }
-
-                                if (k >= 0 && k < reallocateDataThisRowTarget.Count)
-                                {
-                                    updatedMonthlyBucket += reallocateDataThisRowTarget[k];
-                                }
-                                else
-                                {
-                                    updatedMonthlyBucket += 0;
-                                }
-                            }
-
+                            updatedMonthlyBucket += reallocateDataThisRowSource[indexReallocate].Propose;
+                            updatedMonthlyBucket += reallocateDataThisRowTarget[indexReallocate].Propose;
                         }
+            
 
-                        if (listDatePropose.Contains(listDate.ElementAt(j).Date))
+                        //if (indexReallocate > 0)
+                        //{
+                        //    if (indexReallocate < reallocateDataThisRowSource.Count)
+                        //    {
+                        //        updatedMonthlyBucket += reallocateDataThisRowSource[j].Propose;
+                        //    }
+                        //    else
+                        //    {
+                        //        updatedMonthlyBucket += 0;
+                        //    }
+
+                        //    if (j >= 0 && j < reallocateDataThisRowTarget.Count)
+                        //    {
+                        //        updatedMonthlyBucket += reallocateDataThisRowTarget[j].Propose;
+                        //    }
+                        //    else
+                        //    {
+                        //        updatedMonthlyBucket += 0;
+                        //    }
+                        //}
+
+                        var indexPropose = listDatePropose.IndexOf(date);
+
+                        if(indexPropose >= 0)
                         {
-                            if (j >= 0 && j < proposeDataThisRow.Count)
-                            {
-                                updatedMonthlyBucket += proposeDataThisRow[j];
-                            }
-                            else
-                            {
-                                updatedMonthlyBucket += 0;
-                            }
-                        }
+                            updatedMonthlyBucket += proposeDataThisRow[indexPropose].Propose;
+                        }    
+             
+                        //if (listDatePropose.Contains(date))
+                        //{
+                        //    if (j >= 0 && j < proposeDataThisRow.Count)
+                        //    {
+                        //        updatedMonthlyBucket += proposeDataThisRow[j].Propose;
+                        //    }
+                        //    else
+                        //    {
+                        //        updatedMonthlyBucket += 0;
+                        //    }
+                        //}
 
                         row.CreateCell(i).SetCellValue((double)updatedMonthlyBucket);
+                        row.GetCell(i).CellStyle = accountingStyle;
                         i++;
                     }
 
                     for (var j = 0; j < colToAddReallocate; j++)
                     {
-                        row.CreateCell(i).SetCellValue((double)reallocateDataThisRowTarget.ElementAt(j));
+                        row.CreateCell(i).SetCellValue((double)reallocateDataThisRowTarget.ElementAt(j).Propose);
+                        row.GetCell(i).CellStyle = accountingStyle;
                         i++;
-                        row.CreateCell(i).SetCellValue((double)reallocateDataThisRowSource.ElementAt(j));
+                        row.CreateCell(i).SetCellValue((double)reallocateDataThisRowSource.ElementAt(j).Propose);
+                        row.GetCell(i).CellStyle = accountingStyle;
                         i++;
                     }
 
@@ -583,6 +676,7 @@ namespace FSAWebSystem.Services
                     for (var j = 0; j < colToAddRephase; j++)
                     {
                         row.CreateCell(i).SetCellValue((double)rephaseDataThisRow.ElementAt(j).Rephase);
+                        row.GetCell(i).CellStyle = accountingStyle;
                         i++;
                     }
 
@@ -590,99 +684,324 @@ namespace FSAWebSystem.Services
                     //Propose Additional
                     for (var j = 0; j < colToAddPropose; j++)
                     {
-                        row.CreateCell(i).SetCellValue((double)proposeDataThisRow.ElementAt(j));
+                        row.CreateCell(i).SetCellValue((double)proposeDataThisRow.ElementAt(j).Propose);
+                        row.GetCell(i).CellStyle = accountingStyle;
                         i++;
                     }
 
 
 
-
-                    var week1 = Convert.ToDouble(data.Week1);
+                    //Week 1
+                    var week1 = data.Week1;
                     var week1Val = week1;
-                    row.CreateCell(i).SetCellValue(week1);
+                    row.CreateCell(i).SetCellValue((double)week1);
+                    row.GetCell(i).CellStyle = accountingStyle;
                     i++;
 
-                    var week1Version = reportWeekVersions.SingleOrDefault(x => x.Week == 1) != null ? reportWeekVersions.SingleOrDefault(x => x.Week == 1).MaxVersion : 0;
-                    for (var j = 0; j < week1Version; j++)
+                    //Week 1 v
+                    for (var j = 0; j < maxWeek; j++)
                     {
                         if (j >= 0 && j < rephaseDataThisRow.Count)
                         {
-                            week1Val += (double)rephaseDataThisRow[j].Rephase;
+                            week1Val += rephaseDataThisRow[j].Rephase;
                         }
 
-                        row.CreateCell(i).SetCellValue(week1Val);
+                        row.CreateCell(i).SetCellValue((double)week1Val);
+                        row.GetCell(i).CellStyle = accountingStyle;
                         i++;
                     }
 
-
-                    var week2 = Convert.ToDouble(data.Week2);
+                    //Week2
+                    var week2 = data.Week2;
                     var week2Val = week2;
-                    row.CreateCell(i).SetCellValue(week2);
+                    row.CreateCell(i).SetCellValue((double)week2);
+                    row.GetCell(i).CellStyle = accountingStyle;
                     i++;
 
-                    var week2Version = reportWeekVersions.SingleOrDefault(x => x.Week == 2) != null ? reportWeekVersions.SingleOrDefault(x => x.Week == 2).MaxVersion : 0;
-                    week2Version += week1Version;
-                    for (var j = 0; j < week2Version; j++)
+                    //Week 2 v
+                    for (var j = 0; j < maxWeek; j++)
                     {
-                        if (j >= 0 && j < rephaseDataThisRow.Count)
+                        if (j >= 0 && j < rephaseDataThisRow.Where(x => x.Week == 1).Count())
                         {
-                            week2Val -= (double)rephaseDataThisRow[j].Rephase;
+                            var thisRephase = rephaseDataThisRow[j];
 
+                            week2Val -= rephaseDataThisRow[j].Rephase;
                         }
 
-                        if (j >= 0 && j < reallocateDataThisRowSource.Count)
-                        {
-                            week2Val += (double)reallocateDataThisRowSource[j];
+                        row.CreateCell(i).SetCellValue((double)week2Val);
+                        row.GetCell(i).CellStyle = accountingStyle;
+                        i++;
+                    }
 
+                    for (var j = 0; j < maxWeek2; j++)
+                    {
+                        var rephaseThisWeek = rephaseDataThisRow.Where(x => x.Week == 2).ToList();
+                        if (j >= 0 && j < rephaseThisWeek.Count)
+                        {
+                            var thisRephase = rephaseThisWeek[j];
+
+                            week2Val += thisRephase.Rephase;
                         }
 
-                        if (listDateReallocate.Contains(listDate.ElementAt(j).Date))
+
+                        if (listDatePropose.Contains(listDate.Where(x => x.Week == 2).ElementAt(j)))
                         {
-                            for (var k = 0; k < colToAddReallocate; k++)
+                            if (j >= 0 && j < proposeDataThisRow.Count)
                             {
-                                week2Val += (double)reallocateDataThisRowTarget[k] + (double)reallocateDataThisRowSource[k];
+                                week2Val += proposeDataThisRow[j].Propose;
                             }
                         }
 
-                        row.CreateCell(i).SetCellValue(week2Val);
+                        if (listDateReallocate.Contains(listDate.Where(x => x.Week == 2).ElementAt(j)))
+                        {
+                            if (j >= 0 && j < reallocateDataThisRowTarget.Count)
+                            {
+                                week2Val += reallocateDataThisRowTarget[j].Propose;
+                            }
+                            if (j >= 0 && j < reallocateDataThisRowSource.Count)
+                            {
+                                week2Val += reallocateDataThisRowSource[j].Propose;
+                            }
+                        }
+
+                
+                        row.CreateCell(i).SetCellValue((double)week2Val);
+                        row.GetCell(i).CellStyle = accountingStyle;
                         i++;
                     }
 
 
-                    for (var j = 2; j <= week; j++)
+                    var dispatchWk1 = decimal.Zero;
+                    var remWk1 = decimal.Zero;
+                    var week3Val = decimal.Zero;
+                    for (var j = 0; j < maxWeek2; j++)
                     {
-                        var weeklyBucket = weeklyBucketHistories.FirstOrDefault(x => x.BannerPlantId == data.BannerPlantId && x.SKUId == data.SKUId && x.Week == j);
-                        var dispatch = weeklyBucket != null ? weeklyBucket.DispatchConsume : decimal.Zero;
-                        var remWk = week1Val - (double)dispatch;
-                        var week3Val = Convert.ToDouble(remWk);
-                        row.CreateCell(i).SetCellValue(week3Val);
-                        i++;
+                        var weeklyBucketWk2 = weeklyBucketHistories.FirstOrDefault(x => x.BannerPlantId == data.BannerPlantId && x.SKUId == data.SKUId && x.Week == 2);
+                        dispatchWk1 = weeklyBucketWk2 != null ? weeklyBucketWk2.DispatchConsume : decimal.Zero;
+                        remWk1 = week1Val - dispatchWk1;
 
-                        if(j == 2)
+                        if (listDateRephase.Any(x => x.Week == 2) || week == 3)
                         {
-                            var rephaseThisWeek = rephaseDataThisRow.Where(x => x.Week == 2).ToList();
-                            for (var k = 0; k < week2Version + 1; k++)
+                            if (j == 0)
                             {
-                                if (k >= 0 && k < rephaseThisWeek.Count)
-                                {
-                                    week3Val += (double)rephaseThisWeek[k].Rephase;
-                                }
+
+                                //Week 3
+                                week3Val = remWk1;
+                                row.CreateCell(i).SetCellValue((double)week3Val);
+                                row.GetCell(i).CellStyle = accountingStyle;
+                                i++;
                             }
-                            row.CreateCell(i).SetCellValue(week3Val);
+
+                            var rephaseThisWeek = rephaseDataThisRow.Where(x => x.Week == 2).ToList();
+
+                            if (j >= 0 && j < rephaseThisWeek.Count)
+                            {
+                                week3Val -= rephaseThisWeek[j].Rephase;
+                            }
+
+                            row.CreateCell(i).SetCellValue((double)week3Val);
+                            row.GetCell(i).CellStyle = accountingStyle;
                             i++;
                         }
-                      
+                    }
 
-                        //var dispatch = decimal.Zero;
-                        row.CreateCell(i).SetCellValue((double)dispatch);
+                    var dispatchWk2 = decimal.Zero;
+                    var remWk2 = decimal.Zero;
+                    var week4Val = decimal.Zero;
+
+                    for (var j = 0; j < maxWeek3; j++)
+                    {
+                        var rephaseThisWeek = rephaseDataThisRow.Where(x => x.Week == 3).ToList();
+                        if (j >= 0 && j < rephaseThisWeek.Count)
+                        {
+                            var thisRephase = rephaseThisWeek[j];
+
+                            week3Val += thisRephase.Rephase;
+                        }
+
+
+                        if (listDatePropose.Contains(listDate.Where(x => x.Week == 3).ElementAt(j)))
+                        {
+                            if (j >= 0 && j < proposeDataThisRow.Count)
+                            {
+                                week3Val += proposeDataThisRow[j].Propose;
+                            }
+                        }
+
+
+
+                        if (listDateReallocate.Contains(listDate.Where(x => x.Week == 3).ElementAt(j)))
+                        {
+                            if (j >= 0 && j < reallocateDataThisRowTarget.Count)
+                            {
+                                week3Val += reallocateDataThisRowTarget[j].Propose;
+                            }
+                            if (j >= 0 && j < reallocateDataThisRowSource.Count)
+                            {
+                                week3Val += reallocateDataThisRowSource[j].Propose;
+                            }
+                        }
+                        row.CreateCell(i).SetCellValue((double)week3Val);
+                        row.GetCell(i).CellStyle = accountingStyle;
                         i++;
-                      
+
+                    }
+
+                    for (var j = 0; j < maxWeek3; j++)
+                    {
+                        var weeklyBucketWk3 = weeklyBucketHistories.FirstOrDefault(x => x.BannerPlantId == data.BannerPlantId && x.SKUId == data.SKUId && x.Week == 2);
+                        dispatchWk2 = weeklyBucketWk3 != null ? weeklyBucketWk3.DispatchConsume : decimal.Zero;
+                        remWk2 = week2Val - dispatchWk2;
+
+                        if (listDateRephase.Any(x => x.Week == 3) || week == 4)
+                        {
+                            if (j == 0)
+                            {
+
+                                //Week 4
+                                week4Val = remWk2;
+                                row.CreateCell(i).SetCellValue((double)week4Val);
+                                row.GetCell(i).CellStyle = accountingStyle;
+                                i++;
+                            }
+
+                            var rephaseThisWeek = rephaseDataThisRow.Where(x => x.Week == 3).ToList();
+
+                            if (j >= 0 && j < rephaseThisWeek.Count)
+                            {
+                                week4Val -= rephaseThisWeek[j].Rephase;
+                            }
+
+                            row.CreateCell(i).SetCellValue((double)week4Val);
+                            row.GetCell(i).CellStyle = accountingStyle;
+                            i++;
+                        }
+                    }
+
+
+                    var dispatchWk3 = decimal.Zero;
+                    var remWk3 = decimal.Zero;
+                    var week5Val = decimal.Zero;
+
+                    for (var j = 0; j < maxWeek4; j++)
+                    {
+                        var rephaseThisWeek = rephaseDataThisRow.Where(x => x.Week == 4).ToList();
+                        if (j >= 0 && j < rephaseThisWeek.Count)
+                        {
+                            var thisRephase = rephaseThisWeek[j];
+
+                            week4Val += thisRephase.Rephase;
+                        }
+
+
+                        if (listDatePropose.Contains(listDate.Where(x => x.Week == 4).ElementAt(j)))
+                        {
+                            if (j >= 0 && j < proposeDataThisRow.Count)
+                            {
+                                week4Val += proposeDataThisRow[j].Propose;
+                            }
+                        }
+
+
+
+                        if (listDateReallocate.Contains(listDate.Where(x => x.Week == 4).ElementAt(j)))
+                        {
+                            if (j >= 0 && j < reallocateDataThisRowTarget.Count)
+                            {
+                                week4Val += reallocateDataThisRowTarget[j].Propose;
+                            }
+                            if (j >= 0 && j < reallocateDataThisRowSource.Count)
+                            {
+                                week4Val += reallocateDataThisRowSource[j].Propose;
+                            }
+                        }
+                        row.CreateCell(i).SetCellValue((double)week4Val);
+                        row.GetCell(i).CellStyle = accountingStyle;
+                        i++;
+
+                    }
+
+                    for (var j = 0; j < maxWeek4; j++)
+                    {
+                        var weeklyBucketWk4 = weeklyBucketHistories.FirstOrDefault(x => x.BannerPlantId == data.BannerPlantId && x.SKUId == data.SKUId && x.Week == 2);
+                        dispatchWk3 = weeklyBucketWk4 != null ? weeklyBucketWk4.DispatchConsume : decimal.Zero;
+                        remWk3 = week3Val - dispatchWk3;
+
+                        if (listDateRephase.Any(x => x.Week == 4) || week == 5)
+                        {
+                            if (j == 0)
+                            {
+
+                                //Week 4
+                                week5Val = remWk3; 
+                                row.CreateCell(i).SetCellValue((double)week5Val);
+                                row.GetCell(i).CellStyle = accountingStyle;
+                                i++;
+                            }
+
+                            var rephaseThisWeek = rephaseDataThisRow.Where(x => x.Week == 4).ToList();
+
+                            if (j >= 0 && j < rephaseThisWeek.Count)
+                            {
+                                week5Val -= rephaseThisWeek[j].Rephase;
+                            }
+
+                            row.CreateCell(i).SetCellValue((double)week5Val);
+                            row.GetCell(i).CellStyle = accountingStyle;
+                            i++;
+                        }
+                    }
+
+                    var dispatch = decimal.Zero;
+                    var remWk = decimal.Zero;
+
+                    if (listDateRephase.Any(x => x.Week == 2) || week == 3)
+                    {
+                        dispatch = dispatchWk1;
+                        remWk = remWk1;
+
+                        row.CreateCell(i).SetCellValue((double)dispatch);
+                        row.GetCell(i).CellStyle = accountingStyle;
+                        i++;
+
                         row.CreateCell(i).SetCellValue((double)remWk);
+                        row.GetCell(i).CellStyle = accountingStyle;
+                        i++;
+                    }
+
+                    dispatch = decimal.Zero;
+                    if (listDateRephase.Any(x => x.Week == 3) || week == 4)
+                    {
+                        dispatch = dispatchWk2;
+                        remWk = remWk2;
+
+                        row.CreateCell(i).SetCellValue((double)dispatch);
+                        row.GetCell(i).CellStyle = accountingStyle;
+                        i++;
+
+                        row.CreateCell(i).SetCellValue((double)remWk);
+                        row.GetCell(i).CellStyle = accountingStyle;
+                        i++;
+                    }
+
+                    dispatch = decimal.Zero;
+                    if (listDateRephase.Any(x => x.Week == 4) || week == 5)
+                    {
+                        dispatch = dispatchWk3;
+                        remWk = remWk3;
+
+                        row.CreateCell(i).SetCellValue((double)dispatch);
+                        row.GetCell(i).CellStyle = accountingStyle;
+                        i++;
+
+                        row.CreateCell(i).SetCellValue((double)remWk);
+                        row.GetCell(i).CellStyle = accountingStyle;
                         i++;
                     }
 
                     var validBJ = data.ValidBJ;
                     row.CreateCell(i).SetCellValue((double)validBJ);
+                    row.GetCell(i).CellStyle = accountingStyle;
                     i++;
 
                     var remFSA = updatedMonthlyBucket - validBJ;
@@ -690,13 +1009,10 @@ namespace FSAWebSystem.Services
                     row.GetCell(i).CellStyle = accountingStyle;
                     i++;
                     x++;
-
-
-
                 }
 
                 var colRow = worksheet.CreateRow(1);
-                for (var i = 1; i < listCol.Count; i++)
+                for (var i = 0; i < listCol.Count; i++)
                 {
                     if (listCol[i] == "Target")
                     {
@@ -714,7 +1030,7 @@ namespace FSAWebSystem.Services
                     {
                         listCol[i] = "REM FSA";
                     }
-                    colRow.CreateCell(i - 1).SetCellValue(listCol[i]);
+                    colRow.CreateCell(i).SetCellValue(listCol[i]);
                     worksheet.AutoSizeColumn(i);
                 }
 
@@ -745,40 +1061,40 @@ namespace FSAWebSystem.Services
                 }
 
 
-                var reportWeekVersion = reportWeekVersions.SingleOrDefault(x => x.Week == week);
-                if (reportWeekVersion != null)
-                {
-                    reportWeekVersion.MaxVersion += 1;
-                }
-                else
-                {
-                    var newReportWeekVersion = new ReportWeekVersion();
-                    newReportWeekVersion.Id = Guid.NewGuid();
-                    newReportWeekVersion.Month = currDate.Month;
-                    newReportWeekVersion.Week = week;
-                    newReportWeekVersion.Year = currDate.Year;
-                    newReportWeekVersion.MaxVersion = 1;
-                    _db.ReportWeekVersions.Add(newReportWeekVersion);
-                }
+                //var reportWeekVersion = reportWeekVersions.SingleOrDefault(x => x.Week == week);
+                //if (reportWeekVersion != null)
+                //{
+                //    reportWeekVersion.MaxVersion += 1;
+                //}
+                //else
+                //{
+                //    var newReportWeekVersion = new ReportWeekVersion();
+                //    newReportWeekVersion.Id = Guid.NewGuid();
+                //    newReportWeekVersion.Month = currDate.Month;
+                //    newReportWeekVersion.Week = week;
+                //    newReportWeekVersion.Year = currDate.Year;
+                //    newReportWeekVersion.MaxVersion = 1;
+                //    _db.ReportWeekVersions.Add(newReportWeekVersion);
+                //}
 
 
-                if (bucketHistory != null)
-                {
-                    bucketHistory.Version += 1;
-                }
-                else
-                {
-                    var bucketHist = new MonthlyBucketHistory();
-                    bucketHist.Id = Guid.NewGuid();
-                    bucketHist.Version = 1;
-                    bucketHist.Month = currDate.Month;
-                    bucketHist.Year = currDate.Year;
+                //if (bucketHistory != null)
+                //{
+                //    bucketHistory.Version += 1;
+                //}
+                //else
+                //{
+                //    var bucketHist = new MonthlyBucketHistory();
+                //    bucketHist.Id = Guid.NewGuid();
+                //    bucketHist.Version = 1;
+                //    bucketHist.Month = currDate.Month;
+                //    bucketHist.Year = currDate.Year;
 
-                    _db.MonthlyBucketHistories.Add(bucketHist);
-                }
+                //    _db.MonthlyBucketHistories.Add(bucketHist);
+                //}
 
 
-                _db.SaveChanges();
+                //_db.SaveChanges();
                 var msg = "File Generated";
                 return msg;
                 //FileStreamResult file = File(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Daily Report.xls");
@@ -788,12 +1104,5 @@ namespace FSAWebSystem.Services
                 return ex.Message;
             }
         }
-
-
-        private void GenerateHistoryReport(IEnumerable<object> datas)
-        {
-
-        }
-
     }
 }

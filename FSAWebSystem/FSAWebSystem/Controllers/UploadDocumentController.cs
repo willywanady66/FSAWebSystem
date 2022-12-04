@@ -151,7 +151,7 @@ namespace FSAWebSystem.Controllers
         [Authorize]
         public async Task<IActionResult> UploadFile(IFormFile excelDocument, string documentType, string loggedUser, string? uploadMonth, string? uploadYear)
         {
-            string fileContent = string.Empty;
+             string fileContent = string.Empty;
             var currDate = DateTime.Now;
             var month = currDate.Month;
             var year = currDate.Year;
@@ -741,8 +741,8 @@ namespace FSAWebSystem.Controllers
         {
             List<MonthlyBucket> listMonthlyBucket = new List<MonthlyBucket>();
 
-            IQueryable<BannerPlant> bannerPlants = _bannerPlantService.GetAllBannerPlant();
-            IQueryable<SKU> skus = _skuService.GetAllProducts();
+            var bannerPlants = _bannerPlantService.GetAllBannerPlant().ToList();
+            var skus = _skuService.GetAllProducts().ToList();
             //List<ProductCategory> categories = _skuService.GetAllProductCategories().ToList();
 
             FSADocument fsaDoc = _uploadDocService.CreateFSADoc(fileName, loggedUser, documentType);
@@ -764,9 +764,9 @@ namespace FSAWebSystem.Controllers
                         PlantCode = dr[6].ToString(),
 
                         Price = Decimal.Parse(ConvertNumber(dr[8].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }),
-                        PlantContribution = Decimal.Parse(ConvertNumber(dr[9].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }) * 100,
+                        PlantContribution = decimal.Round(Decimal.Parse(ConvertNumber(dr[9].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." })) * 100,
                         RunningRate = decimal.Round(Decimal.Parse(ConvertNumber(dr[10].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." })),
-                        TCT = Decimal.Parse(ConvertNumber(dr[11].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." }) * 100,
+                        TCT = decimal.Round(Decimal.Parse(ConvertNumber(dr[11].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." })) * 100,
                         MonthlyTarget = decimal.Round(Decimal.Parse(ConvertNumber(dr[12].ToString()), NumberStyles.Any, new NumberFormatInfo { CurrencyDecimalSeparator = "." })) * 100,
                         Month = month,
                         Year = year,
@@ -1022,9 +1022,7 @@ namespace FSAWebSystem.Controllers
                             weeklyBucket.ValidBJ = dailyOrder.ValidBJ;
                             weeklyBucket.RemFSA = weeklyBucket.MonthlyBucket - dailyOrder.ValidBJ;
                         }
-           
-                    }
-                   
+                    }  
                 }
             }
         }

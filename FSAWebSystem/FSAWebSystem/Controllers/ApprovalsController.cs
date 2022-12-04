@@ -276,7 +276,6 @@ namespace FSAWebSystem.Controllers
                 var weeklyBucket = await _bucketService.GetWeeklyBucket(detail.WeeklyBucketId);
                 if (type == ProposalType.Rephase)
                 {
-
                     var nextBucket = Convert.ToDecimal(weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).GetValue(weeklyBucket, null));
                     //NEXTWEEK
                     weeklyBucket.GetType().GetProperty("BucketWeek" + (week + 1).ToString()).SetValue(weeklyBucket, decimal.Round(nextBucket - detail.ActualRephase));

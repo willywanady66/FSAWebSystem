@@ -315,7 +315,7 @@ namespace FSAWebSystem.Controllers
                     Id = Guid.NewGuid(),
                     BannerPlant = bannerPlant,
                     PlantContribution = weeklyBucket.PlantContribution,
-                    ActualRephase = (proposalInput.rephase * weeklyBucket.PlantContribution) / 100,
+                    ActualRephase = decimal.Round((proposalInput.rephase * weeklyBucket.PlantContribution) / 100),
                     Proposal = proposal,
                     WeeklyBucketId = weeklyBucket.Id,
                     IsTarget = true
@@ -463,7 +463,7 @@ namespace FSAWebSystem.Controllers
                 proposalDetail.Proposal = proposal;
                 proposalDetail.MonthlyBucket = weeklyBucket.MonthlyBucket;
                 proposalDetail.PlantContribution = weeklyBucket.PlantContribution;
-                proposalDetail.ActualProposeAdditional = (proposalInput.proposeAdditional * weeklyBucket.PlantContribution) / 100;
+                proposalDetail.ActualProposeAdditional = decimal.Round((proposalInput.proposeAdditional * weeklyBucket.PlantContribution) / 100);
                 proposalDetail.BannerPlant = weeklyBucket.BannerPlant;
                 proposalDetail.WeeklyBucketId = weeklyBucket.Id;
                 proposalDetail.IsTarget = true;
@@ -477,7 +477,7 @@ namespace FSAWebSystem.Controllers
                 proposalDetail.Proposal = proposal;
                 proposalDetail.MonthlyBucket = weeklyBucketSource.MonthlyBucket;
                 proposalDetail.PlantContribution = weeklyBucketSource.PlantContribution;
-                proposalDetail.ActualProposeAdditional = (proposalInput.proposeAdditional * weeklyBucketSource.PlantContribution) / 100 * -1;
+                proposalDetail.ActualProposeAdditional = decimal.Round((proposalInput.proposeAdditional * weeklyBucketSource.PlantContribution) / 100) * -1;
                 proposalDetail.BannerPlant = weeklyBucketSource.BannerPlant;
                 proposalDetail.WeeklyBucketId = weeklyBucketSource.Id;
                 proposalDetail.IsTarget = false;
