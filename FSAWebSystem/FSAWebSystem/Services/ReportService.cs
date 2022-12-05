@@ -199,7 +199,7 @@ namespace FSAWebSystem.Services
                 var month = currDate.ToString("MMM").ToUpper();
                 var year = currDate.ToString("yy");
 
-                var listHistoryMonthly = new List<MonthlyBucketHistory>();
+        
 
                 var workbook = new HSSFWorkbook();
                 ISheet worksheet = workbook.CreateSheet("v1.0");
@@ -236,10 +236,9 @@ namespace FSAWebSystem.Services
                 colToAddRephase
             };
 
-                var bucketHistory = _db.MonthlyBucketHistories.SingleOrDefault(x => x.Month == currDate.Month && x.Year == currDate.Year);
+               
                 //var bucketMaxVersion = bucketHistory != null ? bucketHistory.Version : 0;
                 var bucketMaxVersion = listDate.Count;
-                var reportWeekVersions = _db.ReportWeekVersions.Where(x => x.Month == currDate.Month && x.Year == currDate.Year).ToList();
 
                 //var maxVersionWeeks = bucketHistories.GroupBy(x => new { x.Week }).Select(y => new { Version = y.Max(x => x.Version), Week = y.Key.Week }).ToList();
 
